@@ -75,27 +75,36 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'LMS_Project.wsgi.application'
 
-
+AZURE_ACCOUNT_NAME = 'storeholder'
+AZURE_ACCOUNT_KEY = 'QxlUJdp8eSoPeQPas4NigSkXg6KMep7z+fPQ5CpPm0kRfjg7Q0lFmVEIyhU4ohFLFdSqntDAG6MY84elTfecnw=='
+AZURE_CONTAINER = 'tpdata'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-# 'default': {
 #         'ENGINE': 'djongo',
-#         'NAME': 'ExskilenceNEW',
-#         'ENFORCE_SCHEMA': False,  
+#         'NAME': 'LMSmongodb',
 #         'CLIENT': {
 #             'host': 'mongodb+srv://kecoview:FVy5fqqCtQy3KIt6@cluster0.b9wmlid.mongodb.net/',
 #             'username': 'kecoview',
 #             'password': 'FVy5fqqCtQy3KIt6',
 #             'authMechanism': 'SCRAM-SHA-1',
 #         }
+#     },
+#     'MSSQL': {
+#         'ENGINE': 'mssql',
+#         'NAME': 'LMSdb',
+#         'USER': 'sa',
+#         'PASSWORD': 'sql2014!',
+#         'HOST': 'localhost',
+#         'PORT': '1433',
+#         'OPTIONS': {
+#             'driver': 'ODBC Driver 17 for SQL Server',
+#         },
 #     }
+# }
 DATABASES = {
     'mongodb': {
         'ENGINE': 'djongo',
