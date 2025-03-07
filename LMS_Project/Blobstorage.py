@@ -26,4 +26,17 @@ def get_blob(blob_name):
     return cache.get(blob_name)
 
 # def get_blob_list(blob_name):
-#     blob_client = get_blob_container_client().get_blob_client(blob_name)
+#     container_client = get_blob_container_client()
+
+#     blob_list = container_client.list_blobs(name_starts_with=blob_name)
+    
+#     for blob in blob_list:
+#         blob_client = container_client.get_blob_client(blob['name'])
+#         blob_properties = blob_client.get_blob_properties()
+
+#         print(f"Blob Name: {blob['name']}")
+#         print(f"Last Modified: {blob_properties['last_modified']}")
+#         print(f"Blob Size: {blob_properties['size']} bytes")
+#         print(f"Blob Content Type: {blob_properties['content_settings'].content_type}")
+
+#     return blob_list

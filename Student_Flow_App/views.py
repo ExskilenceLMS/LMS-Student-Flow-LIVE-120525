@@ -5,201 +5,13 @@ from rest_framework.decorators import api_view
 from LMS_MSSQLdb_App.models import *
 from LMS_Mongodb_App.models import *
 from datetime import datetime, timedelta
-from django.db.models import Max, F
+from django.db.models import Max, F ,Sum
 import json
-
-from LMS_Project.Blobstorage import get_blob
+from django.db.models.functions import TruncDate
+from LMS_Project.Blobstorage import *
+from .AppUsage import update_app_usage
  
-@api_view(['GET'])
-def addStudetsActivity(request,day,week):
-    try:
-        obj = students_info.objects.get( student_id = 'Student1',del_row = False)
-        sub = subjects.objects.get(subject_id = 'Subject2',del_row = False)
-        topoic = topics.objects.get(topic_id = 'Topic1',del_row = False)
-        subtop = sub_topics.objects.get(sub_topic_id = 'SubTopic1',del_row = False)
-        student = student_activities.objects.create(
-            student_id = obj,
-            subject_id = sub,
-            activity_end_time = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            activity_week = week,
-            activity_day = day,
-            activity_topic = topoic,
-            activity_subtopic = subtop,
-            del_row = False
-        )
-        return HttpResponse("Success")
-    except Exception as e:
-        print(e)
-        return HttpResponse("Failed")
-@api_view(['GET'])
-def addStudent(request):
-    try:
-        track = tracks.objects.create(
-            track_id = 'Track1',
-            track_name =  'Engineering',
-            track_name_searchable = 'engineering',
-            track_description = 'TEST',
-            created_by = 'TEST',
-            created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            modified_by = 'TEST',
-            modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            action = 'TEST',
-            del_row = False
-        )
-        sub = subjects.objects.create(
-            subject_id = 'Subject1',
-            track_id = track,
-            subject_name =  'HTML CSS',
-            subject_alt_name = 'htmlcss',
-            subject_description = 'TEST',
-            created_by = 'TEST',
-            created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            modified_by = 'TEST',
-            modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            action = 'TEST',
-            del_row = False
-        )
-        sub1 = subjects.objects.create(
-            subject_id = 'Subject2',
-            track_id = track,
-            subject_name =  'Data Structures with C++ and Object-Oriented Programming with C++',
-            subject_alt_name = 'datastructureswithc++andobject-orientedprogrammingwithc++',
-            subject_description = 'TEST',
-            created_by = 'TEST',
-            created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            modified_by = 'TEST',
-            modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            action = 'TEST',
-            del_row = False
-        )
-        sub2 = subjects.objects.create(
-            subject_id = 'Subject3',
-            track_id = track,
-            subject_name =  'Data Structures and Algorithms',
-            subject_alt_name = 'datastructuresandalgorithms',
-            subject_description = 'TEST',
-            created_by = 'TEST',
-            created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            modified_by = 'TEST',
-            modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            action = 'TEST',
-            del_row = False
-        )
-        sub3 = subjects.objects.create(
-            subject_id = 'Subject4',
-            track_id = track,
-            subject_name =  'SQL',
-            subject_alt_name = 'sql',
-            subject_description = 'TEST',
-            created_by = 'TEST',
-            created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            modified_by = 'TEST',
-            modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            action = 'TEST',
-            del_row = False
-        )
-        topic = topics.objects.create(
-            topic_id = 'Topic1',
-            subject_id = sub,
-            topic_name =  'TEST',
-            topic_alt_name = 'TEST',
-            topic_description = 'TEST',
-            created_by = 'TEST',
-            created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            modified_by = 'TEST',
-            modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            action = 'TEST',
-            del_row = False
-        )
-        subtopic = sub_topics.objects.create(
-            sub_topic_id = 'SubTopic1',
-            topic_id = topic,
-            sub_topic_name =  'TEST',
-            sub_topic_description = 'TEST',
-            notes = 1,
-            videos = 1,
-            mcq = 1,
-            coding = 1,
-            del_row = False
-        )
-        new = courses.objects.create(
-            course_id = 'Course1',
-            # track_id = "None",
-            course_name =  'Full Stack Web Development',
-            course_description = 'TEST',
-            course_level = 'TEST',
-            created_by = 'TEST',
-            created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            modified_by = 'TEST',
-            modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            action = 'TEST',
-            del_row = False
-        )
-        course_subject = course_subjects.objects.create(
-            course_id = new,
-            subject_id = sub,
-            duration_in_days = '10',
-            start_date = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            end_date = datetime.utcnow().__add__(timedelta(days=10,hours=5,minutes=30)),
-            is_mandatory = True,
-            path = 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            del_row = False
-        )
-        course_subject1 = course_subjects.objects.create(
-            course_id = new,
-            subject_id = sub1,
-            duration_in_days = '10',
-            start_date = datetime.utcnow().__add__(timedelta(days=10,hours=5,minutes=30)),
-            end_date = datetime.utcnow().__add__(timedelta(days=20,hours=5,minutes=30)),
-            is_mandatory = True,
-            path = 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            del_row = False
-        )
-        course_subject2 = course_subjects.objects.create(
-            course_id = new,
-            subject_id = sub2,
-            duration_in_days = '10',
-            start_date = datetime.utcnow().__add__(timedelta(days=20,hours=5,minutes=30)),
-            end_date = datetime.utcnow().__add__(timedelta(days=30,hours=5,minutes=30)),
-            is_mandatory = True,
-            path = 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            del_row = False
-        )
-        course_subject3 = course_subjects.objects.create(
-            course_id = new,
-            subject_id = sub3,
-            duration_in_days = '10',
-            start_date = datetime.utcnow().__add__(timedelta(days=30,hours=5,minutes=30)),
-            end_date = datetime.utcnow().__add__(timedelta(days=40,hours=5,minutes=30)),
-            is_mandatory = True,
-            path = 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            del_row = False
-        )
-        std = students_info.objects.create(
-            student_id = 'Student1',
-            course_id = new,
-            student_firstname = 'TEST',
-            student_lastname = 'TEST',
-            student_email = 'TEST',
-            student_gender = 'TEST',
-            student_course_starttime = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            # batch_id = 'TEST',
-            college = 'TEST',
-            branch = 'TEST',
-            address = 'TEST',    
-            phone = 'TEST',
-            student_score = 'TEST',
-            student_type = 'TEST',
-            linkedin = 'TEST',
-            leetcode = 'TEST',
-            hackerrank = 'TEST',
-            del_row = False
-        )
-        return HttpResponse("Added Successfully")
-    except Exception as e:
-        print(e)
-        return HttpResponse("Failed")
-
+ 
 @api_view(['GET'])
 def fetch_enrolled_subjects(request,student_id):
     try:
@@ -219,14 +31,16 @@ def fetch_enrolled_subjects(request,student_id):
                 "progress": calculate_progress(subject.start_date,subject.end_date,sub_days_count.get(subject.subject_id.subject_name,{'day':0}),subject.duration_in_days),
             })
             responce.append(subject_data)
+        update_app_usage(student_id)
         return JsonResponse(responce,safe=False,status=200)
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed"},safe=False,status=400)    
 def calculate_progress(start_date, end_date, student_progress,Total_days):
     days = student_progress.get('day')
+    std_progress = int(days /int(Total_days) * 100)
     response = {
-        "student_progress": int(days /int(Total_days) * 100)
+        "student_progress": std_progress if std_progress <= 100 else 100
     }
     current_date = datetime.utcnow().__add__(timedelta(days=17,hours=5,minutes=30))
     if current_date.date() < start_date.date() :
@@ -249,53 +63,6 @@ def getdays(date):
        formatted_date =  (f"{day}{suffix} {calendar.month_abbr[month]}")
        return formatted_date
 
- 
-@api_view(['GET'])
-def addLiveSession(request):
-    try:
-
-        obj = live_sessions.objects.using('mongodb').create(
-            # session_id = 'Session1',
-            session_title = 'Week 1 Python Discussion',
-            session_starttime = datetime.utcnow().__add__(timedelta(days=1,hours=5,minutes=30)),
-            session_author = 'TEST',
-            session_subject = 'subject1',
-            session_meetlink = 'TEST',
-            session_endtime = datetime.utcnow().__add__(timedelta(days=1,hours=6,minutes=30)),
-            session_video_link = 'TEST',
-            session_status = 'UPCOMING',
-            del_row = 'False'
-        )
-        obj1 = live_sessions.objects.using('mongodb').create(
-            # session_id = 'Session2',
-            session_title = 'Week 2 Python Discussion',
-            session_starttime = datetime.utcnow().__add__(timedelta(days=1,hours=5,minutes=30)),
-            session_author = 'TEST',
-            session_subject = 'subject1',
-            session_meetlink = 'TEST',
-            session_endtime = datetime.utcnow().__add__(timedelta(days=1,hours=6,minutes=30)),
-            session_video_link = 'TEST',
-            session_status = 'UPCOMING',
-            student_ids = ['student1'],
-            del_row = 'False'
-        )
-        obj2 = live_sessions.objects.using('mongodb').create(
-            # session_id = 'Session3',
-            session_title = 'Week 3 Python Discussion',
-            session_starttime = datetime.utcnow().__add__(timedelta(days=1,hours=5,minutes=30)),
-            session_author = 'TEST',
-            session_subject = 'subject1',
-            session_meetlink = 'TEST',
-            session_endtime = datetime.utcnow().__add__(timedelta(days=1,hours=6,minutes=30)),
-            session_video_link = 'TEST',
-            session_status = 'UPCOMING',
-            student_ids = ['student1','student2'],
-            del_row = 'False'
-        )
-        return HttpResponse("Success")
-    except Exception as e:
-        print(e)
-        return HttpResponse("Failed")
 from django.utils import timezone
 @api_view(['GET'])
 def fetch_live_session(request,student_id):
@@ -313,6 +80,7 @@ def fetch_live_session(request,student_id):
             "title":session[0],
             "date":getdays(session[1])+" "+session[1].strftime("%Y")[2:],
             "time":session[1].strftime("%I:%M") + " " + session[1].strftime("%p")}            for session in live_session ]
+        update_app_usage(student_id)
         return JsonResponse(responce,safe=False,status=200)
     except Exception as e:
         print(e)
@@ -347,4 +115,119 @@ def extract_events(blob_data,current_time):
     upcoming = [ event for event in events if event['datetime'].date() >= current_time.date()]
     return upcoming
 
+@api_view(['GET'])
+def get_weekly_progress(request,student_id):
+    try:
+        # obj = students_info.objects.get( student_id = student_id,del_row = False)
+        assessment_data = students_assessments.objects.using('mongodb').filter(
+            student_id = student_id,
+            del_row = "False"
+            ).order_by('-assessment_week_number').values_list('assessment_week_number','assessment_score_secured','assessment_max_score')
+        practice_data = practice_questions.objects.using('mongodb').filter(
+            student_id = student_id,
+            del_row = "False"
+            ).order_by('-practice_week_number').values_list('practice_week_number','practice_score_secured','practice_max_score')
+        return JsonResponse({
+            "assessment":list(assessment_data),
+            "practice":list(practice_data),
+                })
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed"},safe=False,status=400)
 
+@api_view(['GET'])
+def fetch_study_hours_old(request,student_id,week):
+    try:
+        week = int(week)
+        student = students_info.objects.get(student_id = student_id,del_row = False)
+        course_subjects_data = course_subjects.objects.filter(course_id = student.course_id,del_row = False
+                                                              ).values('subject_id__subject_name','duration_in_days','start_date','end_date')
+        subjects ={}
+        currentweek = {}
+        for subject in course_subjects_data:
+            weeks = []
+            initial_date = subject.get('start_date')
+            final_date = subject.get('end_date')
+            today = timezone.now() + timedelta(days=7,hours=5, minutes=30)
+            if  final_date < today or today < initial_date :
+                break
+            i = 1
+            while initial_date <= final_date:
+                week_start = initial_date - timedelta(days=initial_date.weekday())
+                week_end = week_start + timedelta(days=6)  
+                weeks.append({
+                    'start': week_start.date(),
+                    'end': week_end.date()
+                })
+                if timezone.is_naive(today):
+                    today = timezone.make_aware(today, timezone.get_current_timezone())
+                if week_start <= today<= week_end:
+                    currentweek.update({subject.get('subject_id__subject_name'):i})
+                    break
+                i += 1
+                initial_date = week_end + timedelta(days=1)
+            subjects.update({subject.get('subject_id__subject_name'):weeks})
+        subjects = subjects.get(list(currentweek.keys())[0])[currentweek.get(list(currentweek.keys())[0]) - 1]
+        student_app_usages = student_app_usage.objects.filter(student_id = student_id,
+                                                              logged_in__gte = subjects.get('start'),
+                                                              logged_in__lte = subjects.get('end')+timedelta(days=1),
+                                                              del_row = False
+                ).annotate(date=TruncDate('logged_in')).values('date').annotate(
+                total_study_hours=Sum(F('logged_out') - F('logged_in'))).order_by('date')
+        response = {'daily_limit':2.0,
+                    'weekly_limit':currentweek.get(list(currentweek.keys())[0]),
+                    'hours':[]}
+        hour_spent ={ i.get('date'):i.get('total_study_hours') for i in student_app_usages}
+        for i in range(7):
+            response.get('hours').append({
+                "date":subjects.get('start') + timedelta(days=i),
+                "day_name":calendar.day_name[(subjects.get('start') + timedelta(days=i)).weekday()][0:3],
+                "isUpcoming":True if subjects.get('start') + timedelta(days=i) > datetime.utcnow().__add__(timedelta(hours=5,minutes=30)).date() else False,
+                "isCurrent":True if subjects.get('start') + timedelta(days=i) == datetime.utcnow().__add__(timedelta(hours=5,minutes=30)).date() else False,
+                "hours":round(hour_spent.get(subjects.get('start') + timedelta(days=i)).total_seconds()/3600,2) if hour_spent.get(subjects.get('start') + timedelta(days=i)) else 0
+            })
+        return JsonResponse(response,safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed"},safe=False,status=400)
+
+
+@api_view(['GET'])
+def fetch_study_hours(request,student_id,week):
+    try:
+        week = int(week)
+        today =datetime.utcnow().__add__(timedelta(hours=5,minutes=30)).date()
+        student = students_info.objects.get(student_id = student_id,del_row = False)
+        course_details = course_plan_details.objects.get(course_id = student.course_id,
+                                                            day_date__lte = today,
+                                                            del_row = False
+                                                              )
+        weeks_data = course_plan_details.objects.filter(course_id = student.course_id,week = course_details.week,del_row = False
+                                                              ).values('day_date').annotate(
+                total_study_hours=Sum(F('duration_in_hours'))).order_by('day_date')
+        print(weeks_data)
+        response = {'daily_limit':2.0,
+                    'weekly_limit':course_details.week,
+                    'hours':[]}
+        hour_spent ={ i.get('day_date'):i.get('total_study_hours') for i in weeks_data}
+        for i in range(7):
+            response.get('hours').append({
+                "date":course_details.day_date + timedelta(days=i),
+                "day_name":calendar.day_name[(course_details.day_date + timedelta(days=i)).weekday()][0:3],
+                "isUpcoming":True if course_details.day_date + timedelta(days=i) > datetime.utcnow().__add__(timedelta(hours=5,minutes=30)).date() else False,
+                "isCurrent":True if course_details.day_date + timedelta(days=i) == datetime.utcnow().__add__(timedelta(hours=5,minutes=30)).date() else False,
+                "hours":round(hour_spent.get(course_details.day_date + timedelta(days=i)).total_seconds()/3600,2) if hour_spent.get(course_details.day_date + timedelta(days=i)) else 0
+            })
+        return JsonResponse(response,safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        
+    
+def fetch_calendar(request,student_id):
+    try:
+        student = students_info.objects.get(student_id = student_id,del_row = False)
+        return JsonResponse({"message": "Success","calendar":student.calendar},safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed"},safe=False,status=400)

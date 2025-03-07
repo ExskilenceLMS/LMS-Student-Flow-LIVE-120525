@@ -171,6 +171,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MIGRATION_MODULES = {
-    # 'LMS_Mongodb_App': None,
-    'LMS_MSSQLdb_App': None
+    'LMS_Mongodb_App': None,
+    # 'LMS_MSSQLdb_App': None
 }

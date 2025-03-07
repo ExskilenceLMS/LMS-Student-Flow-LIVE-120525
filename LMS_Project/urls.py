@@ -15,15 +15,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from Student_Flow_App import views 
+from Student_Flow_App import views ,tests 
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Dashboard URLs
     path('api/studentdashboard/mycourses/<str:student_id>/',       views.fetch_enrolled_subjects),
     path('api/studentdashboard/upcomming/sessions/<str:student_id>/',      views.fetch_live_session),
     path('api/studentdashboard/upcomming/events/<str:Course_id>/',       views.fetch_upcoming_events),
+    path('api/studentdashboard/weeklyprogress/<str:student_id>/',       views.get_weekly_progress),
+    path('api/studentdashboard/hourspent/<str:student_id>/<str:week>/',       views.fetch_study_hours),
     # TESTING URLS
-    path('addstudent/',      views.addStudent),
-    path('addstudentactivity/<str:day>/<str:week>/',      views.addStudetsActivity),
-    path('addlivesession/',  views.addLiveSession),
+    path('addstudent/',      tests.addStudent),
+    path('addstudentactivity/<str:day>/<str:week>/',      tests.addStudetsActivity),
+    path('addlivesession/',  tests.addLiveSession),
+    path('addappusage/',     tests.addstudent_app_usages),
+    path('addsubplan/',   tests.add_course_plane_details),
 ]

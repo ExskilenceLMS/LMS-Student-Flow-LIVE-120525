@@ -106,6 +106,20 @@ class course_subjects(models.Model):
         return f"{self.course_id.course_name} - {self.subject_id.subject_name}"
     class Meta:
         db_table = 'course_subjects'
+# 7 
+class course_plan_details(models.Model):
+    course_id = models.ForeignKey(courses, on_delete=models.CASCADE)
+    subject_id = models.ForeignKey(subjects, on_delete=models.CASCADE)
+    day = models.IntegerField()
+    week = models.IntegerField()
+    day_date = models.DateTimeField()
+    duration_in_hours = models.IntegerField()
+    del_row = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.course_id.course_name} - {self.subject_id.subject_name}"
+    class Meta:
+        db_table = 'course_plane_details'
 # 7
 class batches(models.Model):
     batch_id = models.CharField(max_length=20, primary_key=True)
