@@ -119,7 +119,7 @@ class course_plan_details(models.Model):
     def __str__(self):
         return f"{self.course_id.course_name} - {self.subject_id.subject_name}"
     class Meta:
-        db_table = 'course_plane_details'
+        db_table = 'course_plan_details'
 # 7
 class batches(models.Model):
     batch_id = models.CharField(max_length=20, primary_key=True)

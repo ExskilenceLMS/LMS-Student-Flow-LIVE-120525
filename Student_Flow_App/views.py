@@ -195,28 +195,40 @@ def fetch_study_hours_old(request,student_id,week):
 @api_view(['GET'])
 def fetch_study_hours(request,student_id,week):
     try:
-        week = int(week)
-        today =datetime.utcnow().__add__(timedelta(hours=5,minutes=30)).date()
         student = students_info.objects.get(student_id = student_id,del_row = False)
-        course_details = course_plan_details.objects.get(course_id = student.course_id,
-                                                            day_date__lte = today,
-                                                            del_row = False
-                                                              )
-        weeks_data = course_plan_details.objects.filter(course_id = student.course_id,week = course_details.week,del_row = False
-                                                              ).values('day_date').annotate(
-                total_study_hours=Sum(F('duration_in_hours'))).order_by('day_date')
-        print(weeks_data)
-        response = {'daily_limit':2.0,
-                    'weekly_limit':course_details.week,
+        today =datetime.utcnow().__add__(timedelta(days=0,hours=5,minutes=30))
+        if timezone.is_naive(today):
+            today = timezone.make_aware(today, timezone.get_current_timezone())
+        if week.isdigit():
+            current_week = int(week)
+        else:
+            current_week = course_plan_details.objects.get(course_id = student.course_id,
+                                                            day_date__date=today.date(),
+                                                            del_row =False)
+            if current_week is None:
+                current_week =1,
+            else:
+                current_week=current_week.week
+        course_details = list(course_plan_details.objects.filter(course_id=student.course_id,
+                                                            week=current_week).values('duration_in_hours','day_date'))
+        student_app_usages = student_app_usage.objects.filter(student_id = student_id,
+                                                              logged_in__gte = course_details[0].get('day_date'),
+                                                              logged_in__lte = course_details[-1].get('day_date')+timedelta(days=1),
+                                                              del_row = False
+                                                            ).annotate(date=TruncDate('logged_in')).values('date').annotate(
+                                                            total_study_hours=Sum(F('logged_out') - F('logged_in'))).order_by('date')
+        list_of_duration = [i.get("duration_in_hours")  for i in  course_details]
+        response = {'daily_limit':sum(list_of_duration)/len(list_of_duration) if list_of_duration else 0,
+                    'weekly_limit':current_week,
                     'hours':[]}
-        hour_spent ={ i.get('day_date'):i.get('total_study_hours') for i in weeks_data}
+        hour_spent ={ i.get('date'):i.get('total_study_hours') for i in student_app_usages}
         for i in range(7):
             response.get('hours').append({
-                "date":course_details.day_date + timedelta(days=i),
-                "day_name":calendar.day_name[(course_details.day_date + timedelta(days=i)).weekday()][0:3],
-                "isUpcoming":True if course_details.day_date + timedelta(days=i) > datetime.utcnow().__add__(timedelta(hours=5,minutes=30)).date() else False,
-                "isCurrent":True if course_details.day_date + timedelta(days=i) == datetime.utcnow().__add__(timedelta(hours=5,minutes=30)).date() else False,
-                "hours":round(hour_spent.get(course_details.day_date + timedelta(days=i)).total_seconds()/3600,2) if hour_spent.get(course_details.day_date + timedelta(days=i)) else 0
+                "date":course_details[0].get('day_date') + timedelta(days=i),
+                "day_name":calendar.day_name[(course_details[0].get('day_date') + timedelta(days=i)).weekday()][0:3],
+                "isUpcoming":True if (course_details[0].get('day_date') + timedelta(days=i)).date() > today.date() else False,
+                "isCurrent":True if (course_details[0].get('day_date') + timedelta(days=i)).date() == today.date() else False,
+                "hours":round(hour_spent.get((course_details[0].get('day_date') + timedelta(days=i)).date()).total_seconds()/3600,2) if hour_spent.get((course_details[0].get('day_date') + timedelta(days=i)).date()) else 0
             })
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:

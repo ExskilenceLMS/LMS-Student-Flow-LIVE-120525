@@ -121,10 +121,11 @@ DATABASES = {
         'NAME': 'LMSdb',
         'USER': 'sa',
         'PASSWORD': 'sql2014!',
-        'HOST': 'localhost',
+        'HOST': 'Rudresh\\SQLEXPRESS',
         'PORT': '1433',
         'OPTIONS': {
             'driver': 'ODBC Driver 17 for SQL Server',
+            'trustServerCertificate': 'yes',  # Add this to avoid SSL errors
         },
     }
 }

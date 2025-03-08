@@ -273,7 +273,7 @@ def add_course_plane_details(request):
                 subject_id = sub,
                 day = i+1,
                 week = week,
-                start_time = datetime.utcnow().__add__(timedelta(days=i+1,hours=5,minutes=30)),
+                day_date = datetime.utcnow().__add__(timedelta(days=i,hours=5,minutes=30)),
                 duration_in_hours = data['duration'],
                 del_row = False
             )
