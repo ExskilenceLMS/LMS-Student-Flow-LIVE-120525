@@ -34,7 +34,7 @@ def addLiveSession(request):
             session_endtime = datetime.utcnow().__add__(timedelta(days=1,hours=6,minutes=30)),
             session_video_link = 'TEST',
             session_status = 'UPCOMING',
-            student_ids = ['student1'],
+            student_ids = ['25MRITCS001'],
             del_row = 'False'
         )
         obj2 = live_sessions.objects.using('mongodb').create(
@@ -47,7 +47,7 @@ def addLiveSession(request):
             session_endtime = datetime.utcnow().__add__(timedelta(days=1,hours=6,minutes=30)),
             session_video_link = 'TEST',
             session_status = 'UPCOMING',
-            student_ids = ['student1','student2'],
+            student_ids = ['25MRITCS001','student2'],
             del_row = 'False'
         )
         return HttpResponse("Success")
@@ -58,7 +58,7 @@ def addLiveSession(request):
 @api_view(['GET'])
 def addStudetsActivity(request,day,week):
     try:
-        obj = students_info.objects.get( student_id = 'Student1',del_row = False)
+        obj = students_info.objects.get( student_id = '25MRITCS001',del_row = False)
         sub = subjects.objects.get(subject_id = 'Subject2',del_row = False)
         topoic = topics.objects.get(topic_id = 'Topic1',del_row = False)
         subtop = sub_topics.objects.get(sub_topic_id = 'SubTopic1',del_row = False)
@@ -221,10 +221,10 @@ def addStudent(request):
             del_row = False
         )
         std = students_info.objects.create(
-            student_id = 'Student1',
+            student_id = '25MRITCS001',
             course_id = new,
-            student_firstname = 'TEST',
-            student_lastname = 'TEST',
+            student_firstname = 'Raj Kumari',
+            student_lastname = 'P',
             student_email = 'TEST',
             student_gender = 'TEST',
             student_course_starttime = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
@@ -249,10 +249,10 @@ def addStudent(request):
 def addstudent_app_usages(request):
     try:
         std = student_app_usage.objects.create(
-            student_id = 'Student1',
+            student_id = '25MRITCS001',
             # app_name = 'TEST',
-            logged_in = datetime.utcnow().__add__(timedelta(days=2,hours=5,minutes=30)),
-            logged_out = datetime.utcnow().__add__(timedelta(days=2,hours=8,minutes=30)),
+            logged_in = datetime.utcnow().__add__(timedelta(days=0,hours=5,minutes=30)),
+            logged_out = datetime.utcnow().__add__(timedelta(days=0,hours=8,minutes=30)),
             del_row = False
         )
         return HttpResponse("Added Successfully")

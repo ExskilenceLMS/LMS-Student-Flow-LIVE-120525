@@ -120,7 +120,7 @@ class course_plan_details(models.Model):
         return f"{self.course_id.course_name} - {self.subject_id.subject_name}"
     class Meta:
         db_table = 'course_plan_details'
-# 7
+# 8
 class batches(models.Model):
     batch_id = models.CharField(max_length=20, primary_key=True)
     course_id = models.ForeignKey(courses, on_delete=models.CASCADE)
@@ -135,7 +135,7 @@ class batches(models.Model):
         return self.batch_name
     class Meta:
         db_table = 'batches'
-# 8
+# 9
 class students_info(models.Model):
     student_id = models.CharField(max_length=20, primary_key=True)
     course_id = models.ForeignKey(courses,  on_delete=models.SET_NULL, null=True)
@@ -157,7 +157,7 @@ class students_info(models.Model):
     del_row = models.BooleanField(default=False)
     class Meta:
         db_table = 'students_info'
-# 9
+# 10
 class trainers(models.Model):
     trainer_id = models.CharField(max_length=20, primary_key=True)
     trainer_firstname = models.CharField(max_length=100)
@@ -179,7 +179,7 @@ class trainers(models.Model):
         return f"{self.trainer_FirstName} {self.trainer_LastName}"
     class Meta:
         db_table = 'trainers'
-# 10
+# 11
 class trainer_review_comments(models.Model):
     comment_id = models.CharField(max_length=20, primary_key=True)
     student_id = models.ForeignKey(students_info,  on_delete=models.SET_NULL, null=True)
@@ -193,7 +193,7 @@ class trainer_review_comments(models.Model):
     class Meta:
         db_table = 'trainer_review_comments'
 
-# 11
+# 12
 class test_details(models.Model):
     test_id = models.CharField(max_length=20, primary_key=True)
     test_name = models.CharField(max_length=50)
@@ -215,7 +215,7 @@ class test_details(models.Model):
 
     class Meta:
         db_table = 'test_details'
-# 12
+# 13
 class questions(models.Model):
     question_id = models.CharField(max_length=20, primary_key=True)
     question_type = models.CharField(max_length=20)
@@ -231,7 +231,7 @@ class questions(models.Model):
 
     class Meta:
         db_table = 'questions'
-# 13 
+# 14
 class test_sections(models.Model):
     test_id = models.ForeignKey(test_details, on_delete=models.CASCADE, db_column="Test_id")
     section_name = models.CharField(max_length=20)
@@ -243,7 +243,7 @@ class test_sections(models.Model):
     class Meta:
         db_table = 'test_sections'
 
-# 14 
+# 15 
 class student_activities(models.Model):
     student_id = models.ForeignKey(students_info,  on_delete=models.SET_NULL, null=True)
     subject_id = models.ForeignKey(subjects,  on_delete=models.SET_NULL, null=True)
@@ -257,7 +257,7 @@ class student_activities(models.Model):
     class Meta:
         db_table = 'student_activities'
 
-# 15 
+# 16 
 class student_app_usage(models.Model):
     student_id = models.CharField(max_length=20)
     logged_in = models.DateTimeField()
@@ -266,7 +266,7 @@ class student_app_usage(models.Model):
 
     class Meta:
         db_table = 'student_app_usage'
-# 16    
+# 17    
 class college_details(models.Model):
     college_id = models.CharField(max_length=20, primary_key=True)
     college_name = models.CharField(max_length=50)
@@ -276,7 +276,7 @@ class college_details(models.Model):
 
     class Meta:
         db_table = 'college_details'
-# 17
+# 18
 class branch_details(models.Model):
     college_id = models.CharField(max_length=20)
     branch_id = models.CharField(max_length=20)
@@ -285,3 +285,5 @@ class branch_details(models.Model):
 
     class Meta:
         db_table = 'branch_details'
+
+# class ranks(models.Model):

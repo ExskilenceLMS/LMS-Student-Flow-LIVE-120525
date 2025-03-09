@@ -24,6 +24,8 @@ urlpatterns = [
     path('api/studentdashboard/upcomming/events/<str:Course_id>/',       views.fetch_upcoming_events),
     path('api/studentdashboard/weeklyprogress/<str:student_id>/',       views.get_weekly_progress),
     path('api/studentdashboard/hourspent/<str:student_id>/<str:week>/',       views.fetch_study_hours),
+    path('api/studentdashboard/summary/<str:student_id>/',       views.fetch_student_summary),
+    path('api/studentdashboard/event/calender/<str:student_id>/',       views.fetch_calendar),
     # TESTING URLS
     path('addstudent/',      tests.addStudent),
     path('addstudentactivity/<str:day>/<str:week>/',      tests.addStudetsActivity),

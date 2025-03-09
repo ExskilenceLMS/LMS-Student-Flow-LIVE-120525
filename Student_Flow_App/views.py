@@ -10,8 +10,8 @@ import json
 from django.db.models.functions import TruncDate
 from LMS_Project.Blobstorage import *
 from .AppUsage import update_app_usage
- 
- 
+from django.core.cache import cache
+
 @api_view(['GET'])
 def fetch_enrolled_subjects(request,student_id):
     try:
@@ -114,7 +114,7 @@ def extract_events(blob_data,current_time):
     events = sorted(events, key=lambda k: k['datetime'])
     upcoming = [ event for event in events if event['datetime'].date() >= current_time.date()]
     return upcoming
-
+######################
 @api_view(['GET'])
 def get_weekly_progress(request,student_id):
     try:
@@ -134,7 +134,7 @@ def get_weekly_progress(request,student_id):
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed"},safe=False,status=400)
-
+######################
 @api_view(['GET'])
 def fetch_study_hours_old(request,student_id,week):
     try:
@@ -235,11 +235,55 @@ def fetch_study_hours(request,student_id,week):
         print(e)
         return JsonResponse({"message": "Failed"},safe=False,status=400)
         
-    
+######################
+@api_view(['GET'])
 def fetch_calendar(request,student_id):
     try:
+        current_time = datetime.utcnow() + timedelta(days=30,hours=5, minutes=30)
+        blob_data = json.loads(get_blob('LMS_DayWise/Sa_20250306104329.json'))
         student = students_info.objects.get(student_id = student_id,del_row = False)
-        return JsonResponse({"message": "Success","calendar":student.calendar},safe=False,status=200)
+        response = extract_calendar_events(blob_data,current_time)
+        return JsonResponse({"message": "Success","calendar":response},safe=False,status=200)
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed"},safe=False,status=400)
+def extract_calendar_events(blob_data,current_time):
+    events = []
+    for event in blob_data:
+        for i in blob_data.get(event):
+            if i.get('topic') == 'Weekly Test' or i.get('topic') == 'Onsite Workshop' or i.get('topic') == 'Internship':
+                date = datetime.strptime(str(i.get('date').replace('T',' ')).split('.')[0], "%Y-%m-%d %H:%M:%S") if str(i.get('date')).__contains__('T') else datetime.strptime(str(i.get('date')+" 00:00:00").split('.')[0], "%Y-%m-%d %H:%M:%S")
+                events.append({
+                    "title":i.get('topic'),
+                    'subject':event,
+                    "date":getdays(date)+" "+date.strftime("%Y")[2:],
+                    "time":date.strftime("%I:%M") + " " + date.strftime("%p"),
+                    'datetime':date
+                })
+    events = sorted(events, key=lambda k: k['datetime'])
+    this_month = [event for event in events if calendar.month_abbr[int(event['datetime'].strftime("%m"))]==calendar.month_abbr[int(current_time.strftime("%m"))]]
+    return this_month
+######################
+@api_view(['GET'])
+def fetch_student_summary(request,student_id):
+    try:
+        student = students_info.objects.get(student_id = student_id,del_row = False)
+        student_app_usages = student_app_usage.objects.filter(student_id = student_id,
+                                                              del_row = False
+                                                            ).aggregate(
+                                                            total_seconds=Sum(F('logged_out') - F('logged_in')))
+        print(student_app_usages.get('total_seconds'))
+        response ={
+            'student_id': student.student_id,
+            'name': student.student_firstname+' '+student.student_lastname,
+            'score':student.student_score,
+            'hour_spent':round(student_app_usages.get('total_seconds').total_seconds()/3600,2),
+            'category':'Moon',
+            'college_rank':1,
+            'overall_rank':1
+
+        }
+        return JsonResponse(response,safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed"},safe=False,status=400)        
