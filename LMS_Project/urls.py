@@ -26,10 +26,15 @@ urlpatterns = [
     path('api/studentdashboard/hourspent/<str:student_id>/<str:week>/',       views.fetch_study_hours),
     path('api/studentdashboard/summary/<str:student_id>/',       views.fetch_student_summary),
     path('api/studentdashboard/event/calender/<str:student_id>/',       views.fetch_calendar),
+    # top navigation
+    path('api/notifications/<str:student_id>/',       views.fetch_top_navigation),
+    path('api/roadmap/<str:student_id>/<str:course_id>/',       views.fetch_roadmap),
     # TESTING URLS
     path('addstudent/',      tests.addStudent),
     path('addstudentactivity/<str:day>/<str:week>/',      tests.addStudetsActivity),
     path('addlivesession/',  tests.addLiveSession),
     path('addappusage/',     tests.addstudent_app_usages),
     path('addsubplan/',   tests.add_course_plane_details),
+    path('addnotification/',   tests.add_notification),
+    path('addstudentinfo/',   tests.update_student_info),
 ]

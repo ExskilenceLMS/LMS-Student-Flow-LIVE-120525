@@ -109,7 +109,7 @@ class group_announcement(models.Model):
         db_table = 'group_announcement'
 # 9
 class notification(models.Model):
-    notification_id = models.CharField(max_length=20)
+    notification_id = models.AutoField(primary_key=True)
     notification_title = models.TextField()
     notification_message = models.TextField()
     notification_timestamp = models.DateTimeField()
@@ -134,7 +134,7 @@ class announcements(models.Model):
     class Meta:
         db_table = 'announcements'
 # 11
-class students(models.Model):
+class students_details(models.Model):
     student_id = models.CharField(max_length=20, primary_key=True)
     student_group_ids = models.JSONField()
     student_notification = models.JSONField()
@@ -143,7 +143,7 @@ class students(models.Model):
     del_row = models.CharField(default='False',max_length=5)
     
     class Meta:
-        db_table = 'students'
+        db_table = 'students_details'
 # 12
 class participant(models.Model):
     session_id = models.CharField(max_length=20)

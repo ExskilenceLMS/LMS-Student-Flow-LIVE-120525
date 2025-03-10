@@ -233,7 +233,7 @@ def addStudent(request):
             branch = 'TEST',
             address = 'TEST',    
             phone = 'TEST',
-            student_score = 'TEST',
+            student_score = 0,
             student_type = 'TEST',
             linkedin = 'TEST',
             leetcode = 'TEST',
@@ -265,7 +265,7 @@ def add_course_plane_details(request):
         data = json.loads(request.body)
 
         course = courses.objects.get(course_id = 'Course1' ,del_row = False)
-        sub = subjects.objects.get(subject_id = 'Subject1' ,del_row = False)
+        sub = subjects.objects.get(subject_id = 'Subject4' ,del_row = False)
         for i in range(data['day']):
             week = int(i/7)+1
             course_plan_detail = course_plan_details.objects.create(
@@ -278,6 +278,46 @@ def add_course_plane_details(request):
                 del_row = False
             )
         return HttpResponse("Added Successfully")
+    except Exception as e:
+        print(e)
+        return HttpResponse("Failed")
+@api_view(['GET'])
+def add_notification(request):
+    try:
+        std = notification.objects.using('mongodb').create(
+            notification_title = 'TEST',
+            notification_message = 'TEST',
+            notification_timestamp = datetime.utcnow().__add__(timedelta(days=0,hours=5,minutes=30)),
+            status = 'U',
+            student_id = '25MRITCS001',
+            del_row = False
+        )
+        return HttpResponse("Added Successfully")
+    except Exception as e:
+        print(e)
+        return HttpResponse("Failed")
+@api_view(['GET'])
+def update_student_info(request):
+    try:
+        new = courses.objects.get(course_id = 'Course1',del_row = False)
+        # create(
+        #     course_id = 'Course0001',
+        #     # track_id = "None",
+        #     course_name =  'Full Stack Web Development',
+        #     course_description = 'TEST',
+        #     course_level = 'TEST',
+        #     created_by = 'TEST',
+        #     created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     modified_by = 'TEST',
+        #     modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     action = 'TEST',
+        #     del_row = False
+        # )
+        std = students_info.objects.get(student_id = '25MRITCS001',del_row = False)
+        std.course_id = new
+        std.student_score = 50
+        std.save()
+        return HttpResponse("Updated Successfully")
     except Exception as e:
         print(e)
         return HttpResponse("Failed")

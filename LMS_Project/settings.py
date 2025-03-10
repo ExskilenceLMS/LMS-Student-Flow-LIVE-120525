@@ -121,7 +121,8 @@ DATABASES = {
         'NAME': 'LMSdb',
         'USER': 'sa',
         'PASSWORD': 'sql2014!',
-        'HOST': 'Rudresh\\SQLEXPRESS',
+        'HOST': 'localhost',
+        #'HOST': 'Rudresh\\SQLEXPRESS',
         'PORT': '1433',
         'OPTIONS': {
             'driver': 'ODBC Driver 17 for SQL Server',
@@ -172,6 +173,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MIGRATION_MODULES = {
-    'LMS_Mongodb_App': None,
-    # 'LMS_MSSQLdb_App': None
+    # 'LMS_Mongodb_App': None,
+    'LMS_MSSQLdb_App': None
 }
