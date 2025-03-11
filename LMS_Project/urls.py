@@ -18,6 +18,7 @@ from django.urls import path
 from Student_Flow_App import views ,tests 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', views.home),
     # Dashboard URLs
     path('api/studentdashboard/mycourses/<str:student_id>/',       views.fetch_enrolled_subjects),
     path('api/studentdashboard/upcomming/sessions/<str:student_id>/',      views.fetch_live_session),

@@ -13,6 +13,11 @@ from django.db.models.functions import TruncDate
 from LMS_Project.Blobstorage import *
 from .AppUsage import update_app_usage
 from django.core.cache import cache
+ONTIME = datetime.utcnow().__add__(timedelta(hours=5,minutes=30))
+CONTAINER ="internship"
+@api_view(['GET'])   
+def home(request):
+    return JsonResponse({"message": "Successfully Deployed on Azure at "+ str(ONTIME)},safe=False,status=200)
 
 @api_view(['GET'])
 def fetch_enrolled_subjects(request,student_id):
