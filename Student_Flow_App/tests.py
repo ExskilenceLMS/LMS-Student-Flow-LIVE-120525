@@ -272,6 +272,7 @@ def add_course_plane_details(request):
                 course_id = course,
                 subject_id = sub,
                 day = i+1,
+                content_type = 'study' if (i+1)%7 != 0 else 'weekly test',
                 week = week,
                 day_date = datetime.utcnow().__add__(timedelta(days=i,hours=5,minutes=30)),
                 duration_in_hours = data['duration'],

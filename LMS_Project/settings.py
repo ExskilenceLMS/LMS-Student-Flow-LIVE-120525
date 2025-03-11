@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-^@eeb&6o=6x!dv6hdtm+x*@xc=!#cv)ibjx6n^#((z^zet$fa3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -54,6 +54,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'https://staging-exskilence.azurewebsites.net/',
+ 
+]
+
+CSRF_TRUSTED_ORIGINS=[ 
+     'https://staging-exskilence.azurewebsites.net/',
+    ]
 
 ROOT_URLCONF = 'LMS_Project.urls'
 
@@ -118,11 +127,16 @@ DATABASES = {
     },
     'default': {
         'ENGINE': 'mssql',
-        'NAME': 'LMSdb',
-        'USER': 'sa',
-        'PASSWORD': 'sql2014!',
-        'HOST': 'localhost',
-        #'HOST': 'Rudresh\\SQLEXPRESS',
+        # 'NAME': 'LMSdb',
+        # 'USER': 'sa',
+        # 'PASSWORD': 'sql2014!',
+        # 'HOST': 'localhost',
+        'NAME': 'eussdb',
+        'USER': 'euserblr',#'eudev',#
+        'PASSWORD': '6han4Sy5#',#'Devlop99@#',#
+        'HOST': 'slnsgdhutmtbs.database.windows.net',
+        
+        # 'HOST': 'Rudresh\\SQLEXPRESS',
         'PORT': '1433',
         'OPTIONS': {
             'driver': 'ODBC Driver 17 for SQL Server',
@@ -173,6 +187,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MIGRATION_MODULES = {
-    # 'LMS_Mongodb_App': None,
-    'LMS_MSSQLdb_App': None
+    'LMS_Mongodb_App': None,
+    # 'LMS_MSSQLdb_App': None
 }

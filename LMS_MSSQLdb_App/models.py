@@ -111,6 +111,7 @@ class course_plan_details(models.Model):
     course_id = models.ForeignKey(courses, on_delete=models.CASCADE)
     subject_id = models.ForeignKey(subjects, on_delete=models.CASCADE)
     day = models.IntegerField()
+    content_type = models.CharField(max_length=20)
     week = models.IntegerField()
     day_date = models.DateTimeField()
     duration_in_hours = models.IntegerField()

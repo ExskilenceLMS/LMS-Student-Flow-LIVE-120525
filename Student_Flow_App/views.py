@@ -640,11 +640,11 @@ def fetch_roadmap(request,student_id,course_id):
                       totalHours=Sum('duration_in_hours'),
                   )
                   .order_by('week'))
-        student_question_details, created = students_details.objects.using('mongodb').get_or_create(
+        student_question_details = students_details.objects.using('mongodb').get(
             student_id = student_id,del_row = 'False',
-            defaults = {
-                'student_id': student_id,
-            }
+            # defaults = {
+            #     'student_id': student_id,
+            # }
         )
         sub_data = student_question_details.student_question_details.get(sub.subject_name)
         days = []
@@ -672,7 +672,16 @@ def fetch_roadmap(request,student_id,course_id):
                         prev_coding_answered = len([dd for dd in prev_day_data.get('coding_questions_status',{}) if prev_day_data.get('coding_questions_status',{}).get(dd)==2])
                         if prev_mcq_qns == prev_mcq_answered and prev_coding_qns == prev_coding_answered and prev_mcq_qns > 0 and prev_coding_qns > 0:
                             status = 'Start'
-                    days.append({'day':daynumber+1,
+                    if d.get('topic') == 'Weekly Test':# or d.get('topic') == 'Onsite Workshop' or d.get('topic') == 'Internship':
+                        days.append({'day':daynumber+1,
+                            "date":getdays(the_date)+" "+the_date.strftime("%Y")[2:],
+                            'week':i.get('week'),
+                            'topics':d.get('topic'),
+                            'status':status
+                              })
+                        continue
+                    else:
+                        days.append({'day':daynumber+1,
                             "date":getdays(the_date)+" "+the_date.strftime("%Y")[2:],
                             'week':i.get('week'),
                             'topics':d.get('topic'),
@@ -696,80 +705,155 @@ def fetch_roadmap(request,student_id,course_id):
         print(e)
         return JsonResponse({"message": "Failed"},safe=False,status=400)
     
-data ={
-        'sql':[
-                {
-                    'week_1':{
-                                'day_1':{
-                                    'questions':[],
-                                    'questions_status':{'':0},
-                                    'score':""
-                                },
-                                'day_2':{
-                                    'questions':[],
-                                    'questions_status':{'':0},
-                                    'score':""
-                                },
-                                'day_7':{
-                                    'questions':[],
-                                    'questions_status':{'':0},
-                                    'score':""
-                                }
-                            },
-                    'week_2':{
-                                'day_1':{
-                                    'questions':[],
-                                    'questions_status':{'':0},
-                                    'score':""
-                                },
-                                'day_2':{
-                                    'questions':[],
-                                    'questions_status':{'':0},
-                                    'score':""
-                                },
-                                'day_7':{
-                                    'questions':[],
-                                    'questions_status':{'':0},
-                                    'score':""
-                                }
-                            }
-                }
-            ],
-            'python':[
-                {
-                    'week_1':{
-                                'day_1':{
-                                    'questions':[],
-                                    'questions_status':{'':0},
-                                    'score':""
-                                },
-                                'day_2':{
-                                    'questions':[],
-                                    'questions_status':{'':0},
-                                    'score':""
-                                },
-                                'day_7':{
-                                    'questions':[],
-                                    'questions_status':{'':0},
-                                    'score':""
-                                }    
-                            },
-                    'week_2':{
-                                'day_1':{
-                                    'questions':[],
-                                    'questions_status':{'':0},
-                                    'score':""
-                                },
-                                'day_2':{
-                                    'questions':[],
-                                    'questions_status':{'':0},
-                                    'score':""
-                                },
-                                'day_7':{
-                                    'questions':[],
-                                    'questions_status':{'':0},
-                                    'score':""
-                                }
-                    }
-                }]
-        }   
+data = {
+    "SQL": {
+      "week_1": {
+        "day_1": {
+          "mcq_questions": [
+            "q1",
+            "q2",
+            "q3"
+          ],
+          "mcq_questions_status": {
+            "q1": 2,
+            "q2": 2,
+            "q3": 2
+          },
+          "mcq_score": "10/30",
+          "coding_questions": [
+            "q1",
+            "q2",
+            "q3"
+          ],
+          "coding_questions_status": {
+            "q1": 2,
+            "q2": 2,
+            "q3": 2
+          },
+          "coding_score": "15/30"
+        },
+        "day_2": {
+          "mcq_questions": [
+            "q1",
+            "q2",
+            "q3"
+          ],
+          "mcq_questions_status": {
+            "q1": 2,
+            "q2": 0,
+            "q3": 0
+          },
+          "mcq_score": "10/30",
+          "coding_questions": [
+            "q1",
+            "q2",
+            "q3"
+          ],
+          "coding_questions_status": {
+            "q1": 0,
+            "q2": 0,
+            "q3": 0
+          },
+          "coding_score": "10/30"
+        },
+        "day_3": {
+          "mcq_questions": [
+            "q1",
+            "q2",
+            "q3"
+          ],
+          "mcq_questions_status": {
+            "q1": 0,
+            "q2": 0,
+            "q3": 0
+          },
+          "mcq_score": "10/30",
+          "coding_questions": [
+            "q1",
+            "q2",
+            "q3"
+          ],
+          "coding_questions_status": {
+            "q1": 0,
+            "q2": 0,
+            "q3": 0
+          },
+          "coding_score": "10/30"
+        }
+      },
+      "week_2": {
+        "day_1": {
+          "mcq_questions": [
+            "q1",
+            "q2",
+            "q3"
+          ],
+          "mcq_questions_status": {
+            "q1": 0,
+            "q2": 0,
+            "q3": 0
+          },
+          "mcq_score": "10/30",
+          "coding_questions": [
+            "q1",
+            "q2",
+            "q3"
+          ],
+          "coding_questions_status": {
+            "q1": 0,
+            "q2": 0,
+            "q3": 0
+          },
+          "coding_score": "10/30"
+        },
+        "day_2": {
+          "mcq_questions": [
+            "q1",
+            "q2",
+            "q3"
+          ],
+          "mcq_questions_status": {
+            "q1": 0,
+            "q2": 0,
+            "q3": 0
+          },
+          "mcq_score": "10/30",
+          "coding_questions": [
+            "q1",
+            "q2",
+            "q3"
+          ],
+          "coding_questions_status": {
+            "q1": 0,
+            "q2": 0,
+            "q3": 0
+          },
+          "coding_score": "10/30"
+        },
+        "day_3": {
+          "mcq_questions": [
+            "q1",
+            "q2",
+            "q3"
+          ],
+          "mcq_questions_status": {
+            "q1": 0,
+            "q2": 0,
+            "q3": 0
+          },
+          "mcq_score": "10/30",
+          "coding_questions": [
+            "q1",
+            "q2",
+            "q3"
+          ],
+          "coding_questions_status": {
+            "q1": 0,
+            "q2": 0,
+            "q3": 0
+          },
+          "coding_score": "10/30"
+        }
+      }
+    }
+  }
