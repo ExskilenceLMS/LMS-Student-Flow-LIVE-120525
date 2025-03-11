@@ -136,10 +136,11 @@ class announcements(models.Model):
 # 11
 class students_details(models.Model):
     student_id = models.CharField(max_length=20, primary_key=True)
-    student_group_ids = models.JSONField()
-    student_notification = models.JSONField()
-    student_announcements = models.JSONField()
-    student_education_details =models.JSONField()
+    student_question_details = models.JSONField(default=dict)
+    student_group_ids = models.JSONField(default=dict)
+    student_notification = models.JSONField(default=dict)
+    student_announcements = models.JSONField(default=dict)
+    student_education_details =models.JSONField(default=dict)
     del_row = models.CharField(default='False',max_length=5)
     
     class Meta:

@@ -640,63 +640,136 @@ def fetch_roadmap(request,student_id,course_id):
                       totalHours=Sum('duration_in_hours'),
                   )
                   .order_by('week'))
+        student_question_details, created = students_details.objects.using('mongodb').get_or_create(
+            student_id = student_id,del_row = 'False',
+            defaults = {
+                'student_id': student_id,
+            }
+        )
+        sub_data = student_question_details.student_question_details.get(sub.subject_name)
         days = []
         daynumber=0
         for i in course_details:
+            week_data = sub_data.get('week_'+str(i.get('week')))
             for d in blob_data.get(sub.subject_name):  
                 the_date = datetime.strptime(d.get('date').replace('T',' ').split('.')[0].replace('Z',''), "%Y-%m-%d %H:%M:%S")
                 if i.get('startDate').date() <= the_date.date() and the_date.date() <= i.get('endDate').date():
+                    day_data = week_data.get('day_'+str(daynumber+1),{})
+                    status = ''
+                    mcq_qns =len(day_data.get('mcq_questions',[]))
+                    coding_qns =  len(day_data.get('coding_questions',[]))
+                    mcq_answered = len([dd for dd in day_data.get('mcq_questions_status',{}) if day_data.get('mcq_questions_status',{}).get(dd)==2])
+                    coding_answered = len([dd for dd in day_data.get('coding_questions_status',{}) if day_data.get('coding_questions_status',{}).get(dd)==2])
+                    if mcq_qns == mcq_answered and coding_qns == coding_answered and mcq_qns > 0 and coding_qns > 0:
+                        status = 'Completed'
+                    elif mcq_answered > 0 or coding_answered > 0:
+                        status = 'Resume'
+                    else:
+                        prev_day_data = week_data.get('day_'+str(daynumber),{})
+                        prev_mcq_qns =len(prev_day_data.get('mcq_questions',[]))
+                        prev_coding_qns =  len(prev_day_data.get('coding_questions',[]))
+                        prev_mcq_answered = len([dd for dd in prev_day_data.get('mcq_questions_status',{}) if prev_day_data.get('mcq_questions_status',{}).get(dd)==2])
+                        prev_coding_answered = len([dd for dd in prev_day_data.get('coding_questions_status',{}) if prev_day_data.get('coding_questions_status',{}).get(dd)==2])
+                        if prev_mcq_qns == prev_mcq_answered and prev_coding_qns == prev_coding_answered and prev_mcq_qns > 0 and prev_coding_qns > 0:
+                            status = 'Start'
                     days.append({'day':daynumber+1,
                             "date":getdays(the_date)+" "+the_date.strftime("%Y")[2:],
                             'week':i.get('week'),
                             'topics':d.get('topic'),
-                            'practiceMCQ': { 'questions': "5/10", 'score': "4/10" },
-                            'practiceCoding': { 'questions': "5/10", 'score': "4/10" },
-                            'status': "Resume",
+                            'practiceMCQ': { 'questions': str(mcq_answered)
+                                            +'/'+str(mcq_qns),
+                                             'score': day_data.get('mcq_score','0/0') },
+                            'practiceCoding': { 'questions': str(coding_answered)
+                                            +'/'+str(coding_qns),
+                                             'score': day_data.get('coding_score','0/0') },
+                            'status':status
                               })
                     daynumber+=1    
             i.update({'days': days})
             days = []
         response = {
             "weeks":course_details,
-            'days':blob_data.get(sub.subject_name)
+            
         }
-        return JsonResponse({'data':response,'student_id':student_id,'course_id':course_id,'message': 'Success'},safe=False,status=200)
+        return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed"},safe=False,status=400)
     
-    {
-        'sql': {
-            'weeks': [
+data ={
+        'sql':[
                 {
-                    'week_1':[
-                            {
+                    'week_1':{
                                 'day_1':{
                                     'questions':[],
                                     'questions_status':{'':0},
                                     'score':""
-
-                                }
-                            },
-                            {
+                                },
                                 'day_2':{
                                     'questions':[],
                                     'questions_status':{'':0},
                                     'score':""
-
-                                }
-                            },
-                            {
+                                },
                                 'day_7':{
                                     'questions':[],
                                     'questions_status':{'':0},
                                     'score':""
-
+                                }
+                            },
+                    'week_2':{
+                                'day_1':{
+                                    'questions':[],
+                                    'questions_status':{'':0},
+                                    'score':""
+                                },
+                                'day_2':{
+                                    'questions':[],
+                                    'questions_status':{'':0},
+                                    'score':""
+                                },
+                                'day_7':{
+                                    'questions':[],
+                                    'questions_status':{'':0},
+                                    'score':""
                                 }
                             }
-                            ]
+                }
+            ],
+            'python':[
+                {
+                    'week_1':{
+                                'day_1':{
+                                    'questions':[],
+                                    'questions_status':{'':0},
+                                    'score':""
+                                },
+                                'day_2':{
+                                    'questions':[],
+                                    'questions_status':{'':0},
+                                    'score':""
+                                },
+                                'day_7':{
+                                    'questions':[],
+                                    'questions_status':{'':0},
+                                    'score':""
+                                }    
+                            },
+                    'week_2':{
+                                'day_1':{
+                                    'questions':[],
+                                    'questions_status':{'':0},
+                                    'score':""
+                                },
+                                'day_2':{
+                                    'questions':[],
+                                    'questions_status':{'':0},
+                                    'score':""
+                                },
+                                'day_7':{
+                                    'questions':[],
+                                    'questions_status':{'':0},
+                                    'score':""
+                                }
                     }
-            ]
-        }
-    }
+                }]
+        }   
