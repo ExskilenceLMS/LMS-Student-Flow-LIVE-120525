@@ -27,9 +27,15 @@ urlpatterns = [
     path('api/studentdashboard/hourspent/<str:student_id>/<str:week>/',       views.fetch_study_hours),
     path('api/studentdashboard/summary/<str:student_id>/',       views.fetch_student_summary),
     path('api/studentdashboard/event/calender/<str:student_id>/',       views.fetch_calendar),
-    # top navigation
+    
+    # top navigation and roadmap URLs
     path('api/notifications/<str:student_id>/',       views.fetch_top_navigation),
     path('api/roadmap/<str:student_id>/<str:course_id>/',       views.fetch_roadmap),
+
+    # learning modules URLs
+    path('api/student/learningmodules/<str:student_id>/<str:subject>/<str:day_number>/',       views.fetch_learning_modules),
+    path('api/student/lessonoverview/<str:student_id>/<str:subject>/<str:day_number>/',       views.fetch_overview_modules),
+
     # TESTING URLS
     path('addstudent/',      tests.addStudent),
     path('addstudentactivity/<str:day>/<str:week>/',      tests.addStudetsActivity),

@@ -653,10 +653,11 @@ def fetch_roadmap(request,student_id,course_id):
         )
         sub_data = student_question_details.student_question_details.get(sub.subject_name)
         days = []
+        other_weeks = []
         daynumber=0
         for i in course_details:
             week_data = sub_data.get('week_'+str(i.get('week')))
-            for d in blob_data.get(sub.subject_name):  
+            for d in blob_data.get(sub.subject_name): 
                 the_date = datetime.strptime(d.get('date').replace('T',' ').split('.')[0].replace('Z',''), "%Y-%m-%d %H:%M:%S")
                 if i.get('startDate').date() <= the_date.date() and the_date.date() <= i.get('endDate').date():
                     day_data = week_data.get('day_'+str(daynumber+1),{})
@@ -678,15 +679,33 @@ def fetch_roadmap(request,student_id,course_id):
                         if prev_mcq_qns == prev_mcq_answered and prev_coding_qns == prev_coding_answered and prev_mcq_qns > 0 and prev_coding_qns > 0:
                             status = 'Start'
                     if d.get('topic') == 'Weekly Test':# or d.get('topic') == 'Onsite Workshop' or d.get('topic') == 'Internship':
-                        days.append({'day':daynumber+1,
+                        days.append({'day':daynumber+1,'day_key':d.get('day').split(' ')[-1],
                             "date":getdays(the_date)+" "+the_date.strftime("%Y")[2:],
                             'week':i.get('week'),
                             'topics':d.get('topic'),
+                            'score' :'0/0',
                             'status':status
                               })
-                        continue
+                    elif d.get('topic') == 'Onsite Workshop' or d.get('topic') == 'Final Test':
+                        other_weeks.append({#'day':daynumber+1,
+                            'day_key':d.get('day').split(' ')[-1],
+                            "date":getdays(the_date)+" "+the_date.strftime("%Y")[2:],
+                            'week':len(course_details)+other_weeks.__len__()+1,
+                            'topics':d.get('topic'),
+                            'score' :'0/0',
+                            'status':''
+                              })
+                    elif d.get('topic') == 'Internship':
+                        other_weeks.append({#'day':daynumber+1,
+                            'day_key':d.get('day').split(' ')[-1],
+                            "date":getdays(the_date)+" "+the_date.strftime("%Y")[2:],
+                            'week':len(course_details)+other_weeks.__len__()+1,
+                            'topics':d.get('topic'),
+                            'score' :'0/0',
+                            'status':''
+                              })
                     else:
-                        days.append({'day':daynumber+1,
+                        days.append({'day':daynumber+1,'day_key':d.get('day').split(' ')[-1],
                             "date":getdays(the_date)+" "+the_date.strftime("%Y")[2:],
                             'week':i.get('week'),
                             'topics':d.get('topic'),
@@ -701,164 +720,36 @@ def fetch_roadmap(request,student_id,course_id):
                     daynumber+=1    
             i.update({'days': days})
             days = []
+        course_details.extend(other_weeks)
         response = {
             "weeks":course_details,
-            
         }
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed"},safe=False,status=400)
-    
-data = {
-    "SQL": {
-      "week_1": {
-        "day_1": {
-          "mcq_questions": [
-            "q1",
-            "q2",
-            "q3"
-          ],
-          "mcq_questions_status": {
-            "q1": 2,
-            "q2": 2,
-            "q3": 2
-          },
-          "mcq_score": "10/30",
-          "coding_questions": [
-            "q1",
-            "q2",
-            "q3"
-          ],
-          "coding_questions_status": {
-            "q1": 2,
-            "q2": 2,
-            "q3": 2
-          },
-          "coding_score": "15/30"
-        },
-        "day_2": {
-          "mcq_questions": [
-            "q1",
-            "q2",
-            "q3"
-          ],
-          "mcq_questions_status": {
-            "q1": 2,
-            "q2": 0,
-            "q3": 0
-          },
-          "mcq_score": "10/30",
-          "coding_questions": [
-            "q1",
-            "q2",
-            "q3"
-          ],
-          "coding_questions_status": {
-            "q1": 0,
-            "q2": 0,
-            "q3": 0
-          },
-          "coding_score": "10/30"
-        },
-        "day_3": {
-          "mcq_questions": [
-            "q1",
-            "q2",
-            "q3"
-          ],
-          "mcq_questions_status": {
-            "q1": 0,
-            "q2": 0,
-            "q3": 0
-          },
-          "mcq_score": "10/30",
-          "coding_questions": [
-            "q1",
-            "q2",
-            "q3"
-          ],
-          "coding_questions_status": {
-            "q1": 0,
-            "q2": 0,
-            "q3": 0
-          },
-          "coding_score": "10/30"
-        }
-      },
-      "week_2": {
-        "day_1": {
-          "mcq_questions": [
-            "q1",
-            "q2",
-            "q3"
-          ],
-          "mcq_questions_status": {
-            "q1": 0,
-            "q2": 0,
-            "q3": 0
-          },
-          "mcq_score": "10/30",
-          "coding_questions": [
-            "q1",
-            "q2",
-            "q3"
-          ],
-          "coding_questions_status": {
-            "q1": 0,
-            "q2": 0,
-            "q3": 0
-          },
-          "coding_score": "10/30"
-        },
-        "day_2": {
-          "mcq_questions": [
-            "q1",
-            "q2",
-            "q3"
-          ],
-          "mcq_questions_status": {
-            "q1": 0,
-            "q2": 0,
-            "q3": 0
-          },
-          "mcq_score": "10/30",
-          "coding_questions": [
-            "q1",
-            "q2",
-            "q3"
-          ],
-          "coding_questions_status": {
-            "q1": 0,
-            "q2": 0,
-            "q3": 0
-          },
-          "coding_score": "10/30"
-        },
-        "day_3": {
-          "mcq_questions": [
-            "q1",
-            "q2",
-            "q3"
-          ],
-          "mcq_questions_status": {
-            "q1": 0,
-            "q2": 0,
-            "q3": 0
-          },
-          "mcq_score": "10/30",
-          "coding_questions": [
-            "q1",
-            "q2",
-            "q3"
-          ],
-          "coding_questions_status": {
-            "q1": 0,
-            "q2": 0,
-            "q3": 0
-          },
-          "coding_score": "10/30"
-        }
-      }
-    }
-  }
+
+@api_view(['GET'])
+def fetch_learning_modules(request,student_id,subject,day_number):
+    try:
+        print(student_id,day_number)
+        student = students_info.objects.get(student_id = student_id,del_row = False)
+        print('blob path','LMS_DayWise/'+student.course_id.course_id+'.json')
+        blob_data = json.loads(get_blob('LMS_DayWise/'+student.course_id.course_id+'.json'))
+        response = [day  for day in blob_data.get(subject) if day.get('day') == 'Day '+str(day_number)][0].get('content')
+        return JsonResponse(response,safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed"},safe=False,status=400)
+@api_view(['GET'])
+def fetch_overview_modules(request,student_id,subject,day_number):
+    try:
+        print(student_id,day_number)
+        student = students_info.objects.get(student_id = student_id,del_row = False)
+        print('blob path','LMS_DayWise/'+student.course_id.course_id+'.json')
+        blob_data = json.loads(get_blob('LMS_DayWise/'+student.course_id.course_id+'.json'))
+        response = [day  for day in blob_data.get(subject) if day.get('day') == 'Day '+str(day_number)]
+        return JsonResponse(response,safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed"},safe=False,status=400)
