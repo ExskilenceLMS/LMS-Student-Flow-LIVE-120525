@@ -732,11 +732,63 @@ def fetch_roadmap(request,student_id,course_id):
 @api_view(['GET'])
 def fetch_learning_modules(request,student_id,subject,day_number):
     try:
-        print(student_id,day_number)
         student = students_info.objects.get(student_id = student_id,del_row = False)
-        print('blob path','LMS_DayWise/'+student.course_id.course_id+'.json')
         blob_data = json.loads(get_blob('LMS_DayWise/'+student.course_id.course_id+'.json'))
         response = [day  for day in blob_data.get(subject) if day.get('day') == 'Day '+str(day_number)][0].get('content')
+        return JsonResponse(response,safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed"},safe=False,status=400)
+@api_view(['POST'])
+def add_days_to_student(request):
+    try:
+        data = json.loads(request.body)
+        student = students_details.objects.using('mongodb').get(student_id = data.get('student_id'),
+                                                                del_row = 'False')
+        needTOsave = False
+        if student.student_question_details.get(data.get('subject')) == None:
+            student.student_question_details.update({
+                data.get('subject'):{
+                    'week_'+str(data.get('week_number')):{}
+            }})
+            needTOsave = True
+        if student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))) == None:
+            student.student_question_details.get(data.get('subject')).update({
+                'week_'+str(data.get('week_number')):{
+                        'day_'+str(data.get('day_number')):{}
+                    }
+            })
+            needTOsave = True
+        if student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))) == None:
+            student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).update({
+                'day_'+str(data.get('day_number')):{}
+            })
+            needTOsave = True
+        response = {'message':'not updated'}
+        if needTOsave == True :
+            student_info = students_info.objects.get(student_id = data.get('student_id'),del_row = False)
+            blob_data = json.loads(get_blob('LMS_DayWise/'+student_info.course_id.course_id+'.json'))
+            day_data = [day  for day in blob_data.get(data.get('subject')) if day.get('day') == 'Day '+str(data.get('day_number'))][0]
+            types = []
+            levels ={}
+            if day_data.get('mcq'):
+                types.append('MCQ')
+                levels.update({'MCQ':day_data.get('mcq')})
+            if day_data.get('coding'):
+                types.append('Coding')
+                levels.update({'Coding':day_data.get('coding')})
+            qnslist = get_random_questions(types,day_data.get('subtopicid'),levels)
+            student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).update({
+                "mcq_questions": qnslist.get('MCQ'),
+                "mcq_questions_status": {i:0 for i in qnslist.get('MCQ')},
+                "mcq_score": "0/"+str(qnslist.get('MCQ_score')),
+                "coding_questions": qnslist.get('Coding'),
+                "coding_questions_status": {i:0 for i in qnslist.get('Coding')},
+                "coding_score": "0/"+str(qnslist.get('Coding_score'))
+            })
+            student.save()
+            response.update({'message':'updated'})
+        
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
@@ -744,11 +796,54 @@ def fetch_learning_modules(request,student_id,subject,day_number):
 @api_view(['GET'])
 def fetch_overview_modules(request,student_id,subject,day_number):
     try:
-        print(student_id,day_number)
         student = students_info.objects.get(student_id = student_id,del_row = False)
-        print('blob path','LMS_DayWise/'+student.course_id.course_id+'.json')
         blob_data = json.loads(get_blob('LMS_DayWise/'+student.course_id.course_id+'.json'))
         response = [day  for day in blob_data.get(subject) if day.get('day') == 'Day '+str(day_number)]
+        return JsonResponse(response,safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed"},safe=False,status=400)
+    
+@api_view(['GET'])
+def fetch_questions(request,type,student_id,subject,day_number,week_number):
+    try:
+        student = students_details.objects.using('mongodb').get(student_id = student_id,del_row = 'False')
+        if student.student_question_details.get(subject) == None:
+            return JsonResponse({"message": "subject not found"},safe=False,status=400)
+        if student.student_question_details.get(subject).get('week_'+week_number) == None:
+            return JsonResponse({"message": "week not found"},safe=False,status=400)
+        if student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number) == None:
+            return JsonResponse({"message": "day not found"},safe=False,status=400)
+        questions_ids = (student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number).get('mcq_questions' if type.lower() =='mcq' else 'coding_questions'))
+        qn_data = get_list_blob('LMSData/',questions_ids,type.upper() if type.lower() =='mcq' else type[0].upper()+str(type[1:]).lower()  )
+        return JsonResponse(qn_data,safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed"},safe=False,status=400)
+@api_view(['POST'])
+def submit_MCQ_Question(request):
+    try:
+        data = json.loads(request.body)
+        student_id = data.get('student_id')
+        question_id = data.get('question_id')
+        student_practiceMCQ_answer ,created= student_practiceMCQ_answers.objects.using('mongodb'
+                                                            ).get_or_create(student_id = student_id,
+                                                                 question_id = question_id,
+                                                                 del_row = 'False' ,
+                                                                 defaults={
+                                                                     'student_id':student_id,
+                                                                     'question_id':question_id,
+                                                                    'correct_ans': data.get('correct_ans'),
+                                                                    'entered_ans': data.get('entered_ans'),
+                                                                    'subject_id':data.get('subject_id'),
+                                                                    'answered_time':timezone.now() + timedelta(hours=5, minutes=30)
+                                                                 })
+        response ={'message':'Already Submited'}
+        if created:
+            student = students_details.objects.using('mongodb').get(student_id = student_id,
+                                                                    del_row = 'False')
+            # student.student
+            response ={'message':'Submited'}
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
