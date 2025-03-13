@@ -54,6 +54,40 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
+DATABASES = {
+    'mongodb': {
+        'ENGINE': 'djongo',
+        'NAME': 'LMSmongodb',
+        'CLIENT': {
+            'host': 'mongodb+srv://kecoview:FVy5fqqCtQy3KIt6@cluster0.b9wmlid.mongodb.net/',
+            'username': 'kecoview',
+            'password': 'FVy5fqqCtQy3KIt6',
+            'authMechanism': 'SCRAM-SHA-1',
+        }
+    },
+    'default': {
+        'ENGINE': 'mssql',
+        
+        # 'NAME': 'LMSdb',
+        # 'USER': 'sa',
+        # 'PASSWORD': 'sql2014!',
+        # 'HOST': 'localhost',
+
+        'NAME': 'eussdb',
+        'USER': 'euserblr',#'eudev',#
+        'PASSWORD': '6han4Sy5#',#'Devlop99@#',#
+        'HOST': 'slnsgdhutmtbs.database.windows.net',
+        
+        # 'HOST': 'Rudresh\\SQLEXPRESS',
+        'PORT': '1433',
+        'OPTIONS': {
+            'driver': 'ODBC Driver 17 for SQL Server',
+            'trustServerCertificate': 'yes',  # Add this to avoid SSL errors
+        },
+    }
+}
+
+
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'https://staging-exskilence.azurewebsites.net/',
@@ -90,62 +124,6 @@ AZURE_ACCOUNT_KEY = 'QxlUJdp8eSoPeQPas4NigSkXg6KMep7z+fPQ5CpPm0kRfjg7Q0lFmVEIyhU
 AZURE_CONTAINER = 'tpdata'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'djongo',
-#         'NAME': 'LMSmongodb',
-#         'CLIENT': {
-#             'host': 'mongodb+srv://kecoview:FVy5fqqCtQy3KIt6@cluster0.b9wmlid.mongodb.net/',
-#             'username': 'kecoview',
-#             'password': 'FVy5fqqCtQy3KIt6',
-#             'authMechanism': 'SCRAM-SHA-1',
-#         }
-#     },
-#     'MSSQL': {
-#         'ENGINE': 'mssql',
-#         'NAME': 'LMSdb',
-#         'USER': 'sa',
-#         'PASSWORD': 'sql2014!',
-#         'HOST': 'localhost',
-#         'PORT': '1433',
-#         'OPTIONS': {
-#             'driver': 'ODBC Driver 17 for SQL Server',
-#         },
-#     }
-# }
-DATABASES = {
-    'mongodb': {
-        'ENGINE': 'djongo',
-        'NAME': 'LMSmongodb',
-        'CLIENT': {
-            'host': 'mongodb+srv://kecoview:FVy5fqqCtQy3KIt6@cluster0.b9wmlid.mongodb.net/',
-            'username': 'kecoview',
-            'password': 'FVy5fqqCtQy3KIt6',
-            'authMechanism': 'SCRAM-SHA-1',
-        }
-    },
-    'default': {
-        'ENGINE': 'mssql',
-        # 'NAME': 'LMSdb',
-        # 'USER': 'sa',
-        # 'PASSWORD': 'sql2014!',
-        # 'HOST': 'localhost',
-        'NAME': 'eussdb',
-        'USER': 'euserblr',#'eudev',#
-        'PASSWORD': '6han4Sy5#',#'Devlop99@#',#
-        'HOST': 'slnsgdhutmtbs.database.windows.net',
-        
-        # 'HOST': 'Rudresh\\SQLEXPRESS',
-        'PORT': '1433',
-        'OPTIONS': {
-            'driver': 'ODBC Driver 17 for SQL Server',
-            'trustServerCertificate': 'yes',  # Add this to avoid SSL errors
-        },
-    }
-}
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators

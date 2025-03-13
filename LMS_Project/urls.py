@@ -35,7 +35,7 @@ urlpatterns = [
     # learning modules URLs
     path('api/student/learningmodules/<str:student_id>/<str:subject>/<str:day_number>/',       views.fetch_learning_modules),
     path('api/student/lessonoverview/<str:student_id>/<str:subject>/<str:day_number>/',       views.fetch_overview_modules),
-    path('api/student/practice<str:type>/<str:student_id>/<str:subject>/<str:day_number>/<str:week_number>/',       views.fetch_questions),
+    path('api/student/practice<str:type>/<str:student_id>/<str:subject>/<str:day_number>/<str:week_number>/<str:subTopic>/',       views.fetch_questions),
     path('api/student/add/days/', views.add_days_to_student),
     path('api/student/practicemcq/submit/', views.submit_MCQ_Question),
 
@@ -43,6 +43,7 @@ urlpatterns = [
     path('api/student/coding/py/',    cv.run_python),
     path('api/student/coding/ds/', cv.run_pythonDSA),
     path('api/student/coding/sql/', cv.sql_query),
+    path('api/student/coding/', views.submition_coding_question),
     
     # TESTING URLS
     path('addstudent/',      tests.addStudent),
