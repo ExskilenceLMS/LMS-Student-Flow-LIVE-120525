@@ -652,18 +652,16 @@ def fetch_roadmap(request,student_id,course_id):
             # }
         )
         sub_data = student_question_details.student_question_details.get(sub.subject_name)
-        print(1)
         days = []
         other_weeks = []
         daynumber=0
         for i in course_details:
             week_data = sub_data.get('week_'+str(i.get('week')),{})
-            print(2,week_data)
 
             for d in blob_data.get(sub.subject_name): 
                 the_date = datetime.strptime(d.get('date').replace('T',' ').split('.')[0].replace('Z',''), "%Y-%m-%d %H:%M:%S")
                 if i.get('startDate').date() <= the_date.date() and the_date.date() <= i.get('endDate').date():
-                    day_data = week_data.get('day_'+str(daynumber+1),{})
+                    day_data = week_data.get('day_'+str(d.get('day').split(' ')[-1]),{})
                     status = ''
                     mcq_qns =len(day_data.get('mcq_questions',[]))
                     coding_qns =  len(day_data.get('coding_questions',[]))
@@ -671,7 +669,7 @@ def fetch_roadmap(request,student_id,course_id):
                     coding_answered = len([dd for dd in day_data.get('coding_questions_status',{}) if day_data.get('coding_questions_status',{}).get(dd)==2])
                     if mcq_qns == mcq_answered and coding_qns == coding_answered and mcq_qns > 0 and coding_qns > 0:
                         status = 'Completed'
-                    elif mcq_answered > 0 or coding_answered > 0:
+                    elif mcq_answered > 0 or coding_answered > 0 or day_data != {}:
                         status = 'Resume'
                     else:
                         prev_day_data = week_data.get('day_'+str(daynumber),{})
@@ -687,6 +685,7 @@ def fetch_roadmap(request,student_id,course_id):
                             'week':i.get('week'),
                             'topics':d.get('topic'),
                             'score' :'0/0',
+
                             'status':status
                               })
                     elif d.get('topic') == 'Onsite Workshop' or d.get('topic') == 'Final Test':
@@ -696,15 +695,17 @@ def fetch_roadmap(request,student_id,course_id):
                             'week':len(course_details)+other_weeks.__len__()+1,
                             'topics':d.get('topic'),
                             'score' :'0/0',
+                            'days':[],
                             'status':''
                               })
                     elif d.get('topic') == 'Internship':
-                        other_weeks.append({#'day':daynumber+1,
+                        other_weeks.append({'day':'',
                             'day_key':d.get('day').split(' ')[-1],
                             "date":getdays(the_date)+" "+the_date.strftime("%Y")[2:],
                             'week':len(course_details)+other_weeks.__len__()+1,
                             'topics':d.get('topic'),
                             'score' :'0/0',
+                            'days':[],
                             'status':''
                               })
                     else:
@@ -847,10 +848,22 @@ def submit_MCQ_Question(request):
             student = students_details.objects.using('mongodb').get(student_id = student_id,
                                                                     del_row = 'False')
             print(blob_rulea_data)
-            if question_id[-4]=='e':
-                blob_rulea_data
-            # score =
-            student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('mcq_questions_status').update({question_id:2})
+            score = 0
+            if data.get('correct_ans') == data.get('entered_ans'):
+                if question_id[-4]=='e':
+                    score = [i.get('score') for i in blob_rulea_data if i.get('level') == 'level1'.get('level')][0]
+                elif question_id[-4]=='m':
+                    score = [i.get('score') for i in blob_rulea_data if i.get('level') == 'level2'.get('level')][0]
+                elif question_id[-4]=='h':
+                    score = [i.get('score') for i in blob_rulea_data if i.get('level') == 'level3'.get('level')][0]
+            old_score = student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('mcq_score').split('/')
+            score = str(int(old_score[0]) + score) + '/' + str(int(old_score[1]))
+            student.student_question_details.get(data.get('subject')
+                                                 ).get('week_'+str(data.get('week_number'))
+                                                       ).get('day_'+str(data.get('day_number'))
+                                                             ).get('mcq_questions_status'
+                                                                   ).update({question_id:2,
+                                                                             'mcq_score':score})
             response ={'message':student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number')))}
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
