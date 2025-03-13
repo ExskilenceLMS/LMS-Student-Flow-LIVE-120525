@@ -652,11 +652,14 @@ def fetch_roadmap(request,student_id,course_id):
             # }
         )
         sub_data = student_question_details.student_question_details.get(sub.subject_name)
+        print(1)
         days = []
         other_weeks = []
         daynumber=0
         for i in course_details:
-            week_data = sub_data.get('week_'+str(i.get('week')))
+            week_data = sub_data.get('week_'+str(i.get('week')),{})
+            print(2,week_data)
+
             for d in blob_data.get(sub.subject_name): 
                 the_date = datetime.strptime(d.get('date').replace('T',' ').split('.')[0].replace('Z',''), "%Y-%m-%d %H:%M:%S")
                 if i.get('startDate').date() <= the_date.date() and the_date.date() <= i.get('endDate').date():
