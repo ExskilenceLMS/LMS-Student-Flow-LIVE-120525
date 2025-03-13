@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view
 from LMS_MSSQLdb_App.models import *
 from LMS_Mongodb_App.models import *
 from datetime import datetime, timedelta
+from django.utils import timezone
 from django.db.models import Max, F ,Sum,Min,Count
 # from django.contrib.postgres.aggregates import ArrayAgg
 import json
@@ -70,7 +71,7 @@ def getdays(date):
        formatted_date =  (f"{day}{suffix} {calendar.month_abbr[month]}")
        return formatted_date
 
-from django.utils import timezone
+
 @api_view(['GET'])
 def fetch_live_session(request,student_id):
     try:
@@ -738,7 +739,23 @@ def fetch_learning_modules(request,student_id,subject,day_number):
     try:
         student = students_info.objects.get(student_id = student_id,del_row = False)
         blob_data = json.loads(get_blob('LMS_DayWise/'+student.course_id.course_id+'.json'))
-        response = [day  for day in blob_data.get(subject) if day.get('day') == 'Day '+str(day_number)][0].get('content')
+        day_data = [day  for day in blob_data.get(subject) if day.get('day') == 'Day '+str(day_number)][0] 
+        response_data =[]
+        for i in day_data.get('subtopicids'):
+            response_data.append({
+                'sub_topic':i.get('subtopic_name'),
+                'lesson': [subdata.get('path') for subdata in day_data.get('content').get(i.get('subtopic_id')) if subdata.get('type')=="video"],
+                'notes': [subdata.get('path') for subdata in day_data.get('content').get(i.get('subtopic_id')) if subdata.get('type')=="file"],
+                'mcqQuestions':sum([ day_data.get('mcq').get(i.get('subtopic_id')).get(qn) for qn in day_data.get('mcq').get(i.get('subtopic_id')) ]),
+                'codingQuestions':sum([day_data.get('coding').get(i.get('subtopic_id')).get(qn) for qn in day_data.get('coding').get(i.get('subtopic_id') )])
+            })
+        response =  [
+        {
+            'Day': day_data.get('day'),
+            'title':  day_data.get('topic'),
+            'duration':  day_data.get('duration'),
+            'sub_topic_data':response_data
+        }]
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
@@ -830,6 +847,15 @@ def submit_MCQ_Question(request):
         data = json.loads(request.body)
         student_id = data.get('student_id')
         question_id = data.get('question_id')
+        blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json')).get('mcq')
+        score = 0
+        if data.get('correct_ans') == data.get('entered_ans'):
+                if question_id[-4]=='e':
+                    score = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level1'][0]
+                elif question_id[-4]=='m':
+                    score = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level2'][0]
+                elif question_id[-4]=='h':
+                    score = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level3'][0]
         student_practiceMCQ_answer ,created= student_practiceMCQ_answers.objects.using('mongodb'
                                                             ).get_or_create(student_id = student_id,
                                                                  question_id = question_id,
@@ -840,32 +866,95 @@ def submit_MCQ_Question(request):
                                                                     'correct_ans': data.get('correct_ans'),
                                                                     'entered_ans': data.get('entered_ans'),
                                                                     'subject_id':data.get('subject_id'),
+                                                                    'score':score,
                                                                     'answered_time':timezone.now() + timedelta(hours=5, minutes=30)
                                                                  })
+
         response ={'message':'Already Submited'}
         if created:
-            blob_rulea_data = json.loads(get_blob('LMS_Rules/Rules.json')).get('mcq')
+            
             student = students_details.objects.using('mongodb').get(student_id = student_id,
                                                                     del_row = 'False')
-            print(blob_rulea_data)
-            score = 0
-            if data.get('correct_ans') == data.get('entered_ans'):
-                if question_id[-4]=='e':
-                    score = [i.get('score') for i in blob_rulea_data if i.get('level') == 'level1'.get('level')][0]
-                elif question_id[-4]=='m':
-                    score = [i.get('score') for i in blob_rulea_data if i.get('level') == 'level2'.get('level')][0]
-                elif question_id[-4]=='h':
-                    score = [i.get('score') for i in blob_rulea_data if i.get('level') == 'level3'.get('level')][0]
+            student_info = students_info.objects.get(student_id = student_id,del_row = False)
+            
+            
             old_score = student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('mcq_score').split('/')
-            score = str(int(old_score[0]) + score) + '/' + str(int(old_score[1]))
+            newscore = str(int(old_score[0]) + int(score)) + '/' + old_score[1]
             student.student_question_details.get(data.get('subject')
                                                  ).get('week_'+str(data.get('week_number'))
                                                        ).get('day_'+str(data.get('day_number'))
                                                              ).get('mcq_questions_status'
-                                                                   ).update({question_id:2,
-                                                                             'mcq_score':score})
-            response ={'message':student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number')))}
+                                                                   ).update({question_id:2})            
+            student.student_question_details.get(data.get('subject')
+                                                 ).get('week_'+str(data.get('week_number'))
+                                                       ).get('day_'+str(data.get('day_number'))
+                                                             ).update({'mcq_score':newscore})
+            student.save()
+            student_info.student_score = int(student_info.student_score) + int(score)
+            student_info.save()
+            response ={'message':'Submited'}
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed"},safe=False,status=400)
+@api_view(['PUT']) 
+def submition_coding_question(request):
+    try:
+        data = json.loads(request.body)
+        student_id = data.get('student_id')
+        question_id = data.get('Qn')
+        blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json')).get('coding')
+        score = 0
+        if data.get('correct_ans') == data.get('entered_ans'):
+                if question_id[-4]=='e':
+                    score = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level1'][0]
+                elif question_id[-4]=='m':
+                    score = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level2'][0]
+                elif question_id[-4]=='h':
+                    score = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level3'][0]
+        score = int(score)
+        user , created = student_practice_coding_ans.objects.using('mongodb').get_or_create(student_id=student_id,
+                                                                                          subject_id=data.get('subject_id'),
+                                                                                          question_id=question_id,
+                                                                                          del_row='False',
+                                                                                          defaults={
+                                                                                              'student_id':data.get('studentId'),
+                                                                                              'subject_id':data.get('subject_id'),
+                                                                                              'question_id':question_id,
+                                                                                              'entered_ans':data.get('Ans'),
+                                                                                              'answered_time':timezone.now() + timedelta(hours=5, minutes=30),
+                                                                                              'testcase_results':data.get('Result'),
+                                                                                              'Attempts':1,
+                                                                                              'score':score
+                                                                                          })
+        response ={}
+        if created:
+            response.update({'message':'Submited','new':'True'})
+        else:
+            user.entered_ans    = data.get('Ans')
+            user.answered_time  = timezone.now() + timedelta(hours=5, minutes=30)
+            user.testcase_results = data.get('Result')
+            user.score = score
+            user.save()
+            student = students_details.objects.using('mongodb').get(student_id = student_id,
+                                                                    del_row = 'False')
+            student_info = students_info.objects.get(student_id = student_id,del_row = False)
+            old_score = student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('coding_score').split('/')
+            newscore = str(int(old_score[0]) + int(score)) + '/' + old_score[1]
+            student.student_question_details.get(data.get('subject')
+                                                 ).get('week_'+str(data.get('week_number'))
+                                                       ).get('day_'+str(data.get('day_number'))
+                                                             ).get('coding_questions_status'
+                                                                   ).update({question_id:2})            
+            student.student_question_details.get(data.get('subject')
+                                                 ).get('week_'+str(data.get('week_number'))
+                                                       ).get('day_'+str(data.get('day_number'))
+                                                             ).update({'coding_score':newscore})
+            student.save()
+            student_info.student_score = int(student_info.student_score) + int(score)
+            student_info.save()
+        return JsonResponse(response,safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed"},safe=False,status=400)
+

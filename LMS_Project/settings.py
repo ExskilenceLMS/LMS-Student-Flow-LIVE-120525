@@ -188,6 +188,11 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MIGRATION_MODULES = {
-    'LMS_Mongodb_App': None,
-    # 'LMS_MSSQLdb_App': None
+    # 'LMS_Mongodb_App': None,
+    'LMS_MSSQLdb_App': None
 }
+MSSQL_SERVER_NAME = 'slnkshmtbsil.database.windows.net'
+MSSQL_DATABASE_NAME = 'exe_test'
+MSSQL_USERNAME = 'tpssa'
+MSSQL_PWD = 'TPSuser@sa123'
+MSSQL_DRIVER =  'ODBC Driver 17 for SQL Server'

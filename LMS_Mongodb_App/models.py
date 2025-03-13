@@ -58,6 +58,7 @@ class student_practiceMCQ_answers(models.Model):
     correct_ans         = models.CharField(max_length=20)
     entered_ans         = models.CharField(max_length=20)
     subject_id          = models.CharField(max_length=20)
+    score               = models.FloatField(default=0)
     answered_time       = models.DateTimeField()
     del_row = models.CharField(default='False',max_length=5)
 
@@ -71,6 +72,8 @@ class student_practice_coding_ans(models.Model):
     subject_id          = models.CharField(max_length=20)
     answered_time       = models.DateTimeField()
     testcase_results    = models.JSONField()
+    Attempts            = models.IntegerField()
+    score               = models.FloatField(default=0)
     del_row = models.CharField(default='False',max_length=5)
 
     class Meta:

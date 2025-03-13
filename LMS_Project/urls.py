@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from Student_Flow_App import views ,tests 
+from Student_Flow_App import views ,tests ,coding_validation as cv
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home),
@@ -38,6 +38,11 @@ urlpatterns = [
     path('api/student/practice<str:type>/<str:student_id>/<str:subject>/<str:day_number>/<str:week_number>/',       views.fetch_questions),
     path('api/student/add/days/', views.add_days_to_student),
     path('api/student/practicemcq/submit/', views.submit_MCQ_Question),
+
+    # coding Validation URLs
+    path('api/student/coding/py/',    cv.run_python),
+    path('api/student/coding/ds/', cv.run_pythonDSA),
+    path('api/student/coding/sql/', cv.sql_query),
     
     # TESTING URLS
     path('addstudent/',      tests.addStudent),
