@@ -840,10 +840,15 @@ def submit_MCQ_Question(request):
                                                                  })
         response ={'message':'Already Submited'}
         if created:
+            blob_rulea_data = json.loads(get_blob('LMS_Rules/Rules.json')).get('mcq')
             student = students_details.objects.using('mongodb').get(student_id = student_id,
                                                                     del_row = 'False')
-            # student.student
-            response ={'message':'Submited'}
+            print(blob_rulea_data)
+            if question_id[-4]=='e':
+                blob_rulea_data
+            # score =
+            student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('mcq_questions_status').update({question_id:2})
+            response ={'message':student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number')))}
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
