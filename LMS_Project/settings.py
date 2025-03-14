@@ -73,10 +73,10 @@ DATABASES = {
         # 'PASSWORD': 'sql2014!',
         # 'HOST': 'localhost',
 
-        # 'NAME': 'eussdb',
-        # 'USER': 'euserblr',#'eudev',#
-        # 'PASSWORD': '6han4Sy5#',#'Devlop99@#',#
-        # 'HOST': 'slnsgdhutmtbs.database.windows.net',
+        'NAME': 'eussdb',
+        'USER': 'euserblr',#'eudev',#
+        'PASSWORD': '6han4Sy5#',#'Devlop99@#',#
+        'HOST': 'slnsgdhutmtbs.database.windows.net',
         
         # 'HOST': 'Rudresh\\SQLEXPRESS',
         'PORT': '1433',
