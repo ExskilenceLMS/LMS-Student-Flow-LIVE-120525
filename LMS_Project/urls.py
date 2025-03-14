@@ -44,6 +44,12 @@ urlpatterns = [
     path('api/student/coding/ds/', cv.run_pythonDSA),
     path('api/student/coding/sql/', cv.sql_query),
     path('api/student/coding/', views.submition_coding_question),
+
+    # Live Session URLs
+    path('api/student/sessions/<str:student_id>/', views.fetch_all_live_session),
+
+    # TEST Details URLs
+    path('api/student/testdetails/<str:student_id>/', views.fetch_all_test_details),
     
     # TESTING URLS
     path('addstudent/',      tests.addStudent),
@@ -53,4 +59,6 @@ urlpatterns = [
     path('addsubplan/',   tests.add_course_plane_details),
     path('addnotification/',   tests.add_notification),
     path('addstudentinfo/',   tests.update_student_info),
+    path('addparticipants/',   tests.add_participants),
+    path('addtestdetails/',   tests.add_test_sction),
 ]

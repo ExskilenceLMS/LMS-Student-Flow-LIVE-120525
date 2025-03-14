@@ -9,6 +9,7 @@ class students_assessments(models.Model):
     subject_id          = models.CharField(max_length=20)
     test_id             = models.CharField(max_length=20)
     course_id           = models.CharField(max_length=20)
+    assessment_status   = models.CharField(max_length=20)
     assessment_score_secured = models.FloatField()
     assessment_max_score = models.FloatField()
     assessment_week_number = models.IntegerField()

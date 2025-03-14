@@ -743,6 +743,7 @@ def fetch_learning_modules(request,student_id,subject,day_number):
         response_data =[]
         for i in day_data.get('subtopicids'):
             response_data.append({
+                'subtopicid':i.get('subtopic_id'),
                 'sub_topic':i.get('subtopic_name'),
                 'lesson': [subdata.get('path') for subdata in day_data.get('content').get(i.get('subtopic_id')) if subdata.get('type')=="video"],
                 'notes': [subdata.get('path') for subdata in day_data.get('content').get(i.get('subtopic_id')) if subdata.get('type')=="file"],
@@ -985,3 +986,81 @@ def submition_coding_question(request):
         print(e)
         return JsonResponse({"message": "Failed"},safe=False,status=400)
 
+@api_view(['GET'])
+def fetch_all_live_session(request,student_id):
+    try:
+        live_session = list(live_sessions.objects.using('mongodb').filter(student_ids__contains = student_id,
+                                                                     del_row = "False"
+                                                                     ).order_by('-session_starttime').values(
+                                                                         'session_id',
+                                                                         'session_title',
+                                                                         'session_starttime',
+                                                                         'session_meetlink',
+                                                                         'session_video_link',
+                                                                         'session_status',
+                                                                     ))
+        if live_session == []:
+            return JsonResponse({"message": "No Live Session"},safe=False,status=400)
+        attendance = participant.objects.using('mongodb').filter(session_id__in = [session.get('session_id') for session in live_session],
+                                                                     student_id = student_id,
+                                                                     del_row = "False"
+                                                                     ).order_by('-attended_time').values(
+                                                                         'session_id',
+                                                                         'student_id',
+                                                                         'attended_time',
+                                                                     )
+        responce = [{
+                    'id':  session.get('session_id'),
+                    'name': session.get('session_title'),
+                    'date': session.get('session_starttime').strftime("%Y-%m-%d"),
+                    'time': session.get('session_starttime').strftime("%I:%M") + " " + session.get('session_starttime').strftime("%p"),
+                    'meet_link': session.get('session_meetlink'),
+                    'attendance': [duration.get('attended_time') for duration in attendance if duration.get('session_id') == str(session.get('session_id'))][0],
+                    'video_link': session.get('session_video_link'),
+                    'ended': True if session.get('session_status') == 'Completed' else False,
+                    'status':session.get('session_status')
+                    }            for session in live_session ]
+        return JsonResponse((responce),safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed"},safe=False,status=400)
+@api_view(['GET'])
+def fetch_all_test_details(request,student_id):
+    try:
+        students_assessment = students_assessments.objects.using('mongodb'
+                                                                 ).filter(student_id = student_id,
+                                                                     del_row = False
+                                                                     ).values(
+                                                                         'assessment_type',
+                                                                         'subject_id',
+                                                                         'test_id',
+                                                                         'course_id',
+                                                                         'assessment_status',
+                                                                         'assessment_score_secured',
+                                                                         'assessment_max_score',
+                                                                         'assessment_week_number',
+                                                                         'assessment_completion_time'
+                                                                     )
+        if students_assessment == []:
+            return JsonResponse({"message": "No Test Available"},safe=False,status=400)
+        test_detail_obj = test_sections.objects.filter(test_id__test_id__in = [test.get('test_id') for test in students_assessment],
+                                                  del_row = False) 
+        test_detail = {test.test_id.test_id:test.test_id.__dict__ for test in test_detail_obj} 
+        for test in test_detail:
+            
+            print(test)
+        # response =[{
+        #     "test_type": test_detail.get(test.get('test_id')).get('test_type'),
+        #     "test_id":  test.get('test_id'),
+        #     "course_id":  test.get('course_id'),
+        #     "test_status":  test.get('assessment_status'),
+        #     "assessment_score_secured": test.get('assessment_score_secured'),
+        #     'topic':'',
+        #     "datetime":test_detail.get(test.get('test_id')).get('test_date_and_time'),
+        #     "subject":  test.get('subject_id'),
+        #     "test_name":'',            
+        # }  for test in students_assessment]
+        return JsonResponse({'test_details':test_detail},safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed"},safe=False,status=400)

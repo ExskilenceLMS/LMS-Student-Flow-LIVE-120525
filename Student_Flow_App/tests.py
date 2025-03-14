@@ -18,9 +18,9 @@ def addLiveSession(request):
             session_starttime = datetime.utcnow().__add__(timedelta(days=1,hours=5,minutes=30)),
             session_author = 'TEST',
             session_subject = 'subject1',
-            session_meetlink = 'TEST',
+            session_meetlink = 'https://meet.google.com/bba-rfhf-hvk',
             session_endtime = datetime.utcnow().__add__(timedelta(days=1,hours=6,minutes=30)),
-            session_video_link = 'TEST',
+            session_video_link = 'https://www.youtube.com/watch?v=KUECJHlV1LE&t=332s&pp=ygUnZG93bmxvYWQgaW1hZ2UgZnJvbSBkb2NrZXIgdXNpbmcgcHl0aG9u',
             session_status = 'UPCOMING',
             del_row = 'False'
         )
@@ -30,9 +30,9 @@ def addLiveSession(request):
             session_starttime = datetime.utcnow().__add__(timedelta(days=1,hours=5,minutes=30)),
             session_author = 'TEST',
             session_subject = 'subject1',
-            session_meetlink = 'TEST',
+            session_meetlink = 'https://meet.google.com/bba-rfhf-hvk',
             session_endtime = datetime.utcnow().__add__(timedelta(days=1,hours=6,minutes=30)),
-            session_video_link = 'TEST',
+            session_video_link = 'https://www.youtube.com/watch?v=KUECJHlV1LE&t=332s&pp=ygUnZG93bmxvYWQgaW1hZ2UgZnJvbSBkb2NrZXIgdXNpbmcgcHl0aG9u',
             session_status = 'UPCOMING',
             student_ids = ['25MRITCS001'],
             del_row = 'False'
@@ -43,9 +43,9 @@ def addLiveSession(request):
             session_starttime = datetime.utcnow().__add__(timedelta(days=1,hours=5,minutes=30)),
             session_author = 'TEST',
             session_subject = 'subject1',
-            session_meetlink = 'TEST',
+            session_meetlink = 'https://meet.google.com/bba-rfhf-hvk',
             session_endtime = datetime.utcnow().__add__(timedelta(days=1,hours=6,minutes=30)),
-            session_video_link = 'TEST',
+            session_video_link = 'https://www.youtube.com/watch?v=KUECJHlV1LE&t=332s&pp=ygUnZG93bmxvYWQgaW1hZ2UgZnJvbSBkb2NrZXIgdXNpbmcgcHl0aG9u',
             session_status = 'UPCOMING',
             student_ids = ['25MRITCS001','student2'],
             del_row = 'False'
@@ -322,3 +322,219 @@ def update_student_info(request):
     except Exception as e:
         print(e)
         return HttpResponse("Failed")
+
+@api_view(['GET'])
+def add_participants(request):
+    try:
+        std = participant.objects.using('mongodb').create(
+            session_id =  36,
+            student_id = '25MRITCS001',
+            display_name = 'TEST',
+            attended_time = 4565.0,
+            del_row = 'False'
+        )
+        std1 = participant.objects.using('mongodb').create(
+            session_id =  35,
+            student_id = '25MRITCS001',
+            display_name = 'TEST',
+            attended_time = 456.0,
+            del_row = 'False'
+        )
+        
+        return HttpResponse("Added Successfully")
+    except Exception as e:
+        print(e)
+        return HttpResponse("Failed")
+# class students_assessments(models.Model):
+#     student_id          = models.CharField(max_length=20)
+#     assessment_type = models.CharField(max_length=20)
+#     subject_id          = models.CharField(max_length=20)
+#     test_id             = models.CharField(max_length=20)
+#     course_id           = models.CharField(max_length=20)
+#     assessment_status   = models.CharField(max_length=20)
+#     assessment_score_secured = models.FloatField()
+#     assessment_max_score = models.FloatField()
+#     assessment_week_number = models.IntegerField()
+#     assessment_completion_time = models.DateTimeField()
+#     assessment_rank     = models.IntegerField()
+#     assessment_overall_rank = models.IntegerField()
+#     del_row = models.CharField(default='False',max_length=5)
+@api_view(['GET'])
+def add_std_testDetails(request):
+    try:
+        std = students_assessments.objects.using('mongodb').create(
+            student_id = '25MRITCS001',
+            assessment_type = 'Weekly Test',
+            subject_id = 'Subject4',
+            test_id = 'Test1',
+            course_id = 'Course0001',
+            assessment_status = 'ONGOING',
+            assessment_score_secured = 0,
+            assessment_max_score = 0,
+            assessment_week_number = 1,
+            assessment_completion_time = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+            assessment_rank = 0,
+            assessment_overall_rank = 0,
+            del_row = 'False'
+        ) 
+        std2 = students_assessments.objects.using('mongodb').create(
+            student_id = '25MRITCS001',
+            assessment_type = 'Weekly Test',
+            subject_id = 'Subject4',
+            test_id = 'Test2',
+            course_id = 'Course0001',
+            assessment_status = 'UPCOMMING',
+            assessment_score_secured = 0,
+            assessment_max_score = 0,
+            assessment_week_number = 1,
+            assessment_completion_time = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+            assessment_rank = 0,
+            assessment_overall_rank = 0,
+            del_row = 'False'
+        )
+        std3 = students_assessments.objects.using('mongodb').create(
+            student_id = '25MRITCS001',
+            assessment_type = 'Weekly Test',
+            subject_id = 'Subject4',
+            test_id = 'Test3',
+            course_id = 'Course0001',
+            assessment_status = 'COMPLETED',
+            assessment_score_secured = 10.0,
+            assessment_max_score = 10.0,
+            assessment_week_number = 1,
+            assessment_completion_time = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+            assessment_rank = 0,
+            assessment_overall_rank = 0,
+            del_row = 'False'
+        )
+        return HttpResponse("Added Successfully")
+    except Exception as e:
+        print(e)
+        return HttpResponse("Failed")
+    # class test_details(models.Model):
+    # test_id = models.CharField(max_length=20, primary_key=True)
+    # test_name = models.CharField(max_length=50)
+    # test_duration = models.CharField(max_length=20)
+    # test_marks = models.IntegerField()
+    # test_type = models.CharField(max_length=20)
+    # test_description = models.CharField(max_length=250)
+    # test_created_by = models.CharField(max_length=20)
+    # track_id =  models.ForeignKey(tracks, on_delete=models.SET_NULL, null=True)
+    # course_id = models.ForeignKey(courses, on_delete=models.SET_NULL, null=True)
+    # subject_id = models.ForeignKey(subjects, on_delete=models.SET_NULL, null=True)
+    # level = models.CharField(max_length=20)
+    # tags = models.CharField(max_length=20)
+    # test_date_and_time = models.DateTimeField()
+    # del_row = models.BooleanField(default=False)
+@api_view(['GET'])
+def add_testDetails(request):
+    try:
+        course = courses.objects.get(course_id = 'Course0001' ,del_row = False)
+        sub = subjects.objects.get(subject_id = 'Subject4' ,del_row = False)
+        track = tracks.objects.get(track_id = 'Track1' ,del_row = False)
+        test = test_details.objects.create(
+            test_id = 'Test1',
+            test_name = 'week 1 test',
+            test_duration = '10',
+            test_marks = 10,
+            test_type = 'Weekly Test',
+            test_description = 'weekly test',
+            test_created_by = 'rahul',
+            track_id = track,
+            course_id = course,
+            subject_id = sub,
+            level = 'Beginner',
+            tags = 'test',
+            test_date_and_time = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+            del_row = 'False'
+        )
+        test1 = test_details.objects.create(
+            test_id = 'Test2',
+            test_name = 'week 2 test',
+            test_duration = '50',
+            test_marks = 50,
+            test_type = 'Weekly Test',
+            test_description = 'weekly test',
+            test_created_by = 'rahul',
+            track_id = track,
+            course_id = course,
+            subject_id = sub,
+            level = 'Beginner',
+            tags = 'test',
+            test_date_and_time = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+            del_row = 'False'
+        )
+        test2 = test_details.objects.create(
+            test_id = 'Test3',
+            test_name = 'week 3 test',
+            test_duration = '100',
+            test_marks = 100,
+            test_type = 'Weekly Test',
+            test_description = 'weekly test',
+            test_created_by = 'rahul',
+            track_id = track,
+            course_id = course,
+            subject_id = sub,
+            level = 'Beginner',
+            tags = 'test',
+            test_date_and_time = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+            del_row = 'False'
+        )
+        return HttpResponse("Added Successfully")
+    except Exception as e:
+        print(e)
+        return HttpResponse("Failed")
+    # class test_sections(models.Model):
+    # test_id = models.ForeignKey(test_details, on_delete=models.CASCADE, db_column="Test_id")
+    # section_name = models.CharField(max_length=20)
+    # topic_id = models.ForeignKey(topics, on_delete=models.SET_NULL, null=True)
+    # sub_topic_id = models.ForeignKey(sub_topics, on_delete=models.SET_NULL, null=True)
+    # question_id = models.ForeignKey(questions, on_delete=models.SET_NULL, null=True)
+    # del_row = models.BooleanField(default=False)
+
+    # class questions(models.Model):
+    # question_id = models.CharField(max_length=20, primary_key=True)
+    # question_type = models.CharField(max_length=20)
+    # level = models.CharField(max_length=20)
+    # created_by = models.CharField(max_length=20)
+    # creation_time = models.DateTimeField(auto_now_add=True)
+    # last_updated_time = models.DateTimeField(auto_now=True)
+    # last_updated_by = models.CharField(max_length=20)
+    # reviewed_by = models.CharField(max_length=20, null=True, blank=True)
+    # tags = models.CharField(max_length=20, null=True, blank=True)
+    # sub_topic_id = models.ForeignKey(sub_topics, on_delete=models.SET_NULL, null=True)
+    # del_row = models.BooleanField(default=False)
+@api_view(['GET'])
+def add_test_sction(request):
+    try:
+        tests = test_details.objects.filter(test_id__in = ['Test1','Test2','Test3'] ,del_row = False)
+        topic_s = topics.objects.get(topic_id = 'Topic1' ,del_row = False)
+        sub_topic_s = sub_topics.objects.get(sub_topic_id = 'SubTopic1' ,del_row = False)
+        j =1
+        for i in tests:
+            test_section = test_sections.objects.create(
+                test_id = i,
+                section_name = 'Section1',
+                topic_id = topic_s,
+                sub_topic_id = sub_topic_s,
+                question_id = questions.objects.create(
+                    question_id = 'Question'+str(j),
+                    question_type = 'MCQ',
+                    level = 'Beginner',
+                    created_by = 'Rahul',
+                    creation_time = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+                    last_updated_time = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+                    last_updated_by = 'Rahul',
+                    reviewed_by = 'Rahul',
+                    tags = 'test',
+                    sub_topic_id = sub_topic_s,
+                    del_row = 'False'
+                ),
+                del_row = 'False'
+            )
+            j+=1
+        return HttpResponse("Added Successfully")
+    except Exception as e:
+        print(e)
+        return HttpResponse("Failed")
+            
