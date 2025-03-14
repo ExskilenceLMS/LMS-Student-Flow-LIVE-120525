@@ -52,6 +52,10 @@ urlpatterns = [
     # TEST Details URLs
     path('api/student/testdetails/<str:student_id>/', views.fetch_all_test_details),
     
+    # Teckets URLs
+    path('api/student/tickets/', views.submit_Tickets),
+    path('api/student/tickets/<str:student_id>/', views.fetch_all_tickets),
+
     # TESTING URLS
     path('addstudent/',      tests.addStudent),
     path('addstudentactivity/<str:day>/<str:week>/',      tests.addStudetsActivity),

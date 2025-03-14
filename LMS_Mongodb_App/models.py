@@ -170,6 +170,25 @@ class logs(models.Model):
     class Meta:
         db_table = 'logs'
 
-class trainers(models.Model):
+class trainers_details(models.Model):
     trainer_id = models.CharField(max_length=20, primary_key=True)
     batch_ids  = models.JSONField(default=dict)
+
+    class Meta:
+        db_table = 'trainers_details'
+      
+class issue_details(models.Model): 
+    sl_id           = models.AutoField(primary_key=True)
+    student_id      = models.CharField(max_length=20)
+    image_path      = models.TextField()
+    issue_description = models.TextField()
+    issue_status    = models.CharField(max_length=20)
+    issue_type      = models.CharField(max_length=20)
+    reported_time   = models.DateTimeField()
+    resolved_time   = models.DateTimeField()
+    comments        = models.JSONField(default=dict)
+    del_row         = models.CharField(default='False',max_length=5)
+
+    class Meta:
+        db_table = 'issue_details'
+    
