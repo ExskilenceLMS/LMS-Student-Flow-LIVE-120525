@@ -368,7 +368,7 @@ def add_std_testDetails(request):
             subject_id = 'Subject4',
             test_id = 'Test1',
             course_id = 'Course0001',
-            assessment_status = 'ONGOING',
+            assessment_status = 'Ongoing',
             assessment_score_secured = 0,
             assessment_max_score = 0,
             assessment_week_number = 1,
@@ -383,7 +383,7 @@ def add_std_testDetails(request):
             subject_id = 'Subject4',
             test_id = 'Test2',
             course_id = 'Course0001',
-            assessment_status = 'UPCOMMING',
+            assessment_status = 'Upcoming',
             assessment_score_secured = 0,
             assessment_max_score = 0,
             assessment_week_number = 1,
@@ -398,7 +398,7 @@ def add_std_testDetails(request):
             subject_id = 'Subject4',
             test_id = 'Test3',
             course_id = 'Course0001',
-            assessment_status = 'COMPLETED',
+            assessment_status = 'Completed',
             assessment_score_secured = 10.0,
             assessment_max_score = 10.0,
             assessment_week_number = 1,
@@ -411,21 +411,6 @@ def add_std_testDetails(request):
     except Exception as e:
         print(e)
         return HttpResponse("Failed")
-    # class test_details(models.Model):
-    # test_id = models.CharField(max_length=20, primary_key=True)
-    # test_name = models.CharField(max_length=50)
-    # test_duration = models.CharField(max_length=20)
-    # test_marks = models.IntegerField()
-    # test_type = models.CharField(max_length=20)
-    # test_description = models.CharField(max_length=250)
-    # test_created_by = models.CharField(max_length=20)
-    # track_id =  models.ForeignKey(tracks, on_delete=models.SET_NULL, null=True)
-    # course_id = models.ForeignKey(courses, on_delete=models.SET_NULL, null=True)
-    # subject_id = models.ForeignKey(subjects, on_delete=models.SET_NULL, null=True)
-    # level = models.CharField(max_length=20)
-    # tags = models.CharField(max_length=20)
-    # test_date_and_time = models.DateTimeField()
-    # del_row = models.BooleanField(default=False)
 @api_view(['GET'])
 def add_testDetails(request):
     try:
@@ -484,26 +469,7 @@ def add_testDetails(request):
     except Exception as e:
         print(e)
         return HttpResponse("Failed")
-    # class test_sections(models.Model):
-    # test_id = models.ForeignKey(test_details, on_delete=models.CASCADE, db_column="Test_id")
-    # section_name = models.CharField(max_length=20)
-    # topic_id = models.ForeignKey(topics, on_delete=models.SET_NULL, null=True)
-    # sub_topic_id = models.ForeignKey(sub_topics, on_delete=models.SET_NULL, null=True)
-    # question_id = models.ForeignKey(questions, on_delete=models.SET_NULL, null=True)
-    # del_row = models.BooleanField(default=False)
-
-    # class questions(models.Model):
-    # question_id = models.CharField(max_length=20, primary_key=True)
-    # question_type = models.CharField(max_length=20)
-    # level = models.CharField(max_length=20)
-    # created_by = models.CharField(max_length=20)
-    # creation_time = models.DateTimeField(auto_now_add=True)
-    # last_updated_time = models.DateTimeField(auto_now=True)
-    # last_updated_by = models.CharField(max_length=20)
-    # reviewed_by = models.CharField(max_length=20, null=True, blank=True)
-    # tags = models.CharField(max_length=20, null=True, blank=True)
-    # sub_topic_id = models.ForeignKey(sub_topics, on_delete=models.SET_NULL, null=True)
-    # del_row = models.BooleanField(default=False)
+    
 @api_view(['GET'])
 def add_test_sction(request):
     try:
