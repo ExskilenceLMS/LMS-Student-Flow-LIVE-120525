@@ -998,6 +998,7 @@ def fetch_all_live_session(request,student_id):
                                                                          'session_meetlink',
                                                                          'session_video_link',
                                                                          'session_status',
+                                                                         'session_endtime'
                                                                      ))
         if live_session == []:
             return JsonResponse({"message": "No Live Session"},safe=False,status=400)
@@ -1015,7 +1016,11 @@ def fetch_all_live_session(request,student_id):
                     'date': session.get('session_starttime').strftime("%Y-%m-%d"),
                     'time': session.get('session_starttime').strftime("%I:%M") + " " + session.get('session_starttime').strftime("%p"),
                     'meet_link': session.get('session_meetlink'),
-                    'attendance': [duration.get('attended_time') for duration in attendance if duration.get('session_id') == str(session.get('session_id'))][0],
+                    # 'duration': [duration.get('attended_time') for duration in attendance if duration.get('session_id'  ) == str(session.get('session_id'))][0],
+                    # 'total_duration': (session.get('session_endtime')-session.get('session_starttime')).total_seconds(),
+                    'attendance': '-/-'if session.get('session_status') != 'Completed' else round(([duration.get('attended_time'
+                                                                                                                  ) for duration in attendance if duration.get('session_id'  
+                                                                                                                                                               ) == str(session.get('session_id'))][0]/(session.get('session_endtime')-session.get('session_starttime')).total_seconds())*100,2),
                     'video_link': session.get('session_video_link'),
                     'ended': True if session.get('session_status') == 'Completed' else False,
                     'status':session.get('session_status')
@@ -1045,9 +1050,9 @@ def fetch_all_test_details(request,student_id):
             return JsonResponse({"message": "No Test Available"},safe=False,status=400)
         test_detail_obj = test_sections.objects.filter(test_id__test_id__in = [test.get('test_id') for test in students_assessment],
                                                   del_row = False) 
-        test_detail = {test.test_id.test_id:test.test_id.__dict__ for test in test_detail_obj} 
+        test_detail = {test.test_id.test_id:test.test_id for test in test_detail_obj} 
         for test in test_detail:
-            
+
             print(test)
         # response =[{
         #     "test_type": test_detail.get(test.get('test_id')).get('test_type'),

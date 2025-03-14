@@ -15,10 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from Student_Flow_App import views ,tests ,coding_validation as cv
+from Student_Flow_App import views ,tests ,coding_validation as cv ,AppUsage
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home),
+    path('api/clearcache/', AppUsage.clear_blob_ceche),
     # Dashboard URLs
     path('api/studentdashboard/mycourses/<str:student_id>/',       views.fetch_enrolled_subjects),
     path('api/studentdashboard/upcomming/sessions/<str:student_id>/',      views.fetch_live_session),

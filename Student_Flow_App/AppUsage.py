@@ -4,7 +4,8 @@ from LMS_Mongodb_App.models import *
 from django.db.models import Max, F ,Sum
 from django.http import JsonResponse
 from datetime import datetime, timedelta
-
+from django.core.cache import cache
+from rest_framework.decorators import api_view
 def update_app_usage(student_id):
     try:
         student_app_usages = student_app_usage.objects.filter(
@@ -31,3 +32,7 @@ def create_app_usage(student_id):
     except Exception as e:
         print(e)
         return
+@api_view(['GET'])   
+def clear_blob_ceche(request):
+    cache.clear()
+    return JsonResponse({"message": "cache cleared"},safe=False,status=200)
