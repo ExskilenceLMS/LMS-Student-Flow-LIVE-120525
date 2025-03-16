@@ -29,7 +29,7 @@ def fetch_enrolled_subjects(request,student_id):
         sub_days_count = {}
         [sub_days_count.update({activity['subject_id__subject_name']:{'day':activity['latest_day']}})for activity in latest_activities]
         # print(sub_days_count)
-        responce = []
+        response = []
         for subject in enrolled_subjects:
             subject_data = {}
             subject_data.update({
@@ -38,9 +38,9 @@ def fetch_enrolled_subjects(request,student_id):
                 "duration": f"{getdays(subject.start_date)} - {getdays(subject.end_date)}",
                 "progress": calculate_progress(subject.start_date,subject.end_date,sub_days_count.get(subject.subject_id.subject_name,{'day':0}),subject.duration_in_days),
             })
-            responce.append(subject_data)
+            response.append(subject_data)
         update_app_usage(student_id)
-        return JsonResponse(responce,safe=False,status=200)
+        return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)    
@@ -84,12 +84,12 @@ def fetch_live_session(request,student_id):
             student_ids__contains = student_id,
             del_row = "False"
             ).order_by('-session_starttime').values_list('session_title','session_starttime')
-        responce = [{
+        response = [{
             "title":session[0],
             "date":getdays(session[1])+" "+session[1].strftime("%Y")[2:],
             "time":session[1].strftime("%I:%M") + " " + session[1].strftime("%p")}            for session in live_session ]
         update_app_usage(student_id)
-        return JsonResponse(responce,safe=False,status=200)
+        return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
@@ -694,7 +694,7 @@ def fetch_all_live_session(request,student_id):
                                                                          'student_id',
                                                                          'attended_time',
                                                                      )
-        responce = [{
+        response = [{
                     'id':  session.get('session_id'),
                     'name': session.get('session_title'),
                     'date': session.get('session_starttime').strftime("%Y-%m-%d"),
@@ -709,7 +709,7 @@ def fetch_all_live_session(request,student_id):
                     'ended': True if session.get('session_status') == 'Completed' else False,
                     'status':session.get('session_status')
                     }            for session in live_session ]
-        return JsonResponse((responce),safe=False,status=200)
+        return JsonResponse((response),safe=False,status=200)
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)

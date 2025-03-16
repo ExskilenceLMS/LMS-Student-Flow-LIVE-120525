@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from Student_Flow_App import views ,tests ,coding_validation as cv ,AppUsage
+from Student_Flow_App import views ,tests ,coding_validation as cv ,AppUsage,StudentProfile as profile
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home),
@@ -59,6 +59,10 @@ urlpatterns = [
 
     # FAQ URLs
     path('api/student/faq/',views.fetch_FAQ),
+
+    # Profile URLs
+    path('api/student/profile/<str:student_id>/', profile.fetch_student_Profile),
+    path('api/student/profilespcial/', profile.update_social_media),
 
     # TESTING URLS
     path('addstudent/',      tests.addStudent),
