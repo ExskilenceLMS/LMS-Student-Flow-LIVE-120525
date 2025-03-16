@@ -55,6 +55,10 @@ urlpatterns = [
     # Teckets URLs
     path('api/student/tickets/', views.submit_Tickets),
     path('api/student/tickets/<str:student_id>/', views.fetch_all_tickets),
+    path('api/student/ticket/comments/', views.student_side_comments_for_tickets),
+
+    # FAQ URLs
+    path('api/student/faq/',views.fetch_FAQ),
 
     # TESTING URLS
     path('addstudent/',      tests.addStudent),
@@ -67,3 +71,4 @@ urlpatterns = [
     path('addparticipants/',   tests.add_participants),
     path('addtestdetails/',   tests.add_test_sction),
 ]
+

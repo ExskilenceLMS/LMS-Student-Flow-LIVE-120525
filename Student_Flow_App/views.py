@@ -43,7 +43,7 @@ def fetch_enrolled_subjects(request,student_id):
         return JsonResponse(responce,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)    
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)    
 def calculate_progress(start_date, end_date, student_progress,Total_days):
     days = student_progress.get('day')
     std_progress = int(days /int(Total_days) * 100)
@@ -92,7 +92,7 @@ def fetch_live_session(request,student_id):
         return JsonResponse(responce,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
     
 @api_view(['GET'])
 def fetch_upcoming_events(request,Course_id):
@@ -104,7 +104,7 @@ def fetch_upcoming_events(request,Course_id):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
     
 def extract_events(blob_data,current_time):
     events = []
@@ -141,7 +141,7 @@ def get_weekly_progress(request,student_id):
                 })
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 ######################
 @api_view(['GET'])
 def fetch_study_hours_old(request,student_id,week):
@@ -197,14 +197,14 @@ def fetch_study_hours_old(request,student_id,week):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 
 
 @api_view(['GET'])
 def fetch_study_hours(request,student_id,week):
     try:
         student = students_info.objects.get(student_id = student_id,del_row = False)
-        today =datetime.utcnow().__add__(timedelta(days=0,hours=5,minutes=30))
+        today =timezone.now() + timedelta(hours=5, minutes=30)
         if timezone.is_naive(today):
             today = timezone.make_aware(today, timezone.get_current_timezone())
         if week.isdigit():
@@ -241,7 +241,7 @@ def fetch_study_hours(request,student_id,week):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
         
 @api_view(['GET'])
 def fetch_calendar(request,student_id):
@@ -256,7 +256,7 @@ def fetch_calendar(request,student_id):
                               safe=False,status=200)    
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 def extract_calendar_events(blob_data,current_time):
     events = []
     for event in blob_data:
@@ -295,7 +295,7 @@ def fetch_student_summary(request,student_id):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)        
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)        
 @api_view(['GET'])
 def fetch_top_navigation(request,student_id):
     try:
@@ -313,325 +313,9 @@ def fetch_top_navigation(request,student_id):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
     
-# [
-#     {
-#       weekNumber: 1,
-#       startDate: "19th Dec 24",
-#       endDate: "25th Dec 24",
-#       totalHours: "14hrs",
-#       days: [
-#         {
-#           day: 1,
-#           date: "19th Dec 24",
-#           topics: ["Introduction", "Types and Query", "Select Query"],
-#           practiceMCQ: { questions: "5/10", score: "3/10" },
-#           practiceCoding: { questions: "5/10", score: "3/10" },
-#           status: "Completed",
-#         },
-#         {
-#           day: 2,
-#           date: "20th Dec 24",
-#           topics: ["Introduction to topic1", "Topic1", "Update Query"],
-#           practiceMCQ: { questions: "5/10", score: "4/10" },
-#           practiceCoding: { questions: "6/10", score: "4/10" },
-#           status: "Completed",
-#         },
-#         {
-#           day: 3,
-#           date: "21st Dec 24",
-#           topics: ["Advanced Queries", "Subqueries", "Group By"],
-#           practiceMCQ: { questions: "5/10", score: "3/10" },
-#           practiceCoding: { questions: "5/10", score: "3/10" },
-#           status: "Completed",
-#         },
-#         {
-#           day: 4,
-#           date: "22nd Dec 24",
-#           topics: ["Join ", "Indexing", "Normalization"],
-#           practiceMCQ: { questions: "5/10", score: "4/10" },
-#           practiceCoding: { questions: "5/10", score: "4/10" },
-#           status: "Resume",
-#         },
-#         {
-#           day: 5,
-#           date: "24th Dec 24",
-#           topics: ["Inner Join", "outer join", "cross join"],
-#           practiceMCQ: { questions: "5/10", score: "4/10" },
-#           practiceCoding: { questions: "5/10", score: "3/10" },
-#           status: "Start",
-#         },
-#         {
-#           day: 6,
-#           date: "23rd Dec 24",
-#           practiceMCQ: { questions: "5/10", score: "3/10" },
-#           practiceCoding: { questions: "5/10", score: "3/10" },
-#           status: "",
-#           title: "Study day",
-#         },
-#         {
-#           day: 7,
-#           date: "25th Dec 24",
-#           title: "Weekly Test",
-#           testScore: { score: "90/100" },
-#           status: "",
-#         },
-#       ],
-#     },
-#     {
-#       weekNumber: 2,
-#       startDate: "26th Dec 24",
-#       endDate: "1st Jan 25",
-#       totalHours: "14hrs",
-#       days: [
-#         {
-#           day: 1,
-#           date: "26th Dec 24",
-#           topics: ["Advanced Queries", "Subqueries", "Group By"],
-#           practiceMCQ: { questions: "6/10", score: "4/10" },
-#           practiceCoding: { questions: "6/10", score: "4/10" },
-#           status: "",
-#         },
-#         {
-#           day: 2,
-#           date: "27th Dec 24",
-#           topics: ["Advanced Queries", "Subqueries", "Group By"],
-#           practiceMCQ: { questions: "6/10", score: "5/10" },
-#           practiceCoding: { questions: "6/10", score: "5/10" },
-#           status: "",
-#         },
-#         {
-#           day: 3,
-#           date: "28th Dec 24",
-#           topics: ["Join ", "Indexing", "Normalization"],
-#           practiceMCQ: { questions: "6/10", score: "5/10" },
-#           practiceCoding: { questions: "6/10", score: "4/10" },
-#           status: "",
-#         },
-#         {
-#           day: 4,
-#           date: "29th Dec 24",
-#           topics: ["Inner Join", "outer join", "cross join"],
-#           practiceMCQ: { questions: "6/10", score: "5/10" },
-#           practiceCoding: { questions: "6/10", score: "4/10" },
-#           status: "",
-#         },
-#         {
-#           day: 5,
-#           date: "30th Dec 24",
-#           topics: ["Advanced Queries", "Subqueries", "Full join"],
-#           practiceMCQ: { questions: "6/10", score: "4/10" },
-#           practiceCoding: { questions: "6/10", score: "5/10" },
-#           status: "",
-#         },
-#         {
-#           day: 6,
-#           date: "31st Dec 24",
-#           topics: ["Join Operations", "Indexing", "Normalization"],
-#           practiceMCQ: { questions: "6/10", score: "5/10" },
-#           practiceCoding: { questions: "6/10", score: "5/10" },
-#           status: "",
-#         },
-#         {
-#           day: 7,
-#           date: "1st Jan 25",
-#           testScore: { score: "85/100" },
-#           status: "",
-#         },
-#       ],
-#     },
-#     {
-#       weekNumber: 3,
-#       startDate: "2nd Jan 25",
-#       endDate: "8th Jan 25",
-#       totalHours: "14hrs",
-#       days: [
-#         {
-#           day: 1,
-#           date: "2nd Jan 25",
-#           topics: ["Triggers", "Stored Procedures", "Functions"],
-#           practiceMCQ: { questions: "7/10", score: "6/10" },
-#           practiceCoding: { questions: "7/10", score: "6/10" },
-#           status: "",
-#         },
-#         {
-#           day: 2,
-#           date: "3rd Jan 25",
-#           topics: ["Triggers", "Stored Procedures", "Functions"],
-#           practiceMCQ: { questions: "7/10", score: "6/10" },
-#           practiceCoding: { questions: "7/10", score: "6/10" },
-#           status: "",
-#         },
-#         {
-#           day: 3,
-#           date: "4th Jan 25",
-#           topics: ["Triggers", "Stored Procedures", "Functions"],
-#           practiceMCQ: { questions: "7/10", score: "6/10" },
-#           practiceCoding: { questions: "7/10", score: "5/10" },
-#           status: "",
-#         },
-#         {
-#           day: 4,
-#           date: "5th Jan 25",
-#           topics: ["Data Integrity", "Constraints", "Foreign Keys"],
-#           practiceMCQ: { questions: "7/10", score: "6/10" },
-#           practiceCoding: { questions: "7/10", score: "6/10" },
-#           status: "",
-#         },
-#         {
-#           day: 5,
-#           date: "6th Jan 25",
-#           topics: ["Data Integrity", "Constraints", "Foreign Keys"],
-#           practiceMCQ: { questions: "7/10", score: "6/10" },
-#           practiceCoding: { questions: "7/10", score: "5/10" },
-#           status: "",
-#         },
-#         {
-#           day: 6,
-#           date: "7th Jan 25",
-#           topics: ["Triggers", "Stored Procedures", "Functions"],
-#           practiceMCQ: { questions: "7/10", score: "7/10" },
-#           practiceCoding: { questions: "7/10", score: "6/10" },
-#           status: "",
-#         },
-#         {
-#           day: 7,
-#           date: "8th Jan 25",
-#           testScore: { score: "88/100" },
-#           status: "",
-#         },
-#       ],
-#     },
-#     {
-#       weekNumber: 4,
-#       startDate: "9th Jan 25",
-#       endDate: "15th Jan 25",
-#       totalHours: "14hrs",
-#       days: [
-#         {
-#           day: 1,
-#           date: "9th Jan 25",
-#           topics: ["Database Design", "Normalization", "ER Models"],
-#           practiceMCQ: { questions: "8/10", score: "7/10" },
-#           practiceCoding: { questions: "8/10", score: "7/10" },
-#           status: "",
-#         },
-#         {
-#           day: 2,
-#           date: "10th Jan 25",
-#           topics: ["Database Design", "Normalization", "ER Models"],
-#           practiceMCQ: { questions: "8/10", score: "7/10" },
-#           practiceCoding: { questions: "8/10", score: "7/10" },
-#           status: "",
-#         },
-#         {
-#           day: 3,
-#           date: "11th Jan 25",
-#           topics: ["Database Design", "Normalization", "ER Models"],
-#           practiceMCQ: { questions: "8/10", score: "7/10" },
-#           practiceCoding: { questions: "8/10", score: "7/10" },
-#           status: "",
-#         },
-#         {
-#           day: 4,
-#           date: "12th Jan 25",
-#           topics: ["Advanced SQL", "Optimization", "Indexing"],
-#           practiceMCQ: { questions: "8/10", score: "7/10" },
-#           practiceCoding: { questions: "8/10", score: "7/10" },
-#           status: "",
-#         },
-#         {
-#           day: 5,
-#           date: "13th Jan 25",
-#           topics: ["Advanced SQL", "Optimization", "Indexing"],
-#           practiceMCQ: { questions: "8/10", score: "7/10" },
-#           practiceCoding: { questions: "8/10", score: "7/10" },
-#           status: "",
-#         },
-#         {
-#           day: 6,
-#           date: "14th Jan 25",
-#           topics: ["Advanced SQL", "Optimization", "Indexing"],
-#           practiceMCQ: { questions: "8/10", score: "7/10" },
-#           practiceCoding: { questions: "8/10", score: "7/10" },
-#           status: "",
-#         },
-#         {
-#           day: 7,
-#           date: "15th Jan 25",
-#           testScore: { score: "92/100" },
-#           status: "",
-#         },
-#       ],
-#     },
-#     {
-#       weekNumber: 5,
-#       startDate: "8th Jan 24",
-#       endDate: "12th Jan 24",
-#       title: "Workshop",
-#     },
-#     {
-#       weekNumber: 6,
-#       startDate: "8th Jan 24",
-#       endDate: "12th Jan 24",
-#       title: "Final Test",
-#       Score: "150/200",
-#       days: [
-#         {
-#           day: 1,
-#           date: "8th Jan 24",
-#           Questions: "25",
-#           Coding: { questions: "5/25", score: "5/10" },
-#           status: "",
-#         },
-#         {
-#           day: 2,
-#           date: "9th Jan 24",
-#           Questions: "5",
-#           Coding: { questions: "5/5", score: "8/10" },
-#           status: "",
-#         },
-#         {
-#           day: 3,
-#           date: "10th Jan 24",
-#           Questions: "10",
-#           Coding: { questions: "5/10", score: "5/10" },
-#           status: "",
-#         },
-#       ],
-#     },
-#     {
-#       weekNumber: 7,
-#       startDate: "8th Jan 24",
-#       endDate: "12th Jan 24",
-#       title: "Internship",
-#       Score: "150/200",
-#       days: [
-#         {
-#           day: 1,
-#           date: "8th Jan 24",
-#           Questions: "25",
-#           Coding: { questions: "5/25", score: "5/10" },
-#           status: "",
-#         },
-#         {
-#           day: 2,
-#           date: "9th Jan 24",
-#           Questions: "5",
-#           Coding: { questions: "5/5", score: "8/10" },
-#           status: "",
-#         },
-#         {
-#           day: 3,
-#           date: "10th Jan 24",
-#           Questions: "10",
-#           Coding: { questions: "5/10", score: "5/10" },
-#           status: "",
-#         },
-#       ],
-#     },
-#   ]
+
 @api_view(['GET'])
 def fetch_roadmap(request,student_id,course_id):
     try:
@@ -732,7 +416,7 @@ def fetch_roadmap(request,student_id,course_id):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 
 @api_view(['GET'])
 def fetch_learning_modules(request,student_id,subject,day_number):
@@ -760,7 +444,7 @@ def fetch_learning_modules(request,student_id,subject,day_number):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 @api_view(['POST'])
 def add_days_to_student(request):
     try:
@@ -814,7 +498,7 @@ def add_days_to_student(request):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 @api_view(['GET'])
 def fetch_overview_modules(request,student_id,subject,day_number):
     try:
@@ -824,7 +508,7 @@ def fetch_overview_modules(request,student_id,subject,day_number):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
     
 @api_view(['GET'])
 def fetch_questions(request,type,student_id,subject,day_number,week_number,subTopic):
@@ -841,7 +525,7 @@ def fetch_questions(request,type,student_id,subject,day_number,week_number,subTo
         return JsonResponse(qn_data,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 @api_view(['POST'])
 def submit_MCQ_Question(request):
     try:
@@ -897,7 +581,7 @@ def submit_MCQ_Question(request):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 @api_view(['PUT']) 
 def submition_coding_question(request):
     try:
@@ -984,7 +668,7 @@ def submition_coding_question(request):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 
 @api_view(['GET'])
 def fetch_all_live_session(request,student_id):
@@ -1028,7 +712,7 @@ def fetch_all_live_session(request,student_id):
         return JsonResponse((responce),safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 @api_view(['GET'])
 def fetch_all_test_details(request,student_id):
     try:
@@ -1067,7 +751,7 @@ def fetch_all_test_details(request,student_id):
         return JsonResponse({'test_details':response},safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 
 @api_view(['POST'])
 def submit_Tickets(request):
@@ -1080,26 +764,45 @@ def submit_Tickets(request):
             issue_status = data.get('issue_status','Pending'),
             issue_type = data.get('issue_type'),
             resolved_time = None,
-            reported_time = datetime.utcnow().__add__(timedelta(days=0,hours=5,minutes=30)),
+            reported_time = timezone.now() + timedelta(hours=5, minutes=30),
         )
         
         return JsonResponse({"message": "Success"},safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 @api_view(['GET'])
 def fetch_all_tickets(request,student_id):
     try:
-        tickets = list(issue_details.objects.using('mongodb').filter(student_id = student_id,del_row = False).order_by('-reported_time').values())
-        # response = [{
-        #     'student_id':ticket.student_id,
-        #     'issue_type':ticket.issue_type,
-        #     'issue_description':ticket.issue_description,
-        #     'issue_status':ticket.issue_status,   
-        #     'reported_time':ticket.reported_time,
-        #     'image_path':ticket.image_path,            
-        # } for ticket in tickets]
+        tickets = list(issue_details.objects.using('mongodb').filter(student_id = student_id,del_row = 'False').order_by('-reported_time').values())
         return JsonResponse({'ticket_details':tickets},safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed"},safe=False,status=400)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+@api_view(['PUT'])
+def student_side_comments_for_tickets(request):
+    try:
+        data = json.loads(request.body)
+        ticket = issue_details.objects.using('mongodb').get(student_id = data.get('student_id'),sl_id = data.get('t_id'),del_row = 'False')
+        keys = sorted([int(str(tk).replace('stu','')) for tk in ticket.comments if str(tk).startswith('stu')])
+        print(keys[-1]+1 if len(keys)>0 else [0] )
+        ticket.comments.update({
+            "stu"+str(keys[-1]+1 if len(keys)>0 else 1): {
+                    "role": "student",
+                    "comment": data.get('comment'),
+                    "timestamp": timezone.now() + timedelta(hours=5, minutes=30)
+                    },})
+        ticket.save()
+        responnse=ticket.comments
+        return JsonResponse({'message':responnse},safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+    
+@api_view(['GET'])
+def fetch_FAQ(request):
+    try: 
+        return JsonResponse(json.loads(get_blob('FAQ/faq.json')),safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
