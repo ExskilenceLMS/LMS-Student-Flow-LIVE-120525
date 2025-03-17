@@ -71,3 +71,28 @@ def update_social_media(request):
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)  
+@api_view(['PUT'])
+def update_profile(request):
+    try:
+        data =json.loads(request.body)
+        student_details = students_info.objects.get(student_id = data.get('student_id'),del_row ='False')
+        education_details = students_details.objects.using('mongodb').get(student_id = data.get('student_id'),del_row = 'False')
+        student_details.college=data.get('college')
+        student_details.branch=data.get('branch')
+        student_details.student_gender=data.get('gender')
+        student_details.address=data.get('address')
+        # student_details.student_email=data.get('email')
+        student_details.phone=data.get('phone')
+        student_details.leetcode=data.get('leetcode')
+        student_details.hackerrank=data.get('hackerrank')
+        student_details.linkedin=data.get('linkedin')
+        education_details.student_education_details =(data.get('education_details'))
+        student_details.save()
+        education_details.save()
+        response ={"message": "Updated"}
+        
+        return JsonResponse(response,safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)  
+    

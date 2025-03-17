@@ -18,7 +18,7 @@ def get_blob_container_client():
 def get_blob(blob_name):
     cacheresponse = cache.get(blob_name)
     if cacheresponse:
-        print('cache hit')
+        # print('cache hit')
         cache.set(blob_name,cacheresponse)
         return cacheresponse
     blob_client = get_blob_container_client().get_blob_client(blob_name)
@@ -32,8 +32,15 @@ def get_list_blob(blob_path,list_of_qns,type):
     files = []
     for Qn in list_of_qns:
         path = f'{blob_path}{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{type}/{Qn}.json'
-        blob_client = container_client.get_blob_client(path)
-        blob_data = json.loads(blob_client.download_blob().readall())
+        cacheres = cache.get(path)
+        if cacheres:
+            # print('cache hit')
+            cache.set(path,cacheres)
+            blob_data = cacheres
+        else:
+            blob_client = container_client.get_blob_client(path)
+            blob_data = json.loads(blob_client.download_blob().readall())
+            cache.set(path,blob_data)
         blob_data.update({ "Qn_name": Qn})
         files.append(blob_data)
     container_client.close()
@@ -52,8 +59,16 @@ def get_random_questions(types,subtops,levels):
         cache.set('LMS_Rules/Rules.json',Rules)
     for type in types:
         for subtop in subtops:
-            all_qns =[blob.name.split('/')[-1].split('.')[0] for blob in container_client.list_blobs(
-                name_starts_with=f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/')]
+            cacheed_lists = cache.get(f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/')
+            if cacheed_lists:
+                # print('cache hit')
+                cache.set(f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/',cacheed_lists)
+                all_qns_list = cacheed_lists
+            else:
+                all_qns_list =container_client.list_blobs(
+                name_starts_with=f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/')
+                cache.set(f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/',all_qns_list)
+            all_qns =[blob.name.split('/')[-1].split('.')[0] for blob in all_qns_list]
             Qns  = random.sample([qn for qn in all_qns if qn[-4]=='e'], levels.get(type,{}).get(subtop,{}).get('level1',0))
             Qns.extend(random.sample([qn for qn in all_qns if qn[-4]=='m'], levels.get(type,{}).get(subtop,{}).get('level2',0)))
             Qns.extend(random.sample([qn for qn in all_qns if qn[-4]=='h'], levels.get(type,{}).get(subtop,{}).get('level3',0)))
@@ -80,26 +95,47 @@ def get_random_questions(types,subtops,levels):
 #         print(f"Blob Content Type: {blob_properties['content_settings'].content_type}")
 
 #     return blob_list
-def get_questions_staus(blob_path,list_of_qns,type):
-    container_client =  get_blob_container_client()
-    files = []
-    blob_client = container_client.get_blob_client('LMS_Rules/Rules.json')
-    Rules = json.loads(blob_client.download_blob().readall())
-    print(type)
-    if type.lower() == 'mcq':
-        for Qn in list_of_qns:
-            path = f'{blob_path}{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{type}/{Qn}.json'
-            blob_client = container_client.get_blob_client(path)
-            blob_data = json.loads(blob_client.download_blob().readall())
-            blob_data.update({'Qn_name':Qn,'maxscore':Rules.get(type.lower(),[])[0].get('score')})
-            files.append(blob_data)
-    elif type.lower() == 'coding':
-        for Qn in list_of_qns:
-            path = f'{blob_path}{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{type}/{Qn}.json'
-            blob_client = container_client.get_blob_client(path)
-            blob_data = json.loads(blob_client.download_blob().readall())
-            blob_data.update({'Qn_name':Qn,'maxscore':Rules.get(type.lower(),[])[0].get('score')})
-            files.append(blob_data)
-    print(files)
-    container_client.close()
-    return files
+# def get_questions_staus(blob_path,list_of_qns,type):
+#     container_client =  get_blob_container_client()
+#     files = []
+#     cacheresponse = cache.get('LMS_Rules/Rules.json')
+#     if cacheresponse:
+#         # print('cache hit')
+#         cache.set('LMS_Rules/Rules.json',cacheresponse)
+#         Rules = cacheresponse
+#     else:
+#         blob_client = container_client.get_blob_client('LMS_Rules/Rules.json')
+#         Rules = json.loads(blob_client.download_blob().readall())
+#         cache.set('LMS_Rules/Rules.json',Rules)
+#     print(type)
+#     if type.lower() == 'mcq':
+#         for Qn in list_of_qns:
+#             path = f'{blob_path}{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{type}/{Qn}.json'
+#             cacheres = cache.get(path)
+#             if cacheres:
+#                 # print('cache hit')
+#                 cache.set(path,cacheres)
+#                 blob_data = cacheres
+#             else:
+#                 blob_client = container_client.get_blob_client(path)
+#                 blob_data = json.loads(blob_client.download_blob().readall())
+#                 cache.set(path,blob_data)
+#             blob_data.update({'Qn_name':Qn,'maxscore':Rules.get(type.lower(),[])[0].get('score')})
+#             files.append(blob_data)
+#     elif type.lower() == 'coding':
+#         for Qn in list_of_qns:
+#             path = f'{blob_path}{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{type}/{Qn}.json'
+#             cacheres = cache.get(path)
+#             if cacheres:
+#                 # print('cache hit')
+#                 cache.set(path,cacheres)
+#                 blob_data = cacheres
+#             else:
+#                 blob_client = container_client.get_blob_client(path)
+#                 blob_data = json.loads(blob_client.download_blob().readall())
+#                 cache.set(path,blob_data)
+#             blob_data.update({'Qn_name':Qn,'maxscore':Rules.get(type.lower(),[])[0].get('score')})
+#             files.append(blob_data)
+#     print(files)
+#     container_client.close()
+#     return files

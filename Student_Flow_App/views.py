@@ -649,13 +649,28 @@ def submit_MCQ_Question(request):
 
         response ={'message':'Already Submited'}
         if created:
-            
             student = students_details.objects.using('mongodb').get(student_id = student_id,
                                                                     del_row = 'False')
-            student_info = students_info.objects.get(student_id = student_id,del_row = False)
-            
-            
-            old_score = student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('mcq_score').split('/')
+            student_info = students_info.objects.get(student_id = student_id,del_row = False)            
+            if student.student_question_details.get(data.get('subject')) == None:
+                student.student_question_details.update({
+                    data.get('subject'):{
+                        'week_'+str(data.get('week_number')):{}
+                }})
+            if student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))) == None:
+                student.student_question_details.get(data.get('subject')).update({
+                    'week_'+str(data.get('week_number')):{
+                            'day_'+str(data.get('day_number')):{}
+                        }
+                })
+            if student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))) == None:
+                student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).update({
+                    'day_'+str(data.get('day_number')):{
+                            'mcq_questions_status':{},
+                            'mcq_score':'0/0'
+                    }
+                })
+            old_score = student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('mcq_score','0/0').split('/')
             newscore = str(int(old_score[0]) + int(score)) + '/' + old_score[1]
             student.student_question_details.get(data.get('subject')
                                                  ).get('week_'+str(data.get('week_number'))
