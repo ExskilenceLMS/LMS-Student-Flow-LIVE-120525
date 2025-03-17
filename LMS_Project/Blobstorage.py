@@ -41,8 +41,15 @@ def get_list_blob(blob_path,list_of_qns,type):
 def get_random_questions(types,subtops,levels):
     container_client =  get_blob_container_client()
     files = {}
-    blob_client = container_client.get_blob_client('LMS_Rules/Rules.json')
-    Rules = json.loads(blob_client.download_blob().readall())
+    cacheresponse = cache.get('LMS_Rules/Rules.json')
+    if cacheresponse:
+        # print('cache hit')
+        cache.set('LMS_Rules/Rules.json',cacheresponse)
+        Rules = cacheresponse
+    else:
+        blob_client = container_client.get_blob_client('LMS_Rules/Rules.json')
+        Rules = json.loads(blob_client.download_blob().readall())
+        cache.set('LMS_Rules/Rules.json',Rules)
     for type in types:
         for subtop in subtops:
             all_qns =[blob.name.split('/')[-1].split('.')[0] for blob in container_client.list_blobs(
@@ -54,8 +61,8 @@ def get_random_questions(types,subtops,levels):
             for level in Rules.get(type.lower(),[]):
                 level_score = int(levels.get(type,{}).get(subtop,{}).get(level.get('level').lower(),0))*int(level.get('score'))
                 score = score +level_score
-            files.update({type:Qns,
-                          type+'_score':score})
+            files.update({type:files.get(type,[])+Qns,
+                          type+'_score':files.get(type+'_score',0)+score})
     container_client.close()
     return files
 # def get_blob_list(blob_name):
@@ -73,3 +80,26 @@ def get_random_questions(types,subtops,levels):
 #         print(f"Blob Content Type: {blob_properties['content_settings'].content_type}")
 
 #     return blob_list
+def get_questions_staus(blob_path,list_of_qns,type):
+    container_client =  get_blob_container_client()
+    files = []
+    blob_client = container_client.get_blob_client('LMS_Rules/Rules.json')
+    Rules = json.loads(blob_client.download_blob().readall())
+    print(type)
+    if type.lower() == 'mcq':
+        for Qn in list_of_qns:
+            path = f'{blob_path}{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{type}/{Qn}.json'
+            blob_client = container_client.get_blob_client(path)
+            blob_data = json.loads(blob_client.download_blob().readall())
+            blob_data.update({'Qn_name':Qn,'maxscore':Rules.get(type.lower(),[])[0].get('score')})
+            files.append(blob_data)
+    elif type.lower() == 'coding':
+        for Qn in list_of_qns:
+            path = f'{blob_path}{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{type}/{Qn}.json'
+            blob_client = container_client.get_blob_client(path)
+            blob_data = json.loads(blob_client.download_blob().readall())
+            blob_data.update({'Qn_name':Qn,'maxscore':Rules.get(type.lower(),[])[0].get('score')})
+            files.append(blob_data)
+    print(files)
+    container_client.close()
+    return files

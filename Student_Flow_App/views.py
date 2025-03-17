@@ -473,7 +473,13 @@ def add_days_to_student(request):
         response = {'message':'not updated'}
         if needTOsave == True :
             student_info = students_info.objects.get(student_id = data.get('student_id'),del_row = False)
-            blob_data = json.loads(get_blob('LMS_DayWise/'+student_info.course_id.course_id+'.json'))
+            cache_data = cache.get('LMS_DayWise/'+student_info.course_id.course_id+'.json')
+            if cache_data :
+                cache.set('LMS_DayWise/'+student_info.course_id.course_id+'.json',cache_data)
+                blob_data = cache_data
+            else:
+                blob_data = json.loads(get_blob('LMS_DayWise/'+student_info.course_id.course_id+'.json'))
+                cache.set('LMS_DayWise/'+student_info.course_id.course_id+'.json',blob_data)
             day_data = [day  for day in blob_data.get(data.get('subject')) if day.get('day') == 'Day '+str(data.get('day_number'))][0]
             types = []
             levels ={}
@@ -509,9 +515,37 @@ def fetch_overview_modules(request,student_id,subject,day_number):
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
-    
+# @api_view(['GET'])
+# def fetch_questions_and_status(request,type,student_id,subject,day_number,week_number,subTopic):
+#     try:
+#         student = students_details.objects.using('mongodb').get(student_id = student_id,del_row = 'False')
+#         if student.student_question_details.get(subject) == None:
+#             return JsonResponse({"message": "subject not found"},safe=False,status=400)
+#         if student.student_question_details.get(subject).get('week_'+week_number) == None:
+#             return JsonResponse({"message": "week not found"},safe=False,status=400)
+#         if student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number) == None:
+#             return JsonResponse({"message": "day not found"},safe=False,status=400)
+#         questions_ids = (student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number).get('mcq_questions' if type.lower() =='mcq' else 'coding_questions'))
+#         if type .lower() == 'mcq':
+#             student_answers = list(student_practiceMCQ_answers.objects.using('mongodb').filter(student_id = student_id,
+#                                                                                           question_id__in = questions_ids,
+#                                                                                             del_row = 'False').values('question_id','score'))
+#         else:
+#             student_answers = list(student_practice_coding_answers.objects.using('mongodb').filter(student_id = student_id,
+#                                                                                                    subject_id = subject,
+#                                                                                           question_id__in = questions_ids,
+#                                                                                             del_row = 'False').values('question_id','score'))
+#         student_answers = {ans.get('question_id'):ans.get('score') for ans in student_answers}
+#         qn_data = get_questions_staus('LMSData/',[qn for qn in questions_ids if qn[1:-5] == subTopic],type.upper() if type.lower() =='mcq' else type[0].upper()+str(type[1:]).lower()  )
+#         response = [qn.update({
+#             'status': True if student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number).get(type.lower()+'_questions_status').get(qn.get('Qn_name')) == 2 else False
+#             ,'score':str(student_answers.get(qn.get('Qn_name'),'0'))+'/'+qn.get('score')               }) for qn in qn_data ]
+#         return JsonResponse(qn_data,safe=False,status=200)
+#     except Exception as e:
+#         print(e)
+#         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400) 
 @api_view(['GET'])
-def fetch_questions(request,type,student_id,subject,day_number,week_number,subTopic):
+def fetch_questions(request,type,student_id,subject,subject_id,day_number,week_number,subTopic):
     try:
         student = students_details.objects.using('mongodb').get(student_id = student_id,del_row = 'False')
         if student.student_question_details.get(subject) == None:
@@ -521,7 +555,65 @@ def fetch_questions(request,type,student_id,subject,day_number,week_number,subTo
         if student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number) == None:
             return JsonResponse({"message": "day not found"},safe=False,status=400)
         questions_ids = (student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number).get('mcq_questions' if type.lower() =='mcq' else 'coding_questions'))
-        qn_data = get_list_blob('LMSData/',[qn for qn in questions_ids if qn[1:-5] == subTopic],type.upper() if type.lower() =='mcq' else type[0].upper()+str(type[1:]).lower()  )
+        if type .lower() == 'mcq':
+            student_answers = list(student_practiceMCQ_answers.objects.using('mongodb').filter(student_id = student_id,
+                                                                                                subject_id = subject_id,
+                                                                                          question_id__in = questions_ids,
+                                                                                            del_row = 'False').values('question_id','score'))
+        else:
+            student_answers = list(student_practice_coding_answers.objects.using('mongodb').filter(student_id = student_id,
+                                                                                                   subject_id = subject_id,
+                                                                                          question_id__in = questions_ids,
+                                                                                            del_row = 'False').values('question_id','score'))
+        student_answers = {ans.get('question_id'):ans.get('score') for ans in student_answers}
+        container_client =  get_blob_container_client()
+        qn_data = []
+        blob_path = 'LMSData/'
+        list_of_qns = [qn for qn in questions_ids if qn[1:-5] == subTopic]
+        cacheresponse = cache.get('LMS_Rules/Rules.json')
+        if cacheresponse:
+            # print('cache hit')
+            cache.set('LMS_Rules/Rules.json',cacheresponse)
+            Rules = cacheresponse
+        else:
+            blob_client = container_client.get_blob_client('LMS_Rules/Rules.json')
+            Rules = json.loads(blob_client.download_blob().readall())
+            cache.set('LMS_Rules/Rules.json',Rules)
+        if type.lower() == 'mcq':
+            for Qn in list_of_qns:
+                path = f'{blob_path}{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{type.upper()}/{Qn}.json'
+                cacheres = cache.get(path)
+                if cacheres:
+                    # print('cache hit')
+                    cache.set(path,cacheres)
+                    blob_data = cacheres
+                else:
+                    blob_client = container_client.get_blob_client(path)
+                    blob_data = json.loads(blob_client.download_blob().readall())
+                    cache.set(path,blob_data)
+                blob_data.update({'Qn_name':Qn,
+                                  'score':str(student_answers.get(Qn,'0'))+'/'+Rules.get(type.lower(),[])[0].get('score'),
+                                  'status': True if student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number).get(type.lower()+'_questions_status').get(Qn) == 2 else False
+                                  })
+                qn_data.append(blob_data)
+        elif type.lower() == 'coding':
+            for Qn in list_of_qns:
+                path = f'{blob_path}{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{type[0].upper()+str(type[1:]).lower()}/{Qn}.json'
+                cacheres = cache.get(path)
+                if cacheres:
+                    # print('cache hit')
+                    cache.set(path,cacheres)
+                    blob_data = cacheres
+                else:
+                    blob_client = container_client.get_blob_client(path)
+                    blob_data = json.loads(blob_client.download_blob().readall())
+                    cache.set(path,blob_data)
+                blob_data.update({'Qn_name':Qn,
+                                  'score':str(student_answers.get(Qn,'0'))+'/'+Rules.get(type.lower(),[])[0].get('score'),
+                                  'status': True if student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number).get(type.lower()+'_questions_status').get(Qn) == 2 else False
+                                  })
+                qn_data.append(blob_data)
+        container_client.close()
         return JsonResponse(qn_data,safe=False,status=200)
     except Exception as e:
         print(e)
@@ -625,8 +717,8 @@ def submition_coding_question(request):
                 score = 0
             
         score = round(score*(passedcases/totalcases),2)
-        print('SCore',score,'passedcases',passedcases,'totalcases',totalcases)
-        user , created = student_practice_coding_ans.objects.using('mongodb').get_or_create(student_id=student_id,
+        # print('SCore',score,'passedcases',passedcases,'totalcases',totalcases)
+        user , created = student_practice_coding_answers.objects.using('mongodb').get_or_create(student_id=student_id,
                                                                                           subject_id=data.get('subject_id'),
                                                                                           question_id=question_id,
                                                                                           del_row='False',

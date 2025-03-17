@@ -66,7 +66,7 @@ class student_practiceMCQ_answers(models.Model):
     class Meta:
         db_table = 'student_practiceMCQ_answers'
 # 5
-class student_practice_coding_ans(models.Model):
+class student_practice_coding_answers(models.Model):
     student_id          = models.CharField(max_length=20)
     question_id         = models.CharField(max_length=20)
     entered_ans         = models.TextField()
@@ -144,7 +144,7 @@ class students_details(models.Model):
     student_group_ids = models.JSONField(default=dict)
     student_notification = models.JSONField(default=dict)
     student_announcements = models.JSONField(default=dict)
-    student_education_details =models.JSONField(default=dict)
+    student_education_details =models.JSONField(default=list)
     del_row = models.CharField(default='False',max_length=5)
     
     class Meta:
