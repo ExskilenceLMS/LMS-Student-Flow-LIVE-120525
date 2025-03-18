@@ -18,7 +18,7 @@ ONTIME = datetime.utcnow().__add__(timedelta(hours=5,minutes=30))
 CONTAINER ="internship"
 @api_view(['GET'])   
 def home(request):
-    return JsonResponse({"message": "Successfully Deployed on Azure at "+ str(ONTIME)},safe=False,status=200)
+    return JsonResponse({"message": "Successfully Deployed LMS on Azure at "+ str(ONTIME)},safe=False,status=200)
 
 @api_view(['GET'])
 def fetch_enrolled_subjects(request,student_id):
