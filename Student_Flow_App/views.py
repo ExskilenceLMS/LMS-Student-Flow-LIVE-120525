@@ -565,7 +565,9 @@ def fetch_questions(request,type,student_id,subject,subject_id,day_number,week_n
                                                                                                    subject_id = subject_id,
                                                                                           question_id__in = questions_ids,
                                                                                             del_row = 'False').values('question_id','score'))
-        student_answers = {ans.get('question_id'):ans.get('score') for ans in student_answers}
+        student_answers = {
+            ans.get('question_id'):ans.get('score') if int(str(ans.get('score')).split('.')[1]) > 0 else int(str(ans.get('score')).split('.')[0])
+            for ans in student_answers}
         container_client =  get_blob_container_client()
         qn_data = []
         blob_path = 'LMSData/'
@@ -714,7 +716,7 @@ def submition_coding_question(request):
         i = 0
         passedcases = 0
         totalcases = 0
-        if data.get("subject") == 'HTML' or data.get("subject") == 'CSS' or data.get("subject") == 'Java Script':
+        if data.get("subject") == 'HTML' or data.get("subject") == 'HTML CSS' or data.get("subject") == 'CSS' or data.get("subject") == 'Java Script':
                 passedcases = float(str(data.get("final_score")).split('/')[0])
                 totalcases = float(str(data.get("final_score")).split('/')[1])
                 result = { 'TestCases':data.get("final_score")}
@@ -753,7 +755,7 @@ def submition_coding_question(request):
         else:
             user.entered_ans    = data.get('Ans')
             user.answered_time  = timezone.now() + timedelta(hours=5, minutes=30)
-            user.testcase_results = data.get('Result')
+            user.testcase_results = result
             user.score = score
             user.save()
         
@@ -764,7 +766,7 @@ def submition_coding_question(request):
                                              ).get('week_'+str(data.get('week_number'))
                                                    ).get('day_'+str(data.get('day_number'))
                                                          ).get('coding_questions_status'
-                                                               ).update({question_id:2})            
+                                                               ).update({question_id:2})   
         student.student_question_details.get(data.get('subject')
                                              ).get('week_'+str(data.get('week_number'))
                                                    ).get('day_'+str(data.get('day_number'))
