@@ -16,16 +16,17 @@ def get_blob_container_client():
     return BlobServiceClient.from_connection_string(connection_string).get_container_client(AZURE_CONTAINER)
 
 def get_blob(blob_name):
-    cacheresponse = cache.get(blob_name)
-    if cacheresponse:
-        # print('cache hit')
-        cache.set(blob_name,cacheresponse)
-        return cacheresponse
+    # cacheresponse = cache.get(blob_name)
+    # if cacheresponse:
+    #     # print('cache hit')
+    #     cache.set(blob_name,cacheresponse)
+    #     return cacheresponse
     blob_client = get_blob_container_client().get_blob_client(blob_name)
-    cache.set(blob_name,blob_client.download_blob().readall())
-    # return blob_client.download_blob().readall()
+    # cache.set(blob_name,json.loads(blob_client.download_blob().readall()))
     blob_client.close()
-    return cache.get(blob_name)
+    return blob_client.download_blob().readall()
+    # blob_client.close()
+    # return cache.get(blob_name)
 
 def get_list_blob(blob_path,list_of_qns,type):
     container_client =  get_blob_container_client()
