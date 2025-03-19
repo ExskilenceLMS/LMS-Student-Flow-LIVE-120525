@@ -632,8 +632,10 @@ def submit_MCQ_Question(request):
         de_buging = de_buging + '0.1 '
         question_id = data.get('question_id')
         de_buging = de_buging + '0.2 '
-        blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json')).get('mcq')
+        blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json'))
         de_bugging = de_bugging + '0.3 '
+        blob_rules_data = blob_rules_data.get('mcq')
+        de_buging = de_buging + '0.4 '
         score = 0
         de_buging = de_buging + '1 '
         if data.get('correct_ans') == data.get('entered_ans'):
