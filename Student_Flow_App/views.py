@@ -620,14 +620,18 @@ def fetch_questions(request,type,student_id,subject,subject_id,day_number,week_n
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+de_buging = ''
 @api_view(['POST'])
 def submit_MCQ_Question(request):
     try:
+        global de_buging
+        de_buging = ''
         data = json.loads(request.body)
         student_id = data.get('student_id')
         question_id = data.get('question_id')
         blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json')).get('mcq')
         score = 0
+        de_buging = de_buging + '1 '
         if data.get('correct_ans') == data.get('entered_ans'):
                 if question_id[-4]=='e':
                     score = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level1'][0]
@@ -635,6 +639,7 @@ def submit_MCQ_Question(request):
                     score = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level2'][0]
                 elif question_id[-4]=='h':
                     score = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level3'][0]
+        de_buging = de_buging + '2 '
         student_practiceMCQ_answer ,created= student_practiceMCQ_answers.objects.using('mongodb'
                                                             ).get_or_create(student_id = student_id,
                                                                  question_id = question_id,
@@ -648,23 +653,27 @@ def submit_MCQ_Question(request):
                                                                     'score':score,
                                                                     'answered_time':timezone.now() + timedelta(hours=5, minutes=30)
                                                                  })
-
+        de_buging = de_buging + '3 '
         response ={'message':'Already Submited'}
         if created:
             student = students_details.objects.using('mongodb').get(student_id = student_id,
                                                                     del_row = 'False')
-            student_info = students_info.objects.get(student_id = student_id,del_row = False)            
+            de_buging = de_buging + '4 '
+            student_info = students_info.objects.get(student_id = student_id,del_row = False)   
+            de_buging = de_buging + '5 '
             if student.student_question_details.get(data.get('subject')) == None:
                 student.student_question_details.update({
                     data.get('subject'):{
                         'week_'+str(data.get('week_number')):{}
                 }})
+            de_buging = de_buging + '6 '
             if student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))) == None:
                 student.student_question_details.get(data.get('subject')).update({
                     'week_'+str(data.get('week_number')):{
                             'day_'+str(data.get('day_number')):{}
                         }
                 })
+            de_buging = de_buging + '7 '
             if student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))) == None:
                 student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).update({
                     'day_'+str(data.get('day_number')):{
@@ -672,25 +681,34 @@ def submit_MCQ_Question(request):
                             'mcq_score':'0/0'
                     }
                 })
+            de_buging = de_buging + '8 '
             old_score = student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('mcq_score','0/0').split('/')
+            de_buging = de_buging + '9 '
             newscore = str(int(old_score[0]) + int(score)) + '/' + old_score[1]
+            de_buging = de_buging + '10 '
             student.student_question_details.get(data.get('subject')
                                                  ).get('week_'+str(data.get('week_number'))
                                                        ).get('day_'+str(data.get('day_number'))
                                                              ).get('mcq_questions_status'
-                                                                   ).update({question_id:2})            
+                                                                   ).update({question_id:2}) 
+            de_buging = de_buging + '11 '           
             student.student_question_details.get(data.get('subject')
                                                  ).get('week_'+str(data.get('week_number'))
                                                        ).get('day_'+str(data.get('day_number'))
                                                              ).update({'mcq_score':newscore})
+            de_buging = de_buging + '12 '
             student.save()
+            de_buging = de_buging + '13 '
             student_info.student_score = int(student_info.student_score) + int(score)
+            de_buging = de_buging + '14 '
             student_info.save()
+            de_buging = de_buging + '15 '
             response ={'message':'Submited'}
+        de_buging = de_buging + '16 '
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+        return JsonResponse({"message": "Failed","de_buging":de_buging,"error":str(e)},safe=False,status=400)
 @api_view(['PUT']) 
 def submition_coding_question(request):
     try:
