@@ -620,16 +620,20 @@ def fetch_questions(request,type,student_id,subject,subject_id,day_number,week_n
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
-de_buging = ''
+
 @api_view(['POST'])
 def submit_MCQ_Question(request):
+    de_buging = ''
     try:
-        global de_buging
-        de_buging = ''
+        de_buging = '-1 '
         data = json.loads(request.body)
+        de_buging = de_buging + '0 '
         student_id = data.get('student_id')
+        de_buging = de_buging + '0.1 '
         question_id = data.get('question_id')
+        de_buging = de_buging + '0.2 '
         blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json')).get('mcq')
+        de_bugging = de_bugging + '0.3 '
         score = 0
         de_buging = de_buging + '1 '
         if data.get('correct_ans') == data.get('entered_ans'):
