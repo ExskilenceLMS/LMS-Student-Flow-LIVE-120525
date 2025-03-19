@@ -78,7 +78,7 @@ class student_practice_coding_answers(models.Model):
     del_row = models.CharField(default='False',max_length=5)
 
     class Meta:
-        db_table = 'student_practice_coding_ans'
+        db_table = 'student_practice_coding_answers'
 # 6
 class student_online_session(models.Model):
     session_id          = models.CharField(max_length=20)

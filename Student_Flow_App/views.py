@@ -68,7 +68,7 @@ def getdays(date):
            suffix = "th"
        else:
            suffix = ["st", "nd", "rd"][day % 10 - 1]
-       formatted_date =  (f"{day}{suffix} {calendar.month_abbr[month]}")
+       formatted_date =  (f"{day}{suffix} {calendar.month_abbr[month]} {date.strftime('%Y')[2:]}")
        return formatted_date
 
 

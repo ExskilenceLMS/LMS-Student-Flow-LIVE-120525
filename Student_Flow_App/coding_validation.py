@@ -14,7 +14,7 @@ def addAttempt (studentId,Subject,Qn,user_ans,data):
         stat = mainuser.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number')),{}).get('day_'+str(data.get('day_number')),{}).get('coding_questions_status',{}).get(Qn,0)  
         if stat < 2 :
                 print("stat",stat)
-                user , created = student_practice_coding_ans.objects.using('mongodb').get_or_create(student_id=str( studentId),
+                user , created = student_practice_coding_answers.objects.using('mongodb').get_or_create(student_id=str( studentId),
                                                                                           subject_id=str( Subject ),
                                                                                           question_id=str( Qn ),
                                                                                           del_row='False',
