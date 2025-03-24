@@ -16,47 +16,51 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from Student_Flow_App import views ,tests ,coding_validation as cv ,AppUsage,StudentProfile as profile
+from Student_Flow_App import StudentDashBoard as dashboard ,StudentLiveSessions as live_session ,LearningModules as learning_modules
+from Student_Flow_App import Student_Tickets as tickets , StudentRoadMap as roadmap , StudentTestDetails as test_details
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home),
     path('api/clearcache/', AppUsage.clear_blob_ceche),
+    # Login URLs
+    path('api/login/<str:email>/', views.LogIn),
+    path('api/logout/<str:student_id>/', views.LogOut),
     # Dashboard URLs
-    path('api/studentdashboard/mycourses/<str:student_id>/',       views.fetch_enrolled_subjects),
-    path('api/studentdashboard/upcomming/sessions/<str:student_id>/',      views.fetch_live_session),
-    path('api/studentdashboard/upcomming/events/<str:Course_id>/',       views.fetch_upcoming_events),
-    path('api/studentdashboard/weeklyprogress/<str:student_id>/',       views.get_weekly_progress),
-    path('api/studentdashboard/hourspent/<str:student_id>/<str:week>/',       views.fetch_study_hours),
-    path('api/studentdashboard/summary/<str:student_id>/',       views.fetch_student_summary),
-    path('api/studentdashboard/event/calender/<str:student_id>/',       views.fetch_calendar),
+    path('api/studentdashboard/mycourses/<str:student_id>/',       dashboard.fetch_enrolled_subjects),
+    path('api/studentdashboard/upcomming/sessions/<str:student_id>/',      dashboard.fetch_live_session),
+    path('api/studentdashboard/upcomming/events/<str:Course_id>/',       dashboard.fetch_upcoming_events),
+    path('api/studentdashboard/weeklyprogress/<str:student_id>/',       dashboard.get_weekly_progress),
+    path('api/studentdashboard/hourspent/<str:student_id>/<str:week>/',       dashboard.fetch_study_hours),
+    path('api/studentdashboard/summary/<str:student_id>/',       dashboard.fetch_student_summary),
+    path('api/studentdashboard/event/calender/<str:student_id>/',       dashboard.fetch_calendar),
     
     # top navigation and roadmap URLs
-    path('api/notifications/<str:student_id>/',       views.fetch_top_navigation),
-    path('api/roadmap/<str:student_id>/<str:course_id>/',       views.fetch_roadmap),
+    path('api/notifications/<str:student_id>/',       roadmap.fetch_top_navigation),
+    path('api/roadmap/<str:student_id>/<str:course_id>/<str:subject_id>/',       roadmap.fetch_roadmap),
 
     # learning modules URLs
-    path('api/student/learningmodules/<str:student_id>/<str:subject>/<str:day_number>/',       views.fetch_learning_modules),
-    path('api/student/lessonoverview/<str:student_id>/<str:subject>/<str:day_number>/',       views.fetch_overview_modules),
-    path('api/student/practice<str:type>/<str:student_id>/<str:subject>/<str:subject_id>/<str:day_number>/<str:week_number>/<str:subTopic>/',       views.fetch_questions),
-    path('api/student/add/days/', views.add_days_to_student),
-    path('api/student/practicemcq/submit/', views.submit_MCQ_Question),
-    # path('api/student/status/practice<str:type>/<str:student_id>/<str:subject>/<str:day_number>/<str:week_number>/<str:subTopic>/', views.fetch_questions_status),
-
+    path('api/student/learningmodules/<str:student_id>/<str:subject>/<str:day_number>/',       learning_modules.fetch_learning_modules),
+    path('api/student/lessonoverview/<str:student_id>/<str:subject>/<str:day_number>/',       learning_modules.fetch_overview_modules),
+    path('api/student/practice<str:type>/<str:student_id>/<str:subject>/<str:subject_id>/<str:day_number>/<str:week_number>/<str:subTopic>/',       learning_modules.fetch_questions),
+    path('api/student/add/days/', learning_modules.add_days_to_student),
+    path('api/student/practicemcq/submit/', learning_modules.submit_MCQ_Question),
+    
     # coding Validation URLs
     path('api/student/coding/py/',    cv.run_python),
     path('api/student/coding/ds/', cv.run_pythonDSA),
     path('api/student/coding/sql/', cv.sql_query),
-    path('api/student/coding/', views.submition_coding_question),
+    path('api/student/coding/', learning_modules.submition_coding_question),
 
     # Live Session URLs
-    path('api/student/sessions/<str:student_id>/', views.fetch_all_live_session),
+    path('api/student/sessions/<str:student_id>/', live_session.fetch_all_live_session),
 
     # TEST Details URLs
-    path('api/student/testdetails/<str:student_id>/', views.fetch_all_test_details),
+    path('api/student/testdetails/<str:student_id>/', test_details.fetch_all_test_details),
     
     # Teckets URLs
-    path('api/student/tickets/', views.submit_Tickets),
-    path('api/student/tickets/<str:student_id>/', views.fetch_all_tickets),
-    path('api/student/ticket/comments/', views.student_side_comments_for_tickets),
+    path('api/student/tickets/', tickets.submit_Tickets),
+    path('api/student/tickets/<str:student_id>/', tickets.fetch_all_tickets),
+    path('api/student/ticket/comments/', tickets.student_side_comments_for_tickets),
 
     # FAQ URLs
     path('api/student/faq/',views.fetch_FAQ),
