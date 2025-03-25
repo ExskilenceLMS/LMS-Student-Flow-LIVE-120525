@@ -90,6 +90,7 @@ class courses(models.Model):
     modified_by = models.CharField(max_length=100, null=True, blank=True)
     modified_at = models.DateTimeField(auto_now=True)
     action = models.CharField(max_length=100, null=True, blank=True)
+    tracks= models.TextField(default=None, blank=True, null=True)
     del_row = models.BooleanField(default=False)
 
     def __str__(self):
@@ -149,8 +150,11 @@ class students_info(models.Model):
     student_firstname = models.CharField(max_length=100)
     student_lastname = models.CharField(max_length=100)
     student_email = models.EmailField()
+    student_country = models.CharField(max_length=100)
+    student_state = models.CharField(max_length=100)
+    student_city = models.CharField(max_length=100)
     student_gender = models.CharField(max_length=10)
-    student_course_starttime = models.DateTimeField()
+    student_course_starttime = models.DateTimeField(null=True)
     student_pincode = models.CharField(max_length=20)
     student_alt_phone=models.CharField(max_length=20)
     isActive=models.BooleanField(default=True)
@@ -169,14 +173,14 @@ class students_info(models.Model):
     linkedin = models.CharField(max_length=100, blank=True, null=True)
     leetcode = models.CharField(max_length=100, blank=True, null=True)
     hackerrank = models.CharField(max_length=100, blank=True, null=True)
+    allocate=models.BooleanField(default=False)
     del_row = models.BooleanField(default=False)
     class Meta:
         db_table = 'students_info'
 # 10
 class trainers(models.Model):
     trainer_id = models.CharField(max_length=20, primary_key=True)
-    trainer_firstname = models.CharField(max_length=100)
-    trainer_lastname = models.CharField(max_length=100)
+    trainer_name = models.CharField(max_length=100)
     trainer_email = models.EmailField()
     gender = models.CharField(max_length=10)
     # trainer_college = models.CharField(max_length=50)
@@ -193,7 +197,8 @@ class trainers(models.Model):
     def __str__(self):
         return f"{self.trainer_FirstName} {self.trainer_LastName}"
     class Meta:
-        db_table = 'trainers'
+        db_table = 'trainers'   
+
 # 11
 class trainer_review_comments(models.Model):
     comment_id = models.CharField(max_length=20, primary_key=True)

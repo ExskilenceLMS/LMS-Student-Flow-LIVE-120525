@@ -48,3 +48,36 @@ def fetch_FAQ(request):
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+# from django.db.models import Q 
+# @api_view(['GET'])
+# def get_all_tracks(request):
+#     if request.method == "GET":
+#         try:
+#             tracks_data = tracks.objects.filter(del_row=False)
+#             tracks_names = [track.track_name for track in tracks_data]
+#             query = Q()
+#             for track_name in tracks_names:
+#                 query |= Q(tracks__icontains=track_name)
+#             Courses = courses.objects.filter(query, del_row=False)
+#             data=[]
+#             track_data ={}
+#             for track in tracks_data:
+#                 d={
+#                     "track_id":track.track_id,
+#                     "track_name": track.track_name,
+#                     "track_name_searchable": track.track_name_searchable,
+#                     "track_description": track.track_description,
+#                 }
+#                 track_data.update({track.track_name:d})
+#             for course in Courses:
+#                 for i in course.tracks.split(","):
+#                     d={
+#                         "course_id":course.course_id,
+#                         "course_name": course.course_name,
+#                     }
+#                     d.update(track_data.get(str(i)))
+#                     # data.append(d)
+                    
+#             return JsonResponse({'tracks': data})
+#         except Exception as e:
+#             return JsonResponse({'error': str(e)}, status=500)

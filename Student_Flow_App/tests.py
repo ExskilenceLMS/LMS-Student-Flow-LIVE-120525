@@ -79,160 +79,161 @@ def addStudetsActivity(request,day,week):
 @api_view(['GET'])
 def addStudent(request):
     try:
-        track = tracks.objects.create(
-            track_id = 'Track1',
-            track_name =  'Engineering',
-            track_name_searchable = 'engineering',
-            track_description = 'TEST',
-            created_by = 'TEST',
-            created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            modified_by = 'TEST',
-            modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            action = 'TEST',
-            del_row = False
-        )
-        sub = subjects.objects.create(
-            subject_id = 'Subject1',
-            track_id = track,
-            subject_name =  'HTML CSS',
-            subject_alt_name = 'htmlcss',
-            subject_description = 'TEST',
-            created_by = 'TEST',
-            created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            modified_by = 'TEST',
-            modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            action = 'TEST',
-            del_row = False
-        )
-        sub1 = subjects.objects.create(
-            subject_id = 'Subject2',
-            track_id = track,
-            subject_name =  'Data Structures with C++ and Object-Oriented Programming with C++',
-            subject_alt_name = 'datastructureswithc++andobject-orientedprogrammingwithc++',
-            subject_description = 'TEST',
-            created_by = 'TEST',
-            created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            modified_by = 'TEST',
-            modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            action = 'TEST',
-            del_row = False
-        )
-        sub2 = subjects.objects.create(
-            subject_id = 'Subject3',
-            track_id = track,
-            subject_name =  'Data Structures and Algorithms',
-            subject_alt_name = 'datastructuresandalgorithms',
-            subject_description = 'TEST',
-            created_by = 'TEST',
-            created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            modified_by = 'TEST',
-            modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            action = 'TEST',
-            del_row = False
-        )
-        sub3 = subjects.objects.create(
-            subject_id = 'Subject4',
-            track_id = track,
-            subject_name =  'SQL',
-            subject_alt_name = 'sql',
-            subject_description = 'TEST',
-            created_by = 'TEST',
-            created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            modified_by = 'TEST',
-            modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            action = 'TEST',
-            del_row = False
-        )
-        topic = topics.objects.create(
-            topic_id = 'Topic1',
-            subject_id = sub,
-            topic_name =  'TEST',
-            topic_alt_name = 'TEST',
-            topic_description = 'TEST',
-            created_by = 'TEST',
-            created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            modified_by = 'TEST',
-            modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            action = 'TEST',
-            del_row = False
-        )
-        subtopic = sub_topics.objects.create(
-            sub_topic_id = 'SubTopic1',
-            topic_id = topic,
-            sub_topic_name =  'TEST',
-            sub_topic_description = 'TEST',
-            notes = 1,
-            videos = 1,
-            mcq = 1,
-            coding = 1,
-            del_row = False
-        )
-        new = courses.objects.create(
-            course_id = 'Course1',
-            # track_id = "None",
-            course_name =  'Full Stack Web Development',
-            course_description = 'TEST',
-            course_level = 'TEST',
-            created_by = 'TEST',
-            created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            modified_by = 'TEST',
-            modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            action = 'TEST',
-            del_row = False
-        )
-        course_subject = course_subjects.objects.create(
-            course_id = new,
-            subject_id = sub,
-            duration_in_days = '10',
-            start_date = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
-            end_date = datetime.utcnow().__add__(timedelta(days=10,hours=5,minutes=30)),
-            is_mandatory = True,
-            path = 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            del_row = False
-        )
-        course_subject1 = course_subjects.objects.create(
-            course_id = new,
-            subject_id = sub1,
-            duration_in_days = '10',
-            start_date = datetime.utcnow().__add__(timedelta(days=10,hours=5,minutes=30)),
-            end_date = datetime.utcnow().__add__(timedelta(days=20,hours=5,minutes=30)),
-            is_mandatory = True,
-            path = 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            del_row = False
-        )
-        course_subject2 = course_subjects.objects.create(
-            course_id = new,
-            subject_id = sub2,
-            duration_in_days = '10',
-            start_date = datetime.utcnow().__add__(timedelta(days=20,hours=5,minutes=30)),
-            end_date = datetime.utcnow().__add__(timedelta(days=30,hours=5,minutes=30)),
-            is_mandatory = True,
-            path = 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            del_row = False
-        )
-        course_subject3 = course_subjects.objects.create(
-            course_id = new,
-            subject_id = sub3,
-            duration_in_days = '10',
-            start_date = datetime.utcnow().__add__(timedelta(days=30,hours=5,minutes=30)),
-            end_date = datetime.utcnow().__add__(timedelta(days=40,hours=5,minutes=30)),
-            is_mandatory = True,
-            path = 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-            del_row = False
-        )
+        # track = tracks.objects.create(
+        #     track_id = 'Track1',
+        #     track_name =  'Engineering',
+        #     track_name_searchable = 'engineering',
+        #     track_description = 'TEST',
+        #     created_by = 'TEST',
+        #     created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     modified_by = 'TEST',
+        #     modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     action = 'TEST',
+        #     del_row = False
+        # )
+        # sub = subjects.objects.create(
+        #     subject_id = 'Subject1',
+        #     track_id = track,
+        #     subject_name =  'HTML CSS',
+        #     subject_alt_name = 'htmlcss',
+        #     subject_description = 'TEST',
+        #     created_by = 'TEST',
+        #     created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     modified_by = 'TEST',
+        #     modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     action = 'TEST',
+        #     del_row = False
+        # )
+        # sub1 = subjects.objects.create(
+        #     subject_id = 'Subject2',
+        #     track_id = track,
+        #     subject_name =  'Data Structures with C++ and Object-Oriented Programming with C++',
+        #     subject_alt_name = 'datastructureswithc++andobject-orientedprogrammingwithc++',
+        #     subject_description = 'TEST',
+        #     created_by = 'TEST',
+        #     created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     modified_by = 'TEST',
+        #     modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     action = 'TEST',
+        #     del_row = False
+        # )
+        # sub2 = subjects.objects.create(
+        #     subject_id = 'Subject3',
+        #     track_id = track,
+        #     subject_name =  'Data Structures and Algorithms',
+        #     subject_alt_name = 'datastructuresandalgorithms',
+        #     subject_description = 'TEST',
+        #     created_by = 'TEST',
+        #     created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     modified_by = 'TEST',
+        #     modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     action = 'TEST',
+        #     del_row = False
+        # )
+        # sub3 = subjects.objects.create(
+        #     subject_id = 'Subject4',
+        #     track_id = track,
+        #     subject_name =  'SQL',
+        #     subject_alt_name = 'sql',
+        #     subject_description = 'TEST',
+        #     created_by = 'TEST',
+        #     created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     modified_by = 'TEST',
+        #     modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     action = 'TEST',
+        #     del_row = False
+        # )
+        # topic = topics.objects.create(
+        #     topic_id = 'Topic1',
+        #     subject_id = sub,
+        #     topic_name =  'TEST',
+        #     topic_alt_name = 'TEST',
+        #     topic_description = 'TEST',
+        #     created_by = 'TEST',
+        #     created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     modified_by = 'TEST',
+        #     modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     action = 'TEST',
+        #     del_row = False
+        # )
+        # subtopic = sub_topics.objects.create(
+        #     sub_topic_id = 'SubTopic1',
+        #     topic_id = topic,
+        #     sub_topic_name =  'TEST',
+        #     sub_topic_description = 'TEST',
+        #     notes = 1,
+        #     videos = 1,
+        #     mcq = 1,
+        #     coding = 1,
+        #     del_row = False
+        # )
+        new = courses.objects.get(course_id = 'Course0001')
+        # create(
+        #     course_id = 'Course1',
+        #     # track_id = "None",
+        #     course_name =  'Full Stack Web Development',
+        #     course_description = 'TEST',
+        #     course_level = 'TEST',
+        #     created_by = 'TEST',
+        #     created_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     modified_by = 'TEST',
+        #     modified_at = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     action = 'TEST',
+        #     del_row = False
+        # )
+        # course_subject = course_subjects.objects.create(
+        #     course_id = new,
+        #     subject_id = sub,
+        #     duration_in_days = '10',
+        #     start_date = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
+        #     end_date = datetime.utcnow().__add__(timedelta(days=10,hours=5,minutes=30)),
+        #     is_mandatory = True,
+        #     path = 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        #     del_row = False
+        # )
+        # course_subject1 = course_subjects.objects.create(
+        #     course_id = new,
+        #     subject_id = sub1,
+        #     duration_in_days = '10',
+        #     start_date = datetime.utcnow().__add__(timedelta(days=10,hours=5,minutes=30)),
+        #     end_date = datetime.utcnow().__add__(timedelta(days=20,hours=5,minutes=30)),
+        #     is_mandatory = True,
+        #     path = 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        #     del_row = False
+        # )
+        # course_subject2 = course_subjects.objects.create(
+        #     course_id = new,
+        #     subject_id = sub2,
+        #     duration_in_days = '10',
+        #     start_date = datetime.utcnow().__add__(timedelta(days=20,hours=5,minutes=30)),
+        #     end_date = datetime.utcnow().__add__(timedelta(days=30,hours=5,minutes=30)),
+        #     is_mandatory = True,
+        #     path = 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        #     del_row = False
+        # )
+        # course_subject3 = course_subjects.objects.create(
+        #     course_id = new,
+        #     subject_id = sub3,
+        #     duration_in_days = '10',
+        #     start_date = datetime.utcnow().__add__(timedelta(days=30,hours=5,minutes=30)),
+        #     end_date = datetime.utcnow().__add__(timedelta(days=40,hours=5,minutes=30)),
+        #     is_mandatory = True,
+        #     path = 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        #     del_row = False
+        # )
         std = students_info.objects.create(
-            student_id = '25MRITCS001',
+            student_id = '25TEST00001',
             course_id = new,
-            student_firstname = 'Raj Kumari',
-            student_lastname = 'P',
-            student_email = 'TEST',
-            student_gender = 'TEST',
+            student_firstname = 'TEST',
+            student_lastname = ' ',
+            student_email = 'kecoview@gmail.com',
+            student_gender = 'M',
             student_course_starttime = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
             # batch_id = 'TEST',
             college = 'TEST',
             branch = 'TEST',
             address = 'TEST',    
-            phone = 'TEST',
+            phone = '132',
             student_score = 0,
             student_type = 'TEST',
             linkedin = 'TEST',

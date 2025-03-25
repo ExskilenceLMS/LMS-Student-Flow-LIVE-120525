@@ -67,7 +67,7 @@ urlpatterns = [
 
     # Profile URLs
     path('api/student/profile/<str:student_id>/', profile.fetch_student_Profile),
-    path('api/student/profilespcial/', profile.update_profile),
+    path('api/student/profile/', profile.update_profile),
 
     # TESTING URLS
     path('addstudent/',      tests.addStudent),

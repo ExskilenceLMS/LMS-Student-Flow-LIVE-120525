@@ -102,6 +102,11 @@ def add_days_to_student(request):
             })
             student.save()
             response.update({'message':'updated'})
+        else:
+            sub_topics  = [ i[1:-5]  for i in student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('mcq_questions_status')]
+            response.update({'message':'not updated',
+                             'sub_topics':sub_topics,
+                             'data':student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('mcq_questions_status')})
         
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
