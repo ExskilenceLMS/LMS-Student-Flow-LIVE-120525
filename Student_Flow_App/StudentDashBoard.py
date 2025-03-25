@@ -128,6 +128,7 @@ def fetch_study_hours(request,student_id,week):
     try:
         student = students_info.objects.get(student_id = student_id,del_row = False)
         today =timezone.now() + timedelta(hours=5, minutes=30)
+        start_of_week = (today - timedelta(days=today.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
         if timezone.is_naive(today):
             today = timezone.make_aware(today, timezone.get_current_timezone())
         if week.isdigit():
@@ -142,9 +143,13 @@ def fetch_study_hours(request,student_id,week):
                 current_week=current_week.week
         course_details = list(course_plan_details.objects.filter(course_id=student.course_id,
                                                             week=current_week).values('duration_in_hours','day_date'))
+        if week.isdigit():
+            start_of_week = (course_details[0].get('day_date') - timedelta(days=course_details[0].get('day_date').weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
         student_app_usages = student_app_usage.objects.filter(student_id = student_id,
-                                                              logged_in__gte = course_details[0].get('day_date'),
-                                                              logged_in__lte = course_details[-1].get('day_date')+timedelta(days=1),
+                                                            #   logged_in__gte = course_details[0].get('day_date'),
+                                                            #   logged_in__lte = course_details[-1].get('day_date')+timedelta(days=1),
+                                                              logged_in__gte = start_of_week,
+                                                              logged_in__lte = start_of_week + timedelta(days=6, hours=23, minutes=59, seconds=59),
                                                               del_row = False
                                                             ).annotate(date=TruncDate('logged_in')).values('date').annotate(
                                                             total_study_hours=Sum(F('logged_out') - F('logged_in'))).order_by('date')
@@ -155,11 +160,11 @@ def fetch_study_hours(request,student_id,week):
         hour_spent ={ i.get('date'):i.get('total_study_hours') for i in student_app_usages}
         for i in range(7):
             response.get('hours').append({
-                "date":course_details[0].get('day_date') + timedelta(days=i),
-                "day_name":calendar.day_name[(course_details[0].get('day_date') + timedelta(days=i)).weekday()][0:3],
-                "isUpcoming":True if (course_details[0].get('day_date') + timedelta(days=i)).date() > today.date() else False,
-                "isCurrent":True if (course_details[0].get('day_date') + timedelta(days=i)).date() == today.date() else False,
-                "hours":round(hour_spent.get((course_details[0].get('day_date') + timedelta(days=i)).date()).total_seconds()/3600,2) if hour_spent.get((course_details[0].get('day_date') + timedelta(days=i)).date()) else 0
+                "date":start_of_week + timedelta(days=i),
+                "day_name":calendar.day_name[(start_of_week + timedelta(days=i)).weekday()][0:3],
+                "isUpcoming":True if (start_of_week + timedelta(days=i)).date() > today.date() else False,
+                "isCurrent":True if (start_of_week + timedelta(days=i)).date() == today.date() else False,
+                "hours":round(hour_spent.get((start_of_week + timedelta(days=i)).date()).total_seconds()/3600,2) if hour_spent.get((start_of_week + timedelta(days=i)).date()) else 0
             })
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:

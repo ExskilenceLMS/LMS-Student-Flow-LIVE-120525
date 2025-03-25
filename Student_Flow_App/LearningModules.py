@@ -102,11 +102,14 @@ def add_days_to_student(request):
             })
             student.save()
             response.update({'message':'updated'})
-        else:
-            sub_topics  = [ i[1:-5]  for i in student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('mcq_questions_status')]
-            response.update({'message':'not updated',
-                             'sub_topics':sub_topics,
-                             'data':student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('mcq_questions_status')})
+        # else:
+        #     day_Qna_data =student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number')))
+        #     sub_topics  = [ i[1:-5]  for i in day_Qna_data.get('mcq_questions_status')]
+        #     res = {
+        #         subtopic:{"mcq" :True if any([True for subtop in day_Qna_data.get('mcq_questions_status')if subtopic == subtop[1:-5] and day_Qna_data.get('mcq_questions_status').get(subtop) < 2]) else False ,
+        #                   "coding":True if any([True for subtop in day_Qna_data.get('coding_questions_status')if subtopic == subtop[1:-5] and day_Qna_data.get('coding_questions_status').get(subtop) < 2]) else False} for subtopic in sub_topics}
+        #     response.update({'message':'not updated',
+        #                     'res':res})
         
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
