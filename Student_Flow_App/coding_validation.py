@@ -21,6 +21,7 @@ def addAttempt (studentId,Subject,Qn,user_ans,data):
                                                                                           defaults={
                                                                                               'student_id':str( studentId ),
                                                                                               'subject_id':str( Subject ),
+                                                                                              'question_done_at':'practice',
                                                                                               'question_id':str( Qn ),
                                                                                               'entered_ans':user_ans,
                                                                                               'answered_time':timezone.now() + timedelta(hours=5, minutes=30),

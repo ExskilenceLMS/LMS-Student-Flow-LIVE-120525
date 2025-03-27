@@ -195,9 +195,9 @@ class trainers(models.Model):
     del_row = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.trainer_FirstName} {self.trainer_LastName}"
+        return f"{self.trainer_name}"
     class Meta:
-        db_table = 'trainers'   
+        db_table = 'trainers'
 
 # 11
 class trainer_review_comments(models.Model):
@@ -240,10 +240,10 @@ class questions(models.Model):
     question_id = models.CharField(max_length=20, primary_key=True)
     question_type = models.CharField(max_length=20)
     level = models.CharField(max_length=20)
-    created_by = models.CharField(max_length=20)
+    created_by = models.CharField(max_length=100)
     creation_time = models.DateTimeField(auto_now_add=True)
     last_updated_time = models.DateTimeField(auto_now=True)
-    last_updated_by = models.CharField(max_length=20)
+    last_updated_by = models.CharField(max_length=100,null=True, blank=True)
     reviewed_by = models.CharField(max_length=20, null=True, blank=True)
     tags = models.CharField(max_length=20, null=True, blank=True)
     sub_topic_id = models.ForeignKey(sub_topics, on_delete=models.SET_NULL, null=True)
@@ -307,3 +307,17 @@ class branch_details(models.Model):
         db_table = 'branch_details'
 
 # class ranks(models.Model):
+class admins(models.Model):
+    admin_id = models.CharField(max_length=20, primary_key=True)
+    admin_first_name = models.CharField(max_length=100)
+    admin_last_name = models.CharField(max_length=100)
+    admin_email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    activity_status = models.CharField(max_length=20)
+    category = models.CharField(max_length=20)
+    reg_date = models.DateTimeField(auto_now_add=True)
+    exp_date = models.DateTimeField(null=True, blank=True)
+    del_row = models.BooleanField(default=False)
+ 
+    class Meta:
+        db_table = 'admins'

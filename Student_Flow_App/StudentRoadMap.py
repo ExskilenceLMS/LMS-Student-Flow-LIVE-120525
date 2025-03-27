@@ -53,13 +53,13 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                       totalHours=Sum('duration_in_hours'),
                   )
                   .order_by('week'))
-        student_question_details = students_details.objects.using('mongodb').get(
+        studentQuestions = students_details.objects.using('mongodb').get(
             student_id = student_id,del_row = 'False',
             # defaults = {
             #     'student_id': student_id,
             # }
         )
-        sub_data = student_question_details.student_question_details.get(sub.subject_name)
+        sub_data = studentQuestions.student_question_details.get(sub.subject_name,{})
         days = []
         other_weeks = []
         daynumber=0

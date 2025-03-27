@@ -79,5 +79,6 @@ urlpatterns = [
     path('addstudentinfo/',   tests.update_student_info),
     path('addparticipants/',   tests.add_participants),
     path('addtestdetails/',   tests.add_test_sction),
+    # path('ids/',   views.generate_ids),
 ]
 

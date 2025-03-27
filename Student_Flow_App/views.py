@@ -48,6 +48,10 @@ def fetch_FAQ(request):
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+    
+# ===========================================================TESTING SPACE ===========================================================================================
+
+
 # from django.db.models import Q 
 # @api_view(['GET'])
 # def get_all_tracks(request):
@@ -81,3 +85,28 @@ def fetch_FAQ(request):
 #             return JsonResponse({'tracks': data})
 #         except Exception as e:
 #             return JsonResponse({'error': str(e)}, status=500)
+# @api_view(['POST'])
+# def generate_ids(request):
+#     try:
+#         data = json.loads(request.body)
+#         id_ = generate_id(data.get('college_key'),data.get('branch_key'),data.get('type'))
+#         return JsonResponse({"message": "Successfully Generated Student IDs","generated_id":id_},safe=False,status=200)
+#     except Exception as e:
+#         print(e)
+#         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+# def generate_id(college_key,branch_key,type):
+#     try:
+#         id_ = str(datetime.now().year)[-2:] + college_key + branch_key
+#         if type=='student':
+#             ids = students_info.objects.filter(student_id__startswith=id_).order_by('-student_id').values_list('student_id',flat=True).first()
+#         elif type=='trainer':
+#             ids = trainers.objects.filter(trainer_id__startswith=id_).order_by('-trainer_id').values_list('trainer_id',flat=True).first()
+#         elif type=='admin':
+#             ids = admins.objects.filter(admin_id__startswith=id_).order_by('-admin_id').values_list('admin_id',flat=True).first()
+#         else:
+#             return 'not generated='
+#         sl_id = str(int(str( ids)[-3:])+1)
+#         return id_+ (3-len(sl_id))*'0'+sl_id
+#     except Exception as e:
+#         print(e)
+#         return f'not generated {e}'

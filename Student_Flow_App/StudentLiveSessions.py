@@ -32,7 +32,7 @@ def fetch_all_live_session(request,student_id):
                                                                          'session_endtime'
                                                                      ))
         if live_session == []:
-            return JsonResponse({"message": "No Live Session"},safe=False,status=400)
+            return JsonResponse({"message": "No Live Session"},safe=False,status=200)
         attendance = participant.objects.using('mongodb').filter(session_id__in = [session.get('session_id') for session in live_session],
                                                                      student_id = student_id,
                                                                      del_row = "False"
