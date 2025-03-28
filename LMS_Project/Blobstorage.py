@@ -47,40 +47,50 @@ def get_list_blob(blob_path,list_of_qns,type):
     container_client.close()
     return files
 def get_random_questions(types,subtops,levels):
-    container_client =  get_blob_container_client()
-    files = {}
-    cacheresponse = cache.get('LMS_Rules/Rules.json')
-    if cacheresponse:
-        # print('cache hit')
-        cache.set('LMS_Rules/Rules.json',cacheresponse)
-        Rules = cacheresponse
-    else:
-        blob_client = container_client.get_blob_client('LMS_Rules/Rules.json')
-        Rules = json.loads(blob_client.download_blob().readall())
-        cache.set('LMS_Rules/Rules.json',Rules)
-    for type in types:
-        for subtop in subtops:
-            cacheed_lists = cache.get(f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/')
-            if cacheed_lists:
-                # print('cache hit')
-                cache.set(f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/',cacheed_lists)
-                all_qns_list = cacheed_lists
-            else:
-                all_qns_list =container_client.list_blobs(
-                name_starts_with=f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/')
-                cache.set(f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/',all_qns_list)
-            all_qns =[blob.name.split('/')[-1].split('.')[0] for blob in all_qns_list]
-            Qns  = random.sample([qn for qn in all_qns if qn[-4]=='e'], levels.get(type,{}).get(subtop,{}).get('level1',0))
-            Qns.extend(random.sample([qn for qn in all_qns if qn[-4]=='m'], levels.get(type,{}).get(subtop,{}).get('level2',0)))
-            Qns.extend(random.sample([qn for qn in all_qns if qn[-4]=='h'], levels.get(type,{}).get(subtop,{}).get('level3',0)))
-            score = 0
-            for level in Rules.get(type.lower(),[]):
-                level_score = int(levels.get(type,{}).get(subtop,{}).get(level.get('level').lower(),0))*int(level.get('score'))
-                score = score +level_score
-            files.update({type:files.get(type,[])+Qns,
-                          type+'_score':files.get(type+'_score',0)+score})
-    container_client.close()
-    return files
+    try:
+        container_client =  get_blob_container_client()
+        files = {}
+        cacheresponse = cache.get('LMS_Rules/Rules.json')
+        if cacheresponse:
+            # print('cache hit')
+            cache.set('LMS_Rules/Rules.json',cacheresponse)
+            Rules = cacheresponse
+        else:
+            blob_client = container_client.get_blob_client('LMS_Rules/Rules.json')
+            Rules = json.loads(blob_client.download_blob().readall())
+            cache.set('LMS_Rules/Rules.json',Rules)
+        for type in types:
+            for subtop in subtops:
+                cacheed_lists = cache.get(f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/')
+                if cacheed_lists:
+                    cache.set(f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/',cacheed_lists)
+                    all_qns_list = cacheed_lists
+                else:
+                    all_qns_list =container_client.list_blobs(
+                                    name_starts_with =f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/')
+                    cache.set(f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/',all_qns_list)
+                all_qns = [blob.name.split('/')[-1].split('.')[0] for blob in all_qns_list]
+                Easy    = [qn for qn in all_qns if qn[-4]=='e']
+                Medium  = [qn for qn in all_qns if qn[-4]=='m']
+                Hard    = [qn for qn in all_qns if qn[-4]=='h']
+                Qns     = []
+                if len(Easy) > 0 :
+                    Qns.extend(random.sample(Easy, levels.get(type,{}).get(subtop,{}).get('level1',0)))
+                if len(Medium)>0:
+                    Qns.extend(random.sample(Medium, levels.get(type,{}).get(subtop,{}).get('level2',0)))
+                if len(Hard)>0:
+                    Qns.extend(random.sample(Hard, levels.get(type,{}).get(subtop,{}).get('level3',0)))
+                score = 0
+
+                for level in Rules.get(type.lower(),[]):
+                    level_score = int(levels.get(type,{}).get(subtop,{}).get(level.get('level').lower(),0))*int(level.get('score'))
+                    score = score +level_score
+                files.update({type:files.get(type,[])+Qns,
+                            type+'_score':files.get(type+'_score',0)+score})
+        container_client.close()
+        return files
+    except Exception as e :
+        return 'error'
 # def get_blob_list(blob_name):
 #     container_client = get_blob_container_client()
 

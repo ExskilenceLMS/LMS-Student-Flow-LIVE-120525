@@ -75,7 +75,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                 if i.get('startDate').date() <= the_date.date() and the_date.date() <= i.get('endDate').date():
                     if week_first_day == 0:
                         week_first_day = int(d.get('day').split(' ')[-1]) 
-                        print('week_first_day',week_first_day,"prev_week_data",prev_week_data)
+                        # print('week_first_day',week_first_day,"prev_week_data",prev_week_data)
                     day_data = week_data.get('day_'+str(d.get('day').split(' ')[-1]),{})
                     status = ''
                     mcq_qns =len(day_data.get('mcq_questions',[]))
