@@ -122,9 +122,7 @@ WSGI_APPLICATION = 'LMS_Project.wsgi.application'
 AZURE_ACCOUNT_NAME = 'storeholder'
 AZURE_ACCOUNT_KEY = 'QxlUJdp8eSoPeQPas4NigSkXg6KMep7z+fPQ5CpPm0kRfjg7Q0lFmVEIyhU4ohFLFdSqntDAG6MY84elTfecnw=='
 AZURE_CONTAINER = 'tpdata'
-# AZURE_ACCOUNT_NAME = 'eustoreholder'
-# AZURE_ACCOUNT_KEY = 'C2+T9kL7MgZbmODARQYK/HjWSxZy2o1+IqQifEhqPAxhs/ul4pPPisrWFN50yXSBWUHy5ShSPV1B+ASthIYLYw=='
-# AZURE_CONTAINER = 'lmsdata'
+
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
