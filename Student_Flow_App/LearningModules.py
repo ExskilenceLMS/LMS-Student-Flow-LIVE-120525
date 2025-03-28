@@ -14,6 +14,7 @@ from django.db.models.functions import TruncDate
 from LMS_Project.Blobstorage import *
 from .AppUsage import update_app_usage
 from django.core.cache import cache
+from .sqlrun import get_all_tables
 
 # FETCH STUDENT LEARNING MODULEs
 
@@ -385,6 +386,14 @@ def submition_coding_question(request):
         student_info.student_score = int(student_info.student_score) + int(score)
         student_info.save()
         return JsonResponse(response,safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+@api_view(['GET'])
+def get_SQL_tables (request):
+    try:
+        # get_all_tables()
+        return JsonResponse(get_all_tables(),safe=False,status=200)
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
