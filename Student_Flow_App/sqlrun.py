@@ -4,6 +4,7 @@ from LMS_Project.settings import *
 from datetime import date, datetime, time
 from .models import *
 import pyodbc
+from django.core.cache import cache
 def local(data):
     try:
             query = data
@@ -259,19 +260,24 @@ def get_tables(tables):
 
 def get_all_tables():
     try:
-                tabs = []
-                connection_string = (f'Driver={MSSQL_DRIVER};'f'Server={MSSQL_SERVER_NAME};'f'Database={MSSQL_DATABASE_NAME};'f'UID={MSSQL_USERNAME};'f'PWD={MSSQL_PWD};')    
-                conn = pyodbc.connect(connection_string)
-                cursor = conn.cursor()
-                cursor.execute("SELECT name FROM sys.tables")
-                tables = [table[0] for table in cursor.fetchall()]
-                for table in tables:
-                    cursor.execute("SELECT * FROM " + table)
-                    columns = [desc[0] for desc in cursor.description]
-                    rows = cursor.fetchall()
-                    data = extract_table_rows(rows, columns)
-                    
-                    tabs.append({"tab_name": table, "data": data})
+                cacheresponse = cache.get('get_all_tables()')
+                if cacheresponse:
+                    cache.set('get_all_tables()',cacheresponse)
+                    tabs = cacheresponse
+                else:
+                    tabs = []
+                    connection_string = (f'Driver={MSSQL_DRIVER};'f'Server={MSSQL_SERVER_NAME};'f'Database={MSSQL_DATABASE_NAME};'f'UID={MSSQL_USERNAME};'f'PWD={MSSQL_PWD};')    
+                    conn = pyodbc.connect(connection_string)
+                    cursor = conn.cursor()
+                    cursor.execute("SELECT name FROM sys.tables")
+                    tables = [table[0] for table in cursor.fetchall()]
+                    for table in tables:
+                        cursor.execute("SELECT * FROM " + table)
+                        columns = [desc[0] for desc in cursor.description]
+                        rows = cursor.fetchall()
+                        data = extract_table_rows(rows, columns)
+                        tabs.append({"tab_name": table, "data": data})
+                    cache.set('get_all_tables()',tabs)
                 return tabs
     except Exception as e:  
         return "Error getting tables: " + str(e)
