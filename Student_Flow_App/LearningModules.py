@@ -245,6 +245,7 @@ def submit_MCQ_Question(request):
         student_practiceMCQ_answer ,created= student_practiceMCQ_answers.objects.using('mongodb'
                                                             ).get_or_create(student_id = student_id,
                                                                  question_id = question_id,
+                                                                 question_done_at='practice',
                                                                  del_row = 'False' ,
                                                                  defaults={
                                                                      'student_id':student_id,
@@ -313,15 +314,13 @@ def submition_coding_question(request):
         #     return JsonResponse({ "message": "Already Submited",},safe=False,status=200)
         blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json')).get('coding')
         score = 0
-        if data.get('correct_ans') == data.get('entered_ans'):
-                if question_id[-4]=='e':
-                    score = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level1'][0]
-                elif question_id[-4]=='m':
-                    score = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level2'][0]
-                elif question_id[-4]=='h':
-                    score = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level3'][0]
+        if question_id[-4]=='e':
+            score = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level1'][0]
+        elif question_id[-4]=='m':
+            score = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level2'][0]
+        elif question_id[-4]=='h':
+            score = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level3'][0]
         score = int(score)
-
         result = {}
         i = 0
         passedcases = 0
@@ -342,12 +341,11 @@ def submition_coding_question(request):
                     result.update(r)
             if passedcases == totalcases and passedcases ==0:
                 score = 0
-            
         score = round(score*(passedcases/totalcases),2)
-        # print('SCore',score,'passedcases',passedcases,'totalcases',totalcases)
         user , created = student_practice_coding_answers.objects.using('mongodb').get_or_create(student_id=student_id,
                                                                                           subject_id=data.get('subject_id'),
                                                                                           question_id=question_id,
+                                                                                          question_done_at='practice',
                                                                                           del_row='False',
                                                                                           defaults={
                                                                                               'student_id':data.get('student_id'),
@@ -364,12 +362,12 @@ def submition_coding_question(request):
         if created:
             response.update({'message':'Submited','new':'True'})
         else:
-            user.entered_ans    = data.get('Ans')
-            user.answered_time  = timezone.now() + timedelta(hours=5, minutes=30)
-            user.testcase_results = result
-            user.score = score
-            user.save()
-        
+            # user.entered_ans    = data.get('Ans')
+            # user.answered_time  = timezone.now() + timedelta(hours=5, minutes=30)
+            # user.testcase_results = result
+            # user.score = score
+            # user.save()
+            return JsonResponse({'message':'Already Submited'},safe=False,status=200)
         student_info = students_info.objects.get(student_id = student_id,del_row = False)
         old_score = student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('coding_score').split('/')
         newscore = str(int(old_score[0]) + int(score)) + '/' + old_score[1]
@@ -392,7 +390,6 @@ def submition_coding_question(request):
 @api_view(['GET'])
 def get_SQL_tables (request):
     try:
-        # get_all_tables()
         return JsonResponse(get_all_tables(),safe=False,status=200)
     except Exception as e:
         print(e)
