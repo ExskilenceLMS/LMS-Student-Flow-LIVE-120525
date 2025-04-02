@@ -161,15 +161,15 @@ def fetch_questions(request,type,student_id,subject,subject_id,day_number,week_n
                                                                                                 subject_id = subject_id,
                                                                                                 question_done_at = 'practice',
                                                                                                 question_id__in = questions_ids,
-                                                                                                del_row = 'False').values('question_id','score'))
+                                                                                                del_row = 'False').values('question_id','score','entered_ans'))
         else:
             student_answers = list(student_practice_coding_answers.objects.using('mongodb').filter(student_id = student_id,
                                                                                                    subject_id = subject_id,
                                                                                                    question_done_at = 'practice',
                                                                                                    question_id__in = questions_ids,
-                                                                                                   del_row = 'False').values('question_id','score'))
+                                                                                                   del_row = 'False').values('question_id','score','entered_ans'))
         student_answers = {
-            ans.get('question_id'):ans.get('score') if int(str(ans.get('score')).split('.')[1]) > 0 else int(str(ans.get('score')).split('.')[0])
+            ans.get('question_id'):{'entered_ans':ans.get('entered_ans'),'score':ans.get('score') if int(str(ans.get('score')).split('.')[1]) > 0 else int(str(ans.get('score')).split('.')[0])}
             for ans in student_answers}
         container_client =  get_blob_container_client()
         qn_data = []
@@ -196,8 +196,10 @@ def fetch_questions(request,type,student_id,subject,subject_id,day_number,week_n
                     blob_client = container_client.get_blob_client(path)
                     blob_data = json.loads(blob_client.download_blob().readall())
                     cache.set(path,blob_data)
+                level = (  'Level'+('1' if Qn[-4].lower()=='e' else '2' if Qn[-4].lower()=='m' else '3' if Qn[-4].lower()=='h' else '3'))
                 blob_data.update({'Qn_name':Qn,
-                                  'score':str(student_answers.get(Qn,'0'))+'/'+Rules.get(type.lower(),[])[0].get('score'),
+                                  'entered_ans':student_answers.get(Qn,{'entered_ans':'','score':0}).get('entered_ans'),
+                                  'score':str(student_answers.get(Qn,{'entered_ans':'','score':0}).get('score'))+'/'+''.join([str(i.get('score')) for i in Rules.get(type.lower(),[]) if i.get('level').lower() == level.lower()]),
                                   'status': True if student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number).get(type.lower()+'_questions_status').get(Qn) == 2 else False
                                   })
                 qn_data.append(blob_data)
@@ -213,8 +215,10 @@ def fetch_questions(request,type,student_id,subject,subject_id,day_number,week_n
                     blob_client = container_client.get_blob_client(path)
                     blob_data = json.loads(blob_client.download_blob().readall())
                     cache.set(path,blob_data)
+                level = (  'Level'+('1' if Qn[-4].lower()=='e' else '2' if Qn[-4].lower()=='m' else '3' if Qn[-4].lower()=='h' else '3'))
                 blob_data.update({'Qn_name':Qn,
-                                  'score':str(student_answers.get(Qn,'0'))+'/'+Rules.get(type.lower(),[])[0].get('score'),
+                                  'entered_ans':student_answers.get(Qn,{'entered_ans':'','score':0}).get('entered_ans'),
+                                  'score':str(student_answers.get(Qn,{'entered_ans':'','score':0}).get('score'))+'/'+''.join([str(i.get('score')) for i in Rules.get(type.lower(),[]) if i.get('level').lower() == level.lower()]),
                                   'status': True if student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number).get(type.lower()+'_questions_status').get(Qn) == 2 else False
                                   })
                 qn_data.append(blob_data)
