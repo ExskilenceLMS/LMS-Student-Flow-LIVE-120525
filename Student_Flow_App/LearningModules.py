@@ -310,8 +310,8 @@ def submition_coding_question(request):
         question_id = data.get('Qn')
         student = students_details.objects.using('mongodb').get(student_id = student_id,
                                                                 del_row = 'False')
-        # if student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('coding_questions_status').get(question_id) ==2:
-        #     return JsonResponse({ "message": "Already Submited",},safe=False,status=200)
+        if student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('coding_questions_status').get(question_id) ==2:
+            return JsonResponse({ "message": "Already Submited",},safe=False,status=200)
         blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json')).get('coding')
         score = 0
         if question_id[-4]=='e':
@@ -342,32 +342,32 @@ def submition_coding_question(request):
             if passedcases == totalcases and passedcases ==0:
                 score = 0
         score = round(score*(passedcases/totalcases),2)
-        user , created = student_practice_coding_answers.objects.using('mongodb').get_or_create(student_id=student_id,
+        user , created = student_practice_coding_answers.objects.using('mongodb').get_or_create(student_id=data.get('student_id'),
                                                                                           subject_id=data.get('subject_id'),
-                                                                                          question_id=question_id,
+                                                                                          question_id=data.get('Qn'),
                                                                                           question_done_at='practice',
                                                                                           del_row='False',
                                                                                           defaults={
                                                                                               'student_id':data.get('student_id'),
                                                                                               'subject_id':data.get('subject_id'),
                                                                                               'question_done_at':'practice',
-                                                                                              'question_id':question_id,
+                                                                                              'question_id':data.get('Qn'),
                                                                                               'entered_ans':data.get('Ans'),
                                                                                               'answered_time':timezone.now() + timedelta(hours=5, minutes=30),
                                                                                               'testcase_results':result,
                                                                                               'Attempts':1,
-                                                                                              'score':score
-                                                                                          })
+                                                                                              'score':score,
+                                                                                              'del_row':'False'                                                                                          })
         response ={'message':'Submited'}
         if created:
-            response.update({'message':'Submited','new':'True'})
+            response.update({'new':'True'})
         else:
-            # user.entered_ans    = data.get('Ans')
-            # user.answered_time  = timezone.now() + timedelta(hours=5, minutes=30)
-            # user.testcase_results = result
-            # user.score = score
-            # user.save()
-            return JsonResponse({'message':'Already Submited'},safe=False,status=200)
+            user.entered_ans    = data.get('Ans')
+            user.answered_time  = timezone.now() + timedelta(hours=5, minutes=30)
+            user.testcase_results = result
+            user.score = score
+            user.save()
+            # return JsonResponse({'message':'Already Submited'},safe=False,status=200)
         student_info = students_info.objects.get(student_id = student_id,del_row = False)
         old_score = student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('coding_score').split('/')
         newscore = str(int(old_score[0]) + int(score)) + '/' + old_score[1]
