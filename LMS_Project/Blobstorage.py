@@ -81,10 +81,30 @@ def get_random_questions(types,subtops,levels):
                 if len(Hard)>0:
                     Qns.extend(random.sample(Hard, levels.get(type,{}).get(subtop,{}).get('level3',0)))
                 score = 0
-
+                l1 =0
+                l2 =0
+                l3 =0
+                for Qn in Qns:
+                    level =  'Level'+('1' if Qn[-4].lower()=='e' else '2' if Qn[-4].lower()=='m' else '3' if Qn[-4].lower()=='h' else '3')
+                    if level == 'Level1':
+                        l1 = l1+1
+                    if level == 'Level2':
+                        l2 = l2+1
+                    if level == 'Level3':
+                        l3 = l3+1
                 for level in Rules.get(type.lower(),[]):
-                    level_score = int(levels.get(type,{}).get(subtop,{}).get(level.get('level').lower(),0))*int(level.get('score'))
+                    if level.get('level').lower() == 'level1':
+                        level_score = l1*int(level.get('score'))
+                    if level.get('level').lower() == 'level2':
+                        level_score = l2*int(level.get('score'))
+                    if level.get('level').lower() == 'level3':
+                        level_score = l3*int(level.get('score'))
                     score = score +level_score
+                # Scoring works if all the questions are there
+                
+                # for level in Rules.get(type.lower(),[]):
+                #     level_score = int(levels.get(type,{}).get(subtop,{}).get(level.get('level').lower(),0))*int(level.get('score'))
+                #     score = score +level_score
                 files.update({type:files.get(type,[])+Qns,
                             type+'_score':files.get(type+'_score',0)+score})
         container_client.close()
