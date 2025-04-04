@@ -123,7 +123,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                     elif d.get('topic') == 'Internship':
                         other_weeks.append({'day':'',
                             'day_key':d.get('day').split(' ')[-1],
-                            "date":getdays(the_date)+" "+the_date.strftime("%Y")[2:],
+                            "date":getdays(the_date),#+" "+the_date.strftime("%Y")[2:],
                             'week':len(course_details)+other_weeks.__len__()+1,
                             'topics':d.get('topic'),
                             'score' :'0/0',
@@ -132,7 +132,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                               })
                     else:
                         days.append({'day':daynumber+1,'day_key':d.get('day').split(' ')[-1],
-                            "date":getdays(the_date)+" "+the_date.strftime("%Y")[2:],
+                            "date":getdays(the_date),#+" "+the_date.strftime("%Y")[2:],
                             'week':i.get('week'),
                             'topics':d.get('topic'),
                             'practiceMCQ': { 'questions': str(mcq_answered)
