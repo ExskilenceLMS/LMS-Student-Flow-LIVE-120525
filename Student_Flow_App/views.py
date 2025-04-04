@@ -110,3 +110,17 @@ def fetch_FAQ(request):
 #     except Exception as e:
 #         print(e)
 #         return f'not generated {e}'
+
+# from django.http import JsonResponse
+# from LMS_Project.Blobstorage import upload_video_to_blob
+# @api_view(['POST'])
+# def upload_video(request):
+#     try :
+#         if request.method == 'POST' and request.FILES.get('video'):
+#             video_file = request.FILES['video']
+#             blob_url = upload_video_to_blob(video_file)
+#             return JsonResponse({'url': blob_url})
+#         return JsonResponse({'error': 'No file uploaded'}, status=400)
+#     except Exception as e:
+#         print(e)
+#         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)

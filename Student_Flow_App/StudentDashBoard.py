@@ -27,6 +27,8 @@ def fetch_enrolled_subjects(request,student_id):
         # print(sub_days_count)
         response = []
         for subject in enrolled_subjects:
+            if subject.subject_id.del_row :
+                continue
             subject_data = {}
             subject_data.update({
                 "title": subject.subject_id.subject_name,

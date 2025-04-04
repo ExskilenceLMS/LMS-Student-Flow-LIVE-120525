@@ -318,7 +318,7 @@ def submition_coding_question(request):
         student = students_details.objects.using('mongodb').get(student_id = student_id,
                                                                 del_row = 'False')
         if student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('coding_questions_status').get(question_id) ==2:
-            return JsonResponse({ "message": "Already Submited",},safe=False,status=200)
+            return JsonResponse({ "message": "Already Submited","status":True},safe=False,status=200)
         blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json')).get('coding')
         score = 0
         if question_id[-4]=='e':
@@ -365,7 +365,7 @@ def submition_coding_question(request):
                                                                                               'Attempts':1,
                                                                                               'score':score,
                                                                                               'del_row':'False'                                                                                          })
-        response ={'message':'Submited'}
+        response ={'message':'Submited','status':True}
         if created:
             response.update({'new':'True'})
         else:

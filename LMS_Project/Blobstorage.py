@@ -170,3 +170,19 @@ def get_random_questions(types,subtops,levels):
 #     print(files)
 #     container_client.close()
 #     return files
+# import uuid
+# from azure.storage.blob import ContentSettings
+# def upload_video_to_blob(file):
+
+#     container_client = get_blob_container_client()
+
+#     blob_name = f"videos/{uuid.uuid4()}_{file.name}"
+#     blob_client = container_client.get_blob_client(blob_name)
+#     # blob_client.set_http_headers(content_type='video/mp4')
+#     content_type = 'video/mp4'
+#     blob_client.upload_blob(file, overwrite=True,content_settings=ContentSettings(content_type=content_type))
+    
+#     path = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/{blob_name}"
+#     blob_client.close()
+
+#     return path
