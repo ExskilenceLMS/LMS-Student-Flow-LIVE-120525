@@ -103,7 +103,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                             status = 'Start'
                     if d.get('topic') == 'Weekly Test':# or d.get('topic') == 'Onsite Workshop' or d.get('topic') == 'Internship':
                         days.append({'day':daynumber+1,'day_key':d.get('day').split(' ')[-1],
-                            "date":getdays(the_date)+" "+the_date.strftime("%Y")[2:],
+                            "date":getdays(the_date),#+" "+the_date.strftime("%Y")[2:],
                             'week':i.get('week'),
                             'topics':d.get('topic'),
                             'score' :'0/0',
@@ -113,7 +113,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                     elif d.get('topic') == 'Onsite Workshop' or d.get('topic') == 'Final Test':
                         other_weeks.append({#'day':daynumber+1,
                             'day_key':d.get('day').split(' ')[-1],
-                            "date":getdays(the_date)+" "+the_date.strftime("%Y")[2:],
+                            "date":getdays(the_date),#+" "+the_date.strftime("%Y")[2:],
                             'week':len(course_details)+other_weeks.__len__()+1,
                             'topics':d.get('topic'),
                             'score' :'0/0',

@@ -265,20 +265,41 @@ def add_course_plane_details(request):
     try:
         data = json.loads(request.body)
 
-        course = courses.objects.get(course_id = 'Course1' ,del_row = False)
-        sub = subjects.objects.get(subject_id = 'Subject4' ,del_row = False)
+        course = courses.objects.get(course_id = 'Course0001' ,del_row = False)
+        sub = subjects.objects.get(subject_id = 'Subject3' ,del_row = False)
+        course_plan_detail_lastDay = course_plan_details.objects.filter(course_id = course.id,del_row = False).latest('day')
+        print(course_plan_detail_lastDay.day,data['day'])
+        # for i in range(data['day']):
+        #     week = int(i/7)+1
+        #     print(week,i+1+course_plan_detail_lastDay.day)
+        #     course_plan_detail = course_plan_details.objects.create(
+        #         course_id = course,
+        #         subject_id = sub,
+        #         day = i+1+course_plan_detail_lastDay.day,
+        #         content_type = 'study' if (i+1+course_plan_detail_lastDay.day)%7 != 0 else 'weekly test',
+        #         week = week,
+        #         day_date = datetime.utcnow().__add__(timedelta(days=i,hours=5,minutes=30)),
+        #         duration_in_hours = data['duration'],
+        #         del_row = False
+        #     )
+        plan_details = []
         for i in range(data['day']):
-            week = int(i/7)+1
-            course_plan_detail = course_plan_details.objects.create(
-                course_id = course,
-                subject_id = sub,
-                day = i+1,
-                content_type = 'study' if (i+1)%7 != 0 else 'weekly test',
-                week = week,
-                day_date = datetime.utcnow().__add__(timedelta(days=i,hours=5,minutes=30)),
-                duration_in_hours = data['duration'],
-                del_row = False
-            )
+            week = (i // 7) + 1
+            new_day = i + 1 + course_plan_detail_lastDay.day
+
+            plan_details.append(course_plan_details(
+                course_id=course,
+                subject_id=sub,
+                day=new_day,
+                content_type='study' if new_day % 7 != 0 else 'weekly test',
+                week=week,
+                day_date=datetime.utcnow() + timedelta(days=i, hours=5, minutes=30),
+                duration_in_hours=data['duration'],
+                del_row=False
+            ))
+
+        # Bulk insert in a single query
+        course_plan_details.objects.bulk_create(plan_details)
         return HttpResponse("Added Successfully")
     except Exception as e:
         print(e)
