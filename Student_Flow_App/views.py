@@ -28,6 +28,7 @@ def  LogIn (request,email):
         create_app_usage( user.student_id)
         return JsonResponse({"message": "Successfully Logged In",
                              "student_id":user.student_id,
+                             "batch_id" : user.batch_id.batch_id,
                              'course_id':user.course_id.course_id},safe=False,status=200)
     except Exception as e:
         print(e)

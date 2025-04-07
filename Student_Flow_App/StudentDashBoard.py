@@ -54,14 +54,14 @@ def calculate_progress(start_date, end_date, student_progress,Total_days):
     if current_date.date() < start_date.date() :
         response.update({"progress": 0})
         return response
-    start_date = datetime.strptime(str(start_date).split('.')[0], "%Y-%m-%d %H:%M:%S")
-    end_date = datetime.strptime(str(end_date).split('.')[0], "%Y-%m-%d %H:%M:%S")
+    start_date = datetime.strptime(str(start_date).split('.')[0].split('+')[0], "%Y-%m-%d %H:%M:%S")
+    end_date = datetime.strptime(str(end_date).split('.')[0].split('+')[0], "%Y-%m-%d %H:%M:%S")
     progress =(((current_date - start_date).days / (end_date - start_date).days) * 100)
     response.update({"progress": int(progress) if progress <= 100 else 100})
     return  response
 
 def getdays(date):
-       date = datetime.strptime(str(date).split('.')[0], "%Y-%m-%d %H:%M:%S")
+       date = datetime.strptime(str(date).split('.')[0].split('+')[0], "%Y-%m-%d %H:%M:%S")
        day = int(date.strftime("%d"))
        month = int(date.strftime("%m"))
        if 4 <= day <= 20 or 24 <= day <= 30:
@@ -137,14 +137,16 @@ def fetch_study_hours(request,student_id,week):
         if week.isdigit():
             current_week = int(week)
         else:
-            current_week = course_plan_details.objects.get(course_id = student.course_id,
+            current_week = course_plan_details.objects.filter(course_id = student.course_id,
+                                                           batch_id = student.batch_id,
                                                             day_date__date=today.date(),
                                                             del_row =False)
-            if current_week is None:
-                current_week =1,
+            if current_week is None or len(current_week) == 0 :
+                current_week = 1
             else:
-                current_week=current_week.week
+                current_week=current_week[0].week
         course_details = list(course_plan_details.objects.filter(course_id=student.course_id,
+                                                                batch_id = student.batch_id,
                                                             week=current_week).values('duration_in_hours','day_date'))
         if week.isdigit():
             start_of_week = (course_details[0].get('day_date') - timedelta(days=course_details[0].get('day_date').weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
