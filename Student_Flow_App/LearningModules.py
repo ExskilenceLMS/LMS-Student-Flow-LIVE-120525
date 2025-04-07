@@ -22,17 +22,19 @@ from .sqlrun import get_all_tables
 def fetch_learning_modules(request,student_id,subject,day_number):
     try:
         student = students_info.objects.get(student_id = student_id,del_row = False)
-        blob_data = json.loads(get_blob('LMS_DayWise/'+student.course_id.course_id+'.json'))
+        # blob_data = json.loads(get_blob('LMS_DayWise/'+student.course_id.course_id+'.json'))
+        blob_data = json.loads(get_blob(f'lms_daywise/{student.course_id.course_id}/{student.course_id.course_id}_{student.batch_id.batch_id}.json'))
         day_data = [day  for day in blob_data.get(subject) if day.get('day') == 'Day '+str(day_number)][0] 
         response_data =[]
+        # print(day_data.get('content').get('subtopic_id'))
         for i in day_data.get('subtopicids'):
             response_data.append({
                 'subtopicid':i.get('subtopic_id'),
                 'sub_topic':i.get('subtopic_name'),
-                'lesson': [subdata.get('path') for subdata in day_data.get('content').get(i.get('subtopic_id')) if subdata.get('type')=="video"],
-                'notes': [subdata.get('path') for subdata in day_data.get('content').get(i.get('subtopic_id')) if subdata.get('type')=="file"],
-                'mcqQuestions':sum([ day_data.get('mcq').get(i.get('subtopic_id')).get(qn) for qn in day_data.get('mcq').get(i.get('subtopic_id')) ]),
-                'codingQuestions':sum([day_data.get('coding').get(i.get('subtopic_id')).get(qn) for qn in day_data.get('coding').get(i.get('subtopic_id') )])
+                'lesson': [subdata.get('path') for subdata in day_data.get('content').get(i.get('subtopic_id'),[]) if subdata.get('type')=="video"],
+                'notes': [subdata.get('path') for subdata in day_data.get('content').get(i.get('subtopic_id'),[]) if subdata.get('type')=="file"],
+                'mcqQuestions':sum([ day_data.get('mcq').get(i.get('subtopic_id')).get(qn,0) for qn in day_data.get('mcq').get(i.get('subtopic_id'),{}) ]),
+                'codingQuestions':sum([day_data.get('coding').get(i.get('subtopic_id')).get(qn,0) for qn in day_data.get('coding').get(i.get('subtopic_id'),{} )])
             })
         response =  [
         {
@@ -84,17 +86,22 @@ def add_day_to_student(student_id,subject,week_number,day_number):
             student.student_question_details.get(subject).get('week_'+str(week_number)).update({
                 'day_'+str(day_number):{}
             })
-            needTOsave = True
+        needTOsave = True
+
         response = {'message':'not updated'}
         if needTOsave == True :
             student_info = students_info.objects.get(student_id = student_id,del_row = False)
-            cache_data = cache.get('LMS_DayWise/'+student_info.course_id.course_id+'.json')
+            # cache_data = cache.get('LMS_DayWise/'+student_info.course_id.course_id+'.json')
+            cache_data = json.loads(get_blob(f'lms_daywise/{student_info.course_id.course_id}/{student_info.course_id.course_id}_{student_info.batch_id.batch_id}.json'))
             if cache_data :
-                cache.set('LMS_DayWise/'+student_info.course_id.course_id+'.json',cache_data)
+                # cache.set('LMS_DayWise/'+student_info.course_id.course_id+'.json',cache_data)
+                cache.set(f'lms_daywise/{student_info.course_id.course_id}/{student_info.course_id.course_id}_{student_info.batch_id.batch_id}.json',cache_data)
                 blob_data = cache_data
             else:
-                blob_data = json.loads(get_blob('LMS_DayWise/'+student_info.course_id.course_id+'.json'))
-                cache.set('LMS_DayWise/'+student_info.course_id.course_id+'.json',blob_data)
+                # blob_data = json.loads(get_blob('LMS_DayWise/'+student_info.course_id.course_id+'.json'))
+                blob_data = json.loads(get_blob(f'lms_daywise/{student_info.course_id.course_id}/{student_info.course_id.course_id}_{student_info.batch_id.batch_id}.json'))
+                # cache.set('LMS_DayWise/'+student_info.course_id.course_id+'.json',blob_data)
+                cache.set(f'lms_daywise/{student_info.course_id.course_id}/{student_info.course_id.course_id}_{student_info.batch_id.batch_id}.json',blob_data)
             day_data = [day  for day in blob_data.get(subject) if day.get('day') == 'Day '+str(day_number)][0]
             types = []
             levels ={}
@@ -106,12 +113,12 @@ def add_day_to_student(student_id,subject,week_number,day_number):
                 levels.update({'Coding':day_data.get('coding')})
             qnslist = get_random_questions(types,[st.get('subtopic_id') for st in day_data.get('subtopicids')],levels)
             student.student_question_details.get(subject).get('week_'+str(week_number)).get('day_'+str(day_number)).update({
-                "mcq_questions": qnslist.get('MCQ'),
-                "mcq_questions_status": {i:0 for i in qnslist.get('MCQ')},
-                "mcq_score": "0/"+str(qnslist.get('MCQ_score')),
-                "coding_questions": qnslist.get('Coding'),
-                "coding_questions_status": {i:0 for i in qnslist.get('Coding')},
-                "coding_score": "0/"+str(qnslist.get('Coding_score'))
+                "mcq_questions": qnslist.get('MCQ',[]),
+                "mcq_questions_status": {i:0 for i in qnslist.get('MCQ',[])},
+                "mcq_score": "0/"+str(qnslist.get('MCQ_score',0)),
+                "coding_questions": qnslist.get('Coding',[]),
+                "coding_questions_status": {i:0 for i in qnslist.get('Coding',[])},
+                "coding_score": "0/"+str(qnslist.get('Coding_score',0))
             })
             student.save()
             response.update({'message':'updated',
@@ -136,7 +143,8 @@ def add_day_to_student(student_id,subject,week_number,day_number):
 def fetch_overview_modules(request,student_id,subject,day_number):
     try:
         student = students_info.objects.get(student_id = student_id,del_row = False)
-        blob_data = json.loads(get_blob('LMS_DayWise/'+student.course_id.course_id+'.json'))
+        # blob_data = json.loads(get_blob('LMS_DayWise/'+student.course_id.course_id+'.json'))
+        blob_data = json.loads(get_blob(f'lms_daywise/{student.course_id.course_id}/{student.course_id.course_id}_{student.batch_id.batch_id}.json'))
         response = [day  for day in blob_data.get(subject) if day.get('day') == 'Day '+str(day_number)]
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
@@ -155,7 +163,7 @@ def fetch_questions(request,type,student_id,subject,subject_id,day_number,week_n
             student.student_question_details.update({subject:add_day_to_student(student_id,subject,week_number,day_number).get('data')})
         if student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number) == None:
             student.student_question_details.update({subject:add_day_to_student(student_id,subject,week_number,day_number).get('data')})
-        questions_ids = (student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number).get('mcq_questions' if type.lower() =='mcq' else 'coding_questions'))
+        questions_ids = (student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number).get('mcq_questions' if type.lower() =='mcq' else 'coding_questions',[]))
         if type .lower() == 'mcq':
             student_answers = list(student_practiceMCQ_answers.objects.using('mongodb').filter(student_id = student_id,
                                                                                                 subject_id = subject_id,
@@ -173,55 +181,61 @@ def fetch_questions(request,type,student_id,subject,subject_id,day_number,week_n
             for ans in student_answers}
         container_client =  get_blob_container_client()
         qn_data = []
-        blob_path = 'LMSData/'
+        # blob_path = 'LMSData/'
+        blob_path = 'subjects/'
         list_of_qns = [qn for qn in questions_ids if qn[1:-5] == subTopic]
-        cacheresponse = cache.get('LMS_Rules/Rules.json')
+        print('list_of_qns')
+        if list_of_qns == []:
+            student.student_question_details.update({subject:add_day_to_student(student_id,subject,week_number,day_number).get('data')})
+            list_of_qns = [qn for qn in questions_ids if qn[1:-5] == subTopic]
+        print(list_of_qns)
+        cacheresponse = cache.get('lms_rules/rules.json')
         if cacheresponse:
             # print('cache hit')
-            cache.set('LMS_Rules/Rules.json',cacheresponse)
+            cache.set('lms_rules/rules.json',cacheresponse)
             Rules = cacheresponse
         else:
-            blob_client = container_client.get_blob_client('LMS_Rules/Rules.json')
+            blob_client = container_client.get_blob_client('lms_rules/rules.json')
             Rules = json.loads(blob_client.download_blob().readall())
-            cache.set('LMS_Rules/Rules.json',Rules)
-        if type.lower() == 'mcq':
-            for Qn in list_of_qns:
-                path = f'{blob_path}{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{type.upper()}/{Qn}.json'
-                cacheres = cache.get(path)
-                if cacheres:
-                    # print('cache hit')
-                    cache.set(path,cacheres)
-                    blob_data = cacheres
-                else:
-                    blob_client = container_client.get_blob_client(path)
-                    blob_data = json.loads(blob_client.download_blob().readall())
-                    cache.set(path,blob_data)
-                level = (  'Level'+('1' if Qn[-4].lower()=='e' else '2' if Qn[-4].lower()=='m' else '3' if Qn[-4].lower()=='h' else '3'))
-                blob_data.update({'Qn_name':Qn,
-                                  'entered_ans':student_answers.get(Qn,{'entered_ans':'','score':0}).get('entered_ans'),
-                                  'score':str(student_answers.get(Qn,{'entered_ans':'','score':0}).get('score'))+'/'+''.join([str(i.get('score')) for i in Rules.get(type.lower(),[]) if i.get('level').lower() == level.lower()]),
-                                  'status': True if student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number).get(type.lower()+'_questions_status').get(Qn) == 2 else False
-                                  })
-                qn_data.append(blob_data)
-        elif type.lower() == 'coding':
-            for Qn in list_of_qns:
-                path = f'{blob_path}{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{type[0].upper()+str(type[1:]).lower()}/{Qn}.json'
-                cacheres = cache.get(path)
-                if cacheres:
-                    # print('cache hit')
-                    cache.set(path,cacheres)
-                    blob_data = cacheres
-                else:
-                    blob_client = container_client.get_blob_client(path)
-                    blob_data = json.loads(blob_client.download_blob().readall())
-                    cache.set(path,blob_data)
-                level = (  'Level'+('1' if Qn[-4].lower()=='e' else '2' if Qn[-4].lower()=='m' else '3' if Qn[-4].lower()=='h' else '3'))
-                blob_data.update({'Qn_name':Qn,
-                                  'entered_ans':student_answers.get(Qn,{'entered_ans':'','score':0}).get('entered_ans'),
-                                  'score':str(student_answers.get(Qn,{'entered_ans':'','score':0}).get('score'))+'/'+''.join([str(i.get('score')) for i in Rules.get(type.lower(),[]) if i.get('level').lower() == level.lower()]),
-                                  'status': True if student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number).get(type.lower()+'_questions_status').get(Qn) == 2 else False
-                                  })
-                qn_data.append(blob_data)
+            cache.set('lms_rules/rules.json',Rules)
+        # if type.lower() == 'mcq':
+        for Qn in list_of_qns:
+            path = f'{blob_path}{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{type.lower()}/{Qn}.json'
+            cacheres = cache.get(path)
+            if cacheres:
+                # print('cache hit')
+                cache.set(path,cacheres)
+                blob_data = cacheres
+            else:
+                blob_client = container_client.get_blob_client(path)
+                blob_data = json.loads(blob_client.download_blob().readall())
+                cache.set(path,blob_data)
+            level = (  'Level'+('1' if Qn[-4].lower()=='e' else '2' if Qn[-4].lower()=='m' else '3' if Qn[-4].lower()=='h' else '3'))
+            blob_data.update({'Qn_name':Qn,
+                              'entered_ans':student_answers.get(Qn,{'entered_ans':'','score':0}).get('entered_ans'),
+                              'score':str(student_answers.get(Qn,{'entered_ans':'','score':0}).get('score'))+'/'+''.join([str(i.get('score')) for i in Rules.get(type.lower(),[]) if i.get('level').lower() == level.lower()]),
+                              'status': True if student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number).get(type.lower()+'_questions_status').get(Qn) == 2 else False
+                              })
+            qn_data.append(blob_data)
+        # elif type.lower() == 'coding':
+        #     for Qn in list_of_qns:
+        #         path = f'{blob_path}{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{type.lower()}/{Qn}.json'
+        #         cacheres = cache.get(path)
+        #         if cacheres:
+        #             # print('cache hit')
+        #             cache.set(path,cacheres)
+        #             blob_data = cacheres
+        #         else:
+        #             blob_client = container_client.get_blob_client(path)
+        #             blob_data = json.loads(blob_client.download_blob().readall())
+        #             cache.set(path,blob_data)
+        #         level = (  'Level'+('1' if Qn[-4].lower()=='e' else '2' if Qn[-4].lower()=='m' else '3' if Qn[-4].lower()=='h' else '3'))
+        #         blob_data.update({'Qn_name':Qn,
+        #                           'entered_ans':student_answers.get(Qn,{'entered_ans':'','score':0}).get('entered_ans'),
+        #                           'score':str(student_answers.get(Qn,{'entered_ans':'','score':0}).get('score'))+'/'+''.join([str(i.get('score')) for i in Rules.get(type.lower(),[]) if i.get('level').lower() == level.lower()]),
+        #                           'status': True if student.student_question_details.get(subject).get('week_'+week_number).get('day_'+day_number).get(type.lower()+'_questions_status').get(Qn) == 2 else False
+        #                           })
+        #         qn_data.append(blob_data)
         container_client.close()
         return JsonResponse(qn_data,safe=False,status=200)
     except Exception as e:
@@ -236,7 +250,8 @@ def submit_MCQ_Question(request):
         data = json.loads(request.body)
         student_id = data.get('student_id')
         question_id = data.get('question_id')
-        blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json'))
+        # blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json'))
+        blob_rules_data = json.loads(get_blob('lms_rules/rules.json'))
         blob_rules_data = blob_rules_data.get('mcq')
         score = 0
         outoff = 0
@@ -319,7 +334,8 @@ def submition_coding_question(request):
                                                                 del_row = 'False')
         if student.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('coding_questions_status').get(question_id) ==2:
             return JsonResponse({ "message": "Already Submited","status":True},safe=False,status=200)
-        blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json')).get('coding')
+        # blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json')).get('coding')
+        blob_rules_data = json.loads(get_blob(f'lms_rules/rules.json')).get('coding')
         score = 0
         if question_id[-4]=='e':
             score = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level1'][0]

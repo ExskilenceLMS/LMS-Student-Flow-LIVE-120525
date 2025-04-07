@@ -50,25 +50,25 @@ def get_random_questions(types,subtops,levels):
     try:
         container_client =  get_blob_container_client()
         files = {}
-        cacheresponse = cache.get('LMS_Rules/Rules.json')
+        cacheresponse = cache.get('lms_rules/rules.json')
         if cacheresponse:
             # print('cache hit')
-            cache.set('LMS_Rules/Rules.json',cacheresponse)
+            cache.set('lms_rules/rules.json',cacheresponse)
             Rules = cacheresponse
         else:
-            blob_client = container_client.get_blob_client('LMS_Rules/Rules.json')
+            blob_client = container_client.get_blob_client('lms_rules/rules.json')
             Rules = json.loads(blob_client.download_blob().readall())
-            cache.set('LMS_Rules/Rules.json',Rules)
+            cache.set('lms_rules/rules.json',Rules)
         for type in types:
             for subtop in subtops:
-                cacheed_lists = cache.get(f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/')
+                cacheed_lists = cache.get(f'subjects/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type.lower()}/')
                 if cacheed_lists:
-                    cache.set(f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/',cacheed_lists)
+                    cache.set(f'subjects/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type.lower()}/',cacheed_lists)
                     all_qns_list = cacheed_lists
                 else:
                     all_qns_list =container_client.list_blobs(
-                                    name_starts_with =f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/')
-                    cache.set(f'LMSData/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type}/',all_qns_list)
+                                    name_starts_with =f'subjects/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type.lower()}/')
+                    cache.set(f'subjects/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type.lower()}/',all_qns_list)
                 all_qns = [blob.name.split('/')[-1].split('.')[0] for blob in all_qns_list]
                 Easy    = [qn for qn in all_qns if qn[-4]=='e']
                 Medium  = [qn for qn in all_qns if qn[-4]=='m']

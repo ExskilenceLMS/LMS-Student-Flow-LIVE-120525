@@ -138,7 +138,7 @@ class course_plan_details(models.Model):
     week = models.IntegerField()
     day_date = models.DateTimeField()
     duration_in_hours = models.IntegerField()
-    # batch_id = models.ForeignKey(batches,  on_delete=models.SET_NULL, null=True,default=None)
+    batch_id = models.ForeignKey(batches,  on_delete=models.SET_NULL, null=True,default=None)
     del_row = models.BooleanField(default=False)
 
     def __str__(self):
@@ -300,7 +300,7 @@ class college_details(models.Model):
         db_table = 'college_details'
 # 18
 class branch_details(models.Model):
-    college_id = models.CharField(max_length=20)
+    college_id = models.ForeignKey(college_details, on_delete=models.SET_NULL, null=True)
     branch_id = models.CharField(max_length=20)
     branch = models.CharField(max_length=20)
     del_row = models.BooleanField(default=False)

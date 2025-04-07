@@ -95,11 +95,12 @@ def fetch_live_session(request,student_id):
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
     
 @api_view(['GET'])
-def fetch_upcoming_events(request,Course_id):
+def fetch_upcoming_events(request,Course_id,batch_id):
     try:
         print(Course_id)
         current_time = datetime.utcnow() + timedelta(days=0,hours=5, minutes=30)
-        blob_data = json.loads(get_blob('LMS_DayWise/Course0001.json'))
+        # blob_data = json.loads(get_blob('LMS_DayWise/Course0001.json'))
+        blob_data = json.loads(get_blob(f'lms_daywise/{Course_id}/{Course_id}_{batch_id}.json'))
         response = extract_events(blob_data,current_time)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
@@ -179,8 +180,9 @@ def fetch_study_hours(request,student_id,week):
 def fetch_calendar(request,student_id):
     try:
         current_time = datetime.utcnow() + timedelta(days=0,hours=5, minutes=30)
-        blob_data = json.loads(get_blob('LMS_DayWise/Course0001.json'))
+        # blob_data = json.loads(get_blob('LMS_DayWise/Course0001.json'))
         student = students_info.objects.get(student_id = student_id,del_row = False)
+        blob_data = json.loads(get_blob(f'lms_daywise/{student.course_id.course_id}/{student.course_id.course_id}_{student.batch_id.batch_id}.json'))
         response = extract_calendar_events(blob_data,current_time)
         return JsonResponse({'year':(current_time.strftime("%Y")),
                               'month':str(int(current_time.strftime("%m"))-1),

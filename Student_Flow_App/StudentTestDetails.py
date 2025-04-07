@@ -11,7 +11,7 @@ from django.db.models import Max, F ,Sum,Min,Count
 # from django.contrib.postgres.aggregates import ArrayAgg
 import json
 from django.db.models.functions import TruncDate
-from LMS_Project.Blobstorage import *
+# from LMS_Project.Blobstorage import *
 from .AppUsage import update_app_usage
 from django.core.cache import cache
 

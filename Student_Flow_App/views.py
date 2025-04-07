@@ -44,7 +44,7 @@ def LogOut (request, student_id):
 @api_view(['GET'])
 def fetch_FAQ(request):
     try: 
-        return JsonResponse(json.loads(get_blob('FAQ/faq.json')),safe=False,status=200)
+        return JsonResponse(json.loads(get_blob('faq/faq.json')),safe=False,status=200)
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)

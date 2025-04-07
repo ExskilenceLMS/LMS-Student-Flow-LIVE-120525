@@ -42,8 +42,11 @@ def fetch_top_navigation(request,student_id):
 @api_view(['GET'])
 def fetch_roadmap(request,student_id,course_id,subject_id):
     try:
-        blob_data = json.loads(get_blob(f'LMS_DayWise/{course_id}.json'))
-        course = courses.objects.get(course_id=course_id)
+        student = students_info.objects.get(student_id = student_id,del_row = False)
+        course = student.course_id
+        # blob_data = json.loads(get_blob(f'LMS_DayWise/{course_id}.json'))
+        blob_data = json.loads(get_blob(f'lms_daywise/{course.course_id}/{course.course_id}_{student.batch_id.batch_id}.json'))
+        # course = courses.objects.get(course_id=course_id)
         sub = subjects.objects.get(subject_id = subject_id,del_row = False)
         course_details = list(course_plan_details.objects.filter(course_id=course, subject_id=sub, del_row=False)
                   .values('week')
@@ -54,10 +57,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                   )
                   .order_by('week'))
         studentQuestions = students_details.objects.using('mongodb').get(
-            student_id = student_id,del_row = 'False',
-            # defaults = {
-            #     'student_id': student_id,
-            # }
+            student_id = student_id,del_row = 'False'
         )
         sub_data = studentQuestions.student_question_details.get(sub.subject_name,{})
         days = []
@@ -71,7 +71,10 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                 prev_week_data = {}
             week_first_day = 0
             for d in blob_data.get(sub.subject_name):
-                the_date = datetime.strptime(d.get('date').replace('T',' ').split('.')[0].replace('Z',''), "%Y-%m-%d %H:%M:%S")
+                if d.get('date').__contains__('T') or d.get('date').__contains__('Z') or len(d.get('date'))>10: 
+                    the_date = datetime.strptime(d.get('date').replace('T',' ').split('.')[0].replace('Z',''), "%Y-%m-%d %H:%M:%S") 
+                else:
+                    the_date = datetime.strptime(d.get('date')+" 00:00:00", "%Y-%m-%d %H:%M:%S")
                 if i.get('startDate').date() <= the_date.date() and the_date.date() <= i.get('endDate').date():
                     if week_first_day == 0:
                         week_first_day = int(d.get('day').split(' ')[-1]) 
