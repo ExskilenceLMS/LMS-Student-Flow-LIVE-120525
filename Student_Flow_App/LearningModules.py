@@ -86,8 +86,7 @@ def add_day_to_student(student_id,subject,week_number,day_number):
             student.student_question_details.get(subject).get('week_'+str(week_number)).update({
                 'day_'+str(day_number):{}
             })
-        needTOsave = True
-
+            needTOsave = True
         response = {'message':'not updated'}
         if needTOsave == True :
             student_info = students_info.objects.get(student_id = student_id,del_row = False)
@@ -112,10 +111,14 @@ def add_day_to_student(student_id,subject,week_number,day_number):
                 types.append('Coding')
                 levels.update({'Coding':day_data.get('coding')})
             qnslist = get_random_questions(types,[st.get('subtopic_id') for st in day_data.get('subtopicids')],levels)
-            student.student_question_details.get(subject).get('week_'+str(week_number)).get('day_'+str(day_number)).update({
+            if qnslist.get('MCQ') is not None:
+                student.student_question_details.get(subject).get('week_'+str(week_number)).get('day_'+str(day_number)).update({
                 "mcq_questions": qnslist.get('MCQ',[]),
                 "mcq_questions_status": {i:0 for i in qnslist.get('MCQ',[])},
-                "mcq_score": "0/"+str(qnslist.get('MCQ_score',0)),
+                "mcq_score": "0/"+str(qnslist.get('MCQ_score',0))
+            })
+            if qnslist.get('Coding') is not None:
+                student.student_question_details.get(subject).get('week_'+str(week_number)).get('day_'+str(day_number)).update({
                 "coding_questions": qnslist.get('Coding',[]),
                 "coding_questions_status": {i:0 for i in qnslist.get('Coding',[])},
                 "coding_score": "0/"+str(qnslist.get('Coding_score',0))
@@ -184,11 +187,9 @@ def fetch_questions(request,type,student_id,subject,subject_id,day_number,week_n
         # blob_path = 'LMSData/'
         blob_path = 'subjects/'
         list_of_qns = [qn for qn in questions_ids if qn[1:-5] == subTopic]
-        print('list_of_qns')
         if list_of_qns == []:
             student.student_question_details.update({subject:add_day_to_student(student_id,subject,week_number,day_number).get('data')})
             list_of_qns = [qn for qn in questions_ids if qn[1:-5] == subTopic]
-        print(list_of_qns)
         cacheresponse = cache.get('lms_rules/rules.json')
         if cacheresponse:
             # print('cache hit')

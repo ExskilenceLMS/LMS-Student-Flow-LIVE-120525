@@ -85,9 +85,11 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                     coding_qns =  len(day_data.get('coding_questions',[]))
                     mcq_answered = len([dd for dd in day_data.get('mcq_questions_status',{}) if day_data.get('mcq_questions_status',{}).get(dd)==2])
                     coding_answered = len([dd for dd in day_data.get('coding_questions_status',{}) if day_data.get('coding_questions_status',{}).get(dd)==2])
-                    if mcq_qns == mcq_answered and coding_qns == coding_answered and mcq_qns > 0 and coding_qns > 0:
+                    if (day_data.get('mcq_questions') is None and coding_qns == coding_answered and coding_qns > 0
+                        ) or (day_data.get('coding_questions') is None and mcq_qns == mcq_answered and mcq_qns > 0
+                              )or(mcq_qns == mcq_answered and coding_qns == coding_answered and mcq_qns > 0 and coding_qns > 0):
                         status = 'Completed'
-                    elif mcq_answered > 0 or coding_answered > 0 or day_data != {}:
+                    elif mcq_answered > 0 or coding_answered > 0 or day_data != {} :
                         status = 'Resume'
                     else:
                         prev_day_data = week_data.get('day_'+str(int(d.get('day').split(' ')[-1])-1),{})
@@ -111,7 +113,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                             'topics':d.get('topic'),
                             'score' :'0/0',
 
-                            'status':status
+                            'status':""
                               })
                     elif d.get('topic') == 'Onsite Workshop' or d.get('topic') == 'Final Test':
                         other_weeks.append({#'day':daynumber+1,
