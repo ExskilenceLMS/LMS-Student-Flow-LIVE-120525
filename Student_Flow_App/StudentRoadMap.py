@@ -44,7 +44,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
     try:
         student = students_info.objects.get(student_id = student_id,del_row = False)
         course = student.course_id
-        # blob_data = json.loads(get_blob(f'LMS_DayWise/{course_id}.json'))
+        # blob_data = json.loads(get_blob(f'LMS_DayWise/Course0001.json')) #json.loads(get_blob(f'lms_daywise/{course.course_id}/{course_id}.json'))
         blob_data = json.loads(get_blob(f'lms_daywise/{course.course_id}/{course.course_id}_{student.batch_id.batch_id}.json'))
         # course = courses.objects.get(course_id=course_id)
         sub = subjects.objects.get(subject_id = subject_id,del_row = False)
@@ -62,6 +62,9 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
         sub_data = studentQuestions.student_question_details.get(sub.subject_name,{})
         days = []
         other_weeks = []
+        Onsite = []
+        intern = []
+        final = []
         daynumber=0
         for i in course_details:
             week_data = sub_data.get('week_'+str(i.get('week')),{})
@@ -116,7 +119,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                             'status':""
                               })
                     elif d.get('topic') == 'Onsite Workshop' or d.get('topic') == 'Final Test':
-                        other_weeks.append({#'day':daynumber+1,
+                        Onsite.append({#'day':daynumber+1,
                             'day_key':d.get('day').split(' ')[-1],
                             "date":getdays(the_date),#+" "+the_date.strftime("%Y")[2:],
                             'week':len(course_details)+other_weeks.__len__()+1,
@@ -126,7 +129,17 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                             'status':''
                               })
                     elif d.get('topic') == 'Internship':
-                        other_weeks.append({'day':'',
+                        intern.append({'day':'',
+                            'day_key':d.get('day').split(' ')[-1],
+                            "date":getdays(the_date),#+" "+the_date.strftime("%Y")[2:],
+                            'week':len(course_details)+other_weeks.__len__()+1,
+                            'topics':d.get('topic'),
+                            'score' :'0/0',
+                            'days':[],
+                            'status':''
+                              })
+                    elif d.get('topic') == 'Final Test':
+                        final.append({'day':'',
                             'day_key':d.get('day').split(' ')[-1],
                             "date":getdays(the_date),#+" "+the_date.strftime("%Y")[2:],
                             'week':len(course_details)+other_weeks.__len__()+1,
@@ -151,6 +164,28 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                     daynumber+=1    
             i.update({'days': days})
             days = []
+        other_weeks.extend([{
+            'week':len(course_details)+1,
+            'startDate': Onsite[0].get('date') if Onsite!=[] else '',
+            'endDate': Onsite[-1].get('date') if Onsite!=[] else '',
+            'days':Onsite,
+            'title':'Onsite Workshop'
+        },
+        {
+            'week':len(course_details)+2,
+            'startDate': final[0].get('date') if final!=[] else '',
+            'endDate': final[-1].get('date') if final!=[] else '',
+            'days':final,
+            'title':'Final Test'
+        },
+        {
+            'week':len(course_details)+3,
+            'startDate': intern[0].get('date') if intern!=[] else '',
+            'endDate': intern[-1].get('date') if intern!=[] else '',
+            'days':intern,
+            'title':'Internship Challenge'
+        }]
+        )
         course_details.extend(other_weeks)
         response = {
             "weeks":course_details,
