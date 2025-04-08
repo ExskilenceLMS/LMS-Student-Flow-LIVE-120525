@@ -169,21 +169,21 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
             'startDate': Onsite[0].get('date') if Onsite!=[] else '',
             'endDate': Onsite[-1].get('date') if Onsite!=[] else '',
             'days':Onsite,
-            'title':'Onsite Workshop'
+            'topics':'Onsite Workshop'
         },
         {
             'week':len(course_details)+2,
             'startDate': final[0].get('date') if final!=[] else '',
             'endDate': final[-1].get('date') if final!=[] else '',
             'days':final,
-            'title':'Final Test'
+            'topics':'Final Test'
         },
         {
             'week':len(course_details)+3,
             'startDate': intern[0].get('date') if intern!=[] else '',
             'endDate': intern[-1].get('date') if intern!=[] else '',
             'days':intern,
-            'title':'Internship Challenge'
+            'topics':'Internship Challenge'
         }]
         )
         course_details.extend(other_weeks)
