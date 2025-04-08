@@ -159,7 +159,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                             'practiceCoding': { 'questions': str(coding_answered)
                                             +'/'+str(coding_qns),
                                              'score': day_data.get('coding_score','0/0') },
-                            'status':status if str(d.get('topic')).lower() != 'festivals' or str(d.get('topic')).lower() != 'Preparation Day'.lower() or str(d.get('topic')).lower() != 'Semester Exam'.lower()  or  str(d.get('topic')).lower() != 'Internship'.lower() else ''
+                            'status':status if str(d.get('topic')).lower() != 'Festivals'.lower() and str(d.get('topic')).lower() != 'Preparation Day'.lower() and str(d.get('topic')).lower() != 'Semester Exam'.lower()  and  str(d.get('topic')).lower() != 'Internship'.lower() else ''
                               })
                     daynumber+=1    
             i.update({'days': days})
