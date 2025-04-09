@@ -111,6 +111,9 @@ def add_day_to_student(student_id,subject,week_number,day_number):
                 types.append('Coding')
                 levels.update({'Coding':day_data.get('coding')})
             qnslist = get_random_questions(types,[st.get('subtopic_id') for st in day_data.get('subtopicids')],levels)
+            student.student_question_details.get(subject).get('week_'+str(week_number)).get('day_'+str(day_number)).update({
+                "sub_topic_status": {st.get('subtopic_id'):0 for st in day_data.get('subtopicids')},
+            })
             if qnslist.get('MCQ') is not None:
                 student.student_question_details.get(subject).get('week_'+str(week_number)).get('day_'+str(day_number)).update({
                 "mcq_questions": qnslist.get('MCQ',[]),
@@ -415,6 +418,20 @@ def submition_coding_question(request):
 def get_SQL_tables (request):
     try:
         return JsonResponse(get_all_tables(),safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+@api_view(['PUT']) 
+def update_day_status(request):
+    try:
+        data = json.loads(request.body)
+        student = students_details.objects.using('mongodb').get(student_id = data.get('student_id'),del_row = False)
+        student.student_question_details.get(data.get('subject')
+                                             ).get('week_'+str(data.get('week_number'))
+                                                   ).get('day_'+str(data.get('day_number'))
+                                                         ).get('sub_topic_status').update({data.get('sub_topic'):2})
+        student.save()
+        return JsonResponse({'message':'Updated'},safe=False,status=200)    
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)

@@ -37,10 +37,18 @@ def fetch_top_navigation(request,student_id):
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
-    
 
 @api_view(['GET'])
 def fetch_roadmap(request,student_id,course_id,subject_id):
+    try:
+
+        return fetch_roadmap_old(request,student_id,course_id,subject_id)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+
+# @api_view(['GET'])
+def fetch_roadmap_old(request,student_id,course_id,subject_id):
     try:
         student = students_info.objects.get(student_id = student_id,del_row = False)
         course = student.course_id

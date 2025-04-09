@@ -45,6 +45,7 @@ urlpatterns = [
     path('api/student/add/days/', learning_modules.add_days_to_student),
     path('api/student/practicemcq/submit/', learning_modules.submit_MCQ_Question),
     path('api/student/practicecoding/tables/', learning_modules.get_SQL_tables),
+    path('api/student/lessons/status/', learning_modules.update_day_status),
     
     # coding Validation URLs
     path('api/student/coding/py/',    cv.run_python),
