@@ -426,6 +426,20 @@ def update_day_status(request):
     try:
         data = json.loads(request.body)
         student = students_details.objects.using('mongodb').get(student_id = data.get('student_id'),del_row = False)
+        if student.student_question_details.get(data.get('subject')) == None:
+            student.student_question_details.update({data.get('subject'):add_day_to_student(data.get('student_id'),data.get('subject'),data.get('week_number'),data.get('day_number')).get('data')})
+        if student.student_question_details.get(data.get('subject')).get('week_'+data.get('week_number')) == None:
+            student.student_question_details.update({data.get('subject'):add_day_to_student(data.get('student_id'),data.get('subject'),data.get('week_number'),data.get('day_number')).get('data')})
+        if student.student_question_details.get(data.get('subject')).get('week_'+data.get('week_number')).get('day_'+data.get('day_number')) == None:
+            student.student_question_details.update({data.get('subject'):add_day_to_student(data.get('student_id'),data.get('subject'),data.get('week_number'),data.get('day_number')).get('data')})
+        current_status = student.student_question_details.get(data.get('subject')
+                                                ).get('week_'+str(data.get('week_number'))
+                                                      ).get('day_'+str(data.get('day_number'))
+                                                            ).get('sub_topic_status').get(data.get('sub_topic'))
+        if current_status == 2 :
+            return JsonResponse({'message':'Already Completed'},safe=False,status=200)
+        if current_status == 1 and data.get('status') == False:
+            return JsonResponse({'message':'Already Started'},safe=False,status=200)
         student.student_question_details.get(data.get('subject')
                                              ).get('week_'+str(data.get('week_number'))
                                                    ).get('day_'+str(data.get('day_number'))
