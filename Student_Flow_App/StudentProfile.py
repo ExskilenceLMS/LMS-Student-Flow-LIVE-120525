@@ -96,3 +96,14 @@ def update_profile(request):
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)  
     
+@api_view(['GET'])
+def college_and_branch_list(request):
+    try:
+        colleges = college_details.objects.all()
+        branches = branch_details.objects.all()
+        response = {'colleges':list(colleges.values('college_name')),'branches':list(branches.values('branch'))}
+        return JsonResponse(response,safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+    
