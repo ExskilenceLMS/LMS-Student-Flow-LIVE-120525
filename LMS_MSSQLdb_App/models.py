@@ -294,6 +294,7 @@ class college_details(models.Model):
     college_name = models.CharField(max_length=50)
     center_name = models.CharField(max_length=20)
     college_code = models.CharField(max_length=20)
+    college_type = models.CharField(max_length=20) # 10th or 12th or diploma or degree or 10th#12th/diploma#BE
     del_row = models.BooleanField(default=False)
 
     class Meta:

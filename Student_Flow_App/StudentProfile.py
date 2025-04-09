@@ -99,9 +99,18 @@ def update_profile(request):
 @api_view(['GET'])
 def college_and_branch_list(request):
     try:
-        colleges = college_details.objects.all()
-        branches = branch_details.objects.all()
-        response = {'colleges':list(colleges.values('college_name')),'branches':list(branches.values('branch'))}
+        branches = branch_details.objects.filter(del_row =False)
+        colleges = set(item.college_id.college_name for item in branches)
+        new_college_types = ['10th','12th','BE']
+        response = {}
+        for college_type in new_college_types:
+            response.update({college_type if college_type != '12th' else '12th/diploma':{}})
+            for college in colleges:
+                response.get(college_type if college_type != '12th' else '12th/diploma'   ).update({
+                    college:[branch.branch for branch in branches if branch.college_id.college_name == college and branch.college_id.college_type.__contains__(college_type) ]
+                    })
+                if response.get(college_type if college_type != '12th' else '12th/diploma').get (college) == []:
+                    response.get(college_type if college_type != '12th' else '12th/diploma').pop(college)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
