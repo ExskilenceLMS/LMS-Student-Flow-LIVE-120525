@@ -429,7 +429,7 @@ def update_day_status(request):
         student.student_question_details.get(data.get('subject')
                                              ).get('week_'+str(data.get('week_number'))
                                                    ).get('day_'+str(data.get('day_number'))
-                                                         ).get('sub_topic_status').update({data.get('sub_topic'):2})
+                                                         ).get('sub_topic_status').update({data.get('sub_topic'):2 if data.get('status') == True else 1})
         student.save()
         return JsonResponse({'message':'Updated'},safe=False,status=200)    
     except Exception as e:
