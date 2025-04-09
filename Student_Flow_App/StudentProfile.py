@@ -17,7 +17,7 @@ def fetch_student_Profile(request,student_id):
             'student_id' : student.student_id,
             'student_name' : student.student_firstname +' '+student.student_lastname,
             'course_name' : student.course_id.course_name,
-            'batch_name' : student.batch_id,
+            'batch_name' : student.batch_id.batch_name if student.batch_id is not None else student.batch_id,
             'subjects' : [sub.get("subject_id__subject_name") for sub in subjects],
             'profile_details' : {
                 'college':student.college,
