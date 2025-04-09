@@ -159,7 +159,7 @@ def fetch_study_hours(request,student_id,week):
                                                             ).annotate(date=TruncDate('logged_in')).values('date').annotate(
                                                             total_study_hours=Sum(F('logged_out') - F('logged_in'))).order_by('date')
         list_of_duration = [i.get("duration_in_hours")  for i in  course_details]
-        response = {'daily_limit':sum(list_of_duration)/len(list_of_duration) if list_of_duration else 0,
+        response = {'daily_limit':round(sum(list_of_duration)/len(list_of_duration)) if list_of_duration else 0,
                     'weekly_limit':current_week,
                     'hours':[]}
         hour_spent ={ i.get('date'):i.get('total_study_hours') for i in student_app_usages}
