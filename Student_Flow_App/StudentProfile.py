@@ -112,7 +112,7 @@ def college_and_branch_list(request):
         #         if response.get(college_type if college_type != '12th' else '12th/diploma').get (college) == []:
         #             response.get(college_type if college_type != '12th' else '12th/diploma').pop(college)
         for college in colleges:
-             response.update({str(college).replace(' ','_'):[branch.branch for branch in branches if branch.college_id.college_name == college  ]
+             response.update({str(college):[branch.branch for branch in branches if branch.college_id.college_name == college  ]
              })
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
