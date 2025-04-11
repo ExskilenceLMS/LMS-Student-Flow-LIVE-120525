@@ -101,16 +101,19 @@ def college_and_branch_list(request):
     try:
         branches = branch_details.objects.filter(del_row =False)
         colleges = set(item.college_id.college_name for item in branches)
-        new_college_types = ['10th','12th','BE']
+        # new_college_types = ['10th','12th','BE']
         response = {}
-        for college_type in new_college_types:
-            response.update({college_type if college_type != '12th' else '12th/diploma':{}})
-            for college in colleges:
-                response.get(college_type if college_type != '12th' else '12th/diploma'   ).update({
-                    college:[branch.branch for branch in branches if branch.college_id.college_name == college and branch.college_id.college_type.__contains__(college_type) ]
-                    })
-                if response.get(college_type if college_type != '12th' else '12th/diploma').get (college) == []:
-                    response.get(college_type if college_type != '12th' else '12th/diploma').pop(college)
+        # # for college_type in new_college_types:
+        #     response.update({college_type if college_type != '12th' else '12th/diploma':{}})
+        #     for college in colleges:
+        #         response.get(college_type if college_type != '12th' else '12th/diploma'   ).update({
+        #             college:[branch.branch for branch in branches if branch.college_id.college_name == college and branch.college_id.college_type.__contains__(college_type) ]
+        #             })
+        #         if response.get(college_type if college_type != '12th' else '12th/diploma').get (college) == []:
+        #             response.get(college_type if college_type != '12th' else '12th/diploma').pop(college)
+        for college in colleges:
+             response.update({str(college).replace(' ','_'):[branch.branch for branch in branches if branch.college_id.college_name == college  ]
+             })
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
