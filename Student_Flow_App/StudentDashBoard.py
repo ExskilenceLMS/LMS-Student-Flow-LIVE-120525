@@ -86,7 +86,7 @@ def fetch_live_session(request,student_id):
             ).order_by('-session_starttime').values_list('session_title','session_starttime')
         response = [{
             "title":session[0],
-            "date":getdays(session[1])+" "+session[1].strftime("%Y")[2:],
+            "date":getdays(session[1]),#+" "+session[1].strftime("%Y")[2:],
             "time":session[1].strftime("%I:%M") + " " + session[1].strftime("%p")}            for session in live_session ]
         update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
@@ -116,7 +116,7 @@ def extract_events(blob_data,current_time):
                 events.append({
                     "title":i.get('topic'),
                     'subject':event,
-                    "date":getdays(date)+" "+date.strftime("%Y")[2:],
+                    "date":getdays(date),#+" "+date.strftime("%Y")[2:],
                     "time":date.strftime("%I:%M") + " " + date.strftime("%p"),
                     'datetime':date
                 })
@@ -202,7 +202,7 @@ def extract_calendar_events(blob_data,current_time):
                 events.append({
                     "title":i.get('topic'),
                     'subject':event,
-                    "date":getdays(date)+" "+date.strftime("%Y"),
+                    "date":getdays(date),#+" "+date.strftime("%Y"),
                     "time":date.strftime("%I:%M") + " " + date.strftime("%p"),
                     'datetime':date.date()
                 })
