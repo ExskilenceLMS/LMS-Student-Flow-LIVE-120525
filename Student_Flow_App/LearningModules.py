@@ -22,6 +22,8 @@ from .sqlrun import get_all_tables
 def fetch_learning_modules(request,student_id,subject,day_number):
     try:
         student = students_info.objects.get(student_id = student_id,del_row = False)
+        student_details = students_details.objects.using('mongodb').get(student_id = student_id,del_row = 'False')
+        print('student_details',student_details.student_question_details.get(subject).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status'))
         # blob_data = json.loads(get_blob('LMS_DayWise/'+student.course_id.course_id+'.json'))
         blob_data = json.loads(get_blob(f'lms_daywise/{student.course_id.course_id}/{student.course_id.course_id}_{student.batch_id.batch_id}.json'))
         day_data = [day  for day in blob_data.get(subject) if day.get('day') == 'Day '+str(day_number)][0] 
@@ -36,11 +38,15 @@ def fetch_learning_modules(request,student_id,subject,day_number):
                 'mcqQuestions':sum([ day_data.get('mcq').get(i.get('subtopic_id')).get(qn,0) for qn in day_data.get('mcq').get(i.get('subtopic_id'),{}) ]),
                 'codingQuestions':sum([day_data.get('coding').get(i.get('subtopic_id')).get(qn,0) for qn in day_data.get('coding').get(i.get('subtopic_id'),{} )])
             })
+        status ={'current_id': ""}
+        [status.update({'current_id':i}) for i in student_details.student_question_details.get(subject).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status')
+          if student_details.student_question_details.get(subject).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status').get(i) == 1]    
         response =  [
         {
             'Day': day_data.get('day'),
             'title':  day_data.get('topic'),
             'duration':  day_data.get('duration'),
+            'user_subtopic_id': status.get('current_id'),
             'sub_topic_data':response_data
         }]
         return JsonResponse(response,safe=False,status=200)

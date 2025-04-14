@@ -1,7 +1,7 @@
 import calendar
 from itertools import count
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse,StreamingHttpResponse
 from rest_framework.decorators import api_view
 from LMS_MSSQLdb_App.models import *
 from LMS_Mongodb_App.models import *
@@ -10,8 +10,10 @@ from django.utils import timezone
 from django.db.models import Max, F ,Sum,Min,Count
 # from django.contrib.postgres.aggregates import ArrayAgg
 import json
+import requests
 from django.db.models.functions import TruncDate
 from LMS_Project.Blobstorage import *
+from LMS_Project.settings import * 
 from .AppUsage import update_app_usage, create_app_usage
 from django.core.cache import cache
 ONTIME = datetime.utcnow().__add__(timedelta(hours=5,minutes=30))
@@ -49,6 +51,23 @@ def fetch_FAQ(request):
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+
+@api_view(['POST'])
+def get_pdf(request):
+    try:
+        data = json.loads(request.body)
+        file_url = data.get('file_url')
+        # file_url = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/{data.get('file_url')}'
+        response = requests.get(file_url, stream=True)
+        response.raise_for_status()
+        return StreamingHttpResponse(
+            response.iter_content(chunk_size=1024),
+            content_type='application/pdf'
+        )
+    except requests.RequestException as err:
+        print(err)
+        return StreamingHttpResponse('PDF fetch failed', status=500)
+
     
 # ===========================================================TESTING SPACE ===========================================================================================
 

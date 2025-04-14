@@ -72,6 +72,9 @@ urlpatterns = [
     path('api/student/profile/', profile.update_profile),
     path('api/colleges/', profile.college_and_branch_list),
 
+    # PDF URLs
+    path('pdf/', views.get_pdf),
+
     # TESTING URLS
     path('addstudent/',      tests.addStudent),
     path('addstudentactivity/<str:day>/<str:week>/',      tests.addStudetsActivity),
