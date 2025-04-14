@@ -23,10 +23,15 @@ def fetch_learning_modules(request,student_id,subject,day_number):
     try:
         student = students_info.objects.get(student_id = student_id,del_row = False)
         student_details = students_details.objects.using('mongodb').get(student_id = student_id,del_row = 'False')
-        print('student_details',student_details.student_question_details.get(subject).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status'))
+        if student_details.student_question_details.get(subject) == None:
+            student_details = add_day_to_student(student_id,subject,'week_'+str(1),day_number)
+        # print(f'lms_daywise/{student.course_id.course_id}/{student.course_id.course_id}_{student.batch_id.batch_id}.json')
+        # print('student_details',student_details.student_question_details.get(subject).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status'))
         # blob_data = json.loads(get_blob('LMS_DayWise/'+student.course_id.course_id+'.json'))
         blob_data = json.loads(get_blob(f'lms_daywise/{student.course_id.course_id}/{student.course_id.course_id}_{student.batch_id.batch_id}.json'))
+        # print(0.1)
         day_data = [day  for day in blob_data.get(subject) if day.get('day') == 'Day '+str(day_number)][0] 
+        # print(1)
         response_data =[]
         # print(day_data.get('content').get('subtopic_id'))
         for i in day_data.get('subtopicids'):
@@ -38,9 +43,14 @@ def fetch_learning_modules(request,student_id,subject,day_number):
                 'mcqQuestions':sum([ day_data.get('mcq').get(i.get('subtopic_id')).get(qn,0) for qn in day_data.get('mcq').get(i.get('subtopic_id'),{}) ]),
                 'codingQuestions':sum([day_data.get('coding').get(i.get('subtopic_id')).get(qn,0) for qn in day_data.get('coding').get(i.get('subtopic_id'),{} )])
             })
+        # print(2)
         status ={'current_id': ""}
-        [status.update({'current_id':i}) for i in student_details.student_question_details.get(subject).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status')
-          if student_details.student_question_details.get(subject).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status').get(i) == 1]    
+        if student_details.student_question_details.get(subject,None) == None  or student_details.student_question_details.get(subject).get('week_'+str(1))== None or student_details.student_question_details.get(subject).get('week_'+str(1)).get('day_'+str(day_number)) == None or student_details.student_question_details.get(subject).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status')==None:
+            pass
+        else:
+            [status.update({'current_id':i}) for i in student_details.student_question_details.get(subject).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status')
+        if student_details.student_question_details.get(subject).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status').get(i) == 1]    
+        # print(3)
         response =  [
         {
             'Day': day_data.get('day'),

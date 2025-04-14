@@ -23,7 +23,7 @@ def get_blob(blob_name):
     #     return cacheresponse
     blob_client = get_blob_container_client().get_blob_client(blob_name)
     # cache.set(blob_name,json.loads(blob_client.download_blob().readall()))
-    blob_client.close()
+    # blob_client.close()
     return blob_client.download_blob().readall()
     # blob_client.close()
     # return cache.get(blob_name)
