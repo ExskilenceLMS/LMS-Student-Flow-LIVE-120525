@@ -25,6 +25,62 @@ def fetch_enrolled_subjects(request,student_id):
         sub_days_count = {}
         [sub_days_count.update({activity['subject_id__subject_name']:{'day':activity['latest_day']}})for activity in latest_activities]
         # print(sub_days_count)
+        demo = [
+             {
+        "title": "Python",
+        "subject": "Python",
+        "subject_id": "sr",
+        "image": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "duration": "25th Apr 25 - 15th May 25",
+        "progress": {
+            "student_progress": 0,
+            "progress": 100
+        }
+    },
+      {
+        "title": "Web Application",
+        "subject": "Web Application",
+        "subject_id": "sr",
+        "image": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "duration": "15th May 25 - 15th june 25",
+        "progress": {
+            "student_progress": 0,
+            "progress": 100
+        }
+    },
+      {
+        "title": "480hrs Intership",
+        "subject": "480hrs Intership",
+        "subject_id": "sr",
+        "image": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "duration": "15th june 25 - 15th sept 25",
+        "progress": {
+            "student_progress": 0,
+            "progress": 100
+        }
+    },{
+        "title": "DSA ",
+        "subject": "DSA ",
+        "subject_id": "sr",
+        "image": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "duration": "15th sept 25 - 15th oct 25",
+        "progress": {
+            "student_progress": 0,
+            "progress": 100
+        }
+    },
+    {
+        "title": "Placement Preparation",
+        "subject": "Placement Preparation",
+        "subject_id": "sr", 
+        "image": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "duration": "15th oct 25 - 15th nov 25",
+        "progress": {
+            "student_progress": 0,
+            "progress": 100
+        }
+    }
+        ]
         response = []
         for subject in enrolled_subjects:
             if subject.subject_id.del_row :
@@ -39,6 +95,7 @@ def fetch_enrolled_subjects(request,student_id):
                 "progress": calculate_progress(subject.start_date,subject.end_date,sub_days_count.get(subject.subject_id.subject_name,{'day':0}),subject.duration_in_days),
             })
             response.append(subject_data)
+        response.extend(demo)
         update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
