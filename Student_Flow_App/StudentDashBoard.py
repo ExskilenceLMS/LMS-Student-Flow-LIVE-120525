@@ -35,7 +35,8 @@ def fetch_enrolled_subjects(request,student_id):
         "progress": {
             "student_progress": 0,
             "progress": 100
-        }
+        },
+        'status': 'Closed'
     },
       {
         "title": "Web Application",
@@ -46,7 +47,8 @@ def fetch_enrolled_subjects(request,student_id):
         "progress": {
             "student_progress": 0,
             "progress": 100
-        }
+        },
+        'status': 'Closed'
     },
       {
         "title": "480hrs Intership",
@@ -57,7 +59,8 @@ def fetch_enrolled_subjects(request,student_id):
         "progress": {
             "student_progress": 0,
             "progress": 100
-        }
+        },
+        'status': 'Closed'
     },{
         "title": "DSA ",
         "subject": "DSA ",
@@ -67,7 +70,8 @@ def fetch_enrolled_subjects(request,student_id):
         "progress": {
             "student_progress": 0,
             "progress": 100
-        }
+        },
+        'status': 'Closed'
     },
     {
         "title": "Placement Preparation",
@@ -78,10 +82,14 @@ def fetch_enrolled_subjects(request,student_id):
         "progress": {
             "student_progress": 0,
             "progress": 100
-        }
+        },
+        'status': 'Closed'
     }
         ]
         response = []
+        current_time = timezone.now() + timedelta(hours=5, minutes=30)
+        if timezone.is_naive(current_time):
+            current_time = timezone.make_aware(current_time, timezone.get_current_timezone())
         for subject in enrolled_subjects:
             if subject.subject_id.del_row :
                 continue
@@ -93,9 +101,12 @@ def fetch_enrolled_subjects(request,student_id):
                 "image": subject.path,
                 "duration": f"{getdays(subject.start_date)} - {getdays(subject.end_date)}",
                 "progress": calculate_progress(subject.start_date,subject.end_date,sub_days_count.get(subject.subject_id.subject_name,{'day':0}),subject.duration_in_days),
+                'status': 'Open' if subject.end_date > current_time and subject.start_date < current_time else 'Closed'
             })
             response.append(subject_data)
-        response.extend(demo)
+        if str(student_data.course_id) == 'DEMO15' :
+            if str(student_data.batch_id) == 'DEMOBatch1' :  
+               response.extend(demo)
         update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
