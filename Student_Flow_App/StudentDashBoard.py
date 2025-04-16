@@ -43,7 +43,7 @@ def fetch_enrolled_subjects(request,student_id):
         "subject": "Web Application",
         "subject_id": "sr",
         "image": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        "duration": "15th May 25 - 15th june 25",
+        "duration": "15th May 25 - 15th June 25",
         "progress": {
             "student_progress": 0,
             "progress": 100
@@ -51,11 +51,11 @@ def fetch_enrolled_subjects(request,student_id):
         'status': 'Closed'
     },
       {
-        "title": "480hrs Intership",
-        "subject": "480hrs Intership",
+        "title": "480hrs Internship",
+        "subject": "480hrs Internship",
         "subject_id": "sr",
         "image": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        "duration": "15th june 25 - 15th sept 25",
+        "duration": "15th June 25 - 15th Sept 25",
         "progress": {
             "student_progress": 0,
             "progress": 100
@@ -66,7 +66,7 @@ def fetch_enrolled_subjects(request,student_id):
         "subject": "DSA ",
         "subject_id": "sr",
         "image": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        "duration": "15th sept 25 - 15th oct 25",
+        "duration": "15th Sept 25 - 15th Oct 25",
         "progress": {
             "student_progress": 0,
             "progress": 100
@@ -78,7 +78,7 @@ def fetch_enrolled_subjects(request,student_id):
         "subject": "Placement Preparation",
         "subject_id": "sr", 
         "image": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        "duration": "15th oct 25 - 15th nov 25",
+        "duration": "15th Oct 25 - 15th Nov 25",
         "progress": {
             "student_progress": 0,
             "progress": 100
@@ -104,9 +104,9 @@ def fetch_enrolled_subjects(request,student_id):
                 'status': 'Open' if subject.end_date > current_time and subject.start_date < current_time else 'Closed'
             })
             response.append(subject_data)
-        if str(student_data.course_id) == 'DEMO15' :
-            if str(student_data.batch_id) == 'DEMOBatch1' :  
-               response.extend(demo)
+        # if str(student_data.course_id) == 'DEMO15' :
+        #     if str(student_data.batch_id) == 'DEMOBatch1' :  
+        #        response.extend(demo)
         update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:

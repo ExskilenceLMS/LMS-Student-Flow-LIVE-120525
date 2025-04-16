@@ -456,11 +456,32 @@ def update_day_status(request):
             return JsonResponse({'message':'Already Completed'},safe=False,status=200)
         if current_status == 1 and data.get('status') == False:
             return JsonResponse({'message':'Already Started'},safe=False,status=200)
-        student.student_question_details.get(data.get('subject')
+        if data.get('status') == True:
+            mcq_questions_ids = (student.student_question_details.get(data.get('subject')
+                                                                  ).get('week_'+str(data.get('week_number'))
+                                                                        ).get('day_'+str(data.get('day_number'))
+                                                                              ).get('mcq_questions_status',[]))
+            coding_questons = (student.student_question_details.get(data.get('subject')
+                                                                  ).get('week_'+str(data.get('week_number'))
+                                                                        ).get('day_'+str(data.get('day_number'))
+                                                                              ).get('coding_questions_status',[]))
+
+            status_of_qns = [{i:mcq_questions_ids.get(i)} for i in mcq_questions_ids if i[1:-5] == data.get('sub_topic')]
+            status_of_qns.extend([{i:coding_questons.get(i)} for i in coding_questons if i[1:-5] == data.get('sub_topic')])
+            if len(status_of_qns) == len([i for i in status_of_qns if i.get(list(i.keys())[0])  == 2]):
+                student.student_question_details.get(data.get('subject')
                                              ).get('week_'+str(data.get('week_number'))
                                                    ).get('day_'+str(data.get('day_number'))
-                                                         ).get('sub_topic_status').update({data.get('sub_topic'):2 if data.get('status') == True else 1})
-        student.save()
+                                                         ).get('sub_topic_status').update({data.get('sub_topic'):2})
+                student.save()
+            else:
+                return JsonResponse({'message':'Not Completed'},safe=False,status=200)
+        else:
+            student.student_question_details.get(data.get('subject')
+                                             ).get('week_'+str(data.get('week_number'))
+                                                   ).get('day_'+str(data.get('day_number'))
+                                                         ).get('sub_topic_status').update({data.get('sub_topic'): 1})
+            student.save()
         return JsonResponse({'message':'Updated'},safe=False,status=200)    
     except Exception as e:
         print(e)

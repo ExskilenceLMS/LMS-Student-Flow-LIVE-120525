@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db.models import Max, F ,Sum,Min,Count
 # from django.contrib.postgres.aggregates import ArrayAgg
+import mimetypes
+from urllib.parse import urlparse
 import json
 import requests
 from django.db.models.functions import TruncDate
@@ -53,22 +55,24 @@ def fetch_FAQ(request):
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 
 @api_view(['POST'])
-def get_pdf(request):
+def get_media(request):
     try:
         data = json.loads(request.body)
         file_url = data.get('file_url')
         # file_url = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/{data.get('file_url')}'
         response = requests.get(file_url, stream=True)
         response.raise_for_status()
+        path = urlparse(file_url).path
+        content_type, _ = mimetypes.guess_type(path)
+        if content_type is None:
+            content_type = 'application/octet-stream'
         return StreamingHttpResponse(
-            response.iter_content(chunk_size=1024),
-            content_type='application/pdf'
+            response.iter_content(chunk_size=1024*1024),  # 1MB chunks
+            content_type=content_type
         )
     except requests.RequestException as err:
         print(err)
-        return StreamingHttpResponse('PDF fetch failed', status=500)
-
-    
+        return StreamingHttpResponse('Media fetch failed', status=500)
 # ===========================================================TESTING SPACE ===========================================================================================
 
 
