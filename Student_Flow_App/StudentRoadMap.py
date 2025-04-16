@@ -67,10 +67,10 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
         last_day_data = {}
         for i in course_details:
             week_data = sub_data.get('week_'+str(i.get('week')),{})
-            # if i.get('week') > 1:
-            #     prev_week_data = sub_data.get('week_'+str(i.get('week')-1),{})
-            # else:
-            #     prev_week_data = {}
+            if i.get('week') > 1:
+                prev_week_data = sub_data.get('week_'+str(i.get('week')-1),{})
+            else:
+                prev_week_data = {}
             week_first_day = 0
             for d in blob_data.get(sub.subject_name):
                 if d.get('date').__contains__('T') or d.get('date').__contains__('Z') or len(d.get('date'))>10: 
@@ -96,17 +96,17 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                         status = 'Resume'
                     else:
                         prev_day_data = week_data.get('day_'+str(int(d.get('day').split(' ')[-1])-1),{})
-                        if prev_day_data !={}:
-                            last_day_data = prev_day_data
-                        if prev_day_data == {}:
-                            prev_day_data = last_day_data
+                        # if prev_day_data !={}:
+                        #     last_day_data = prev_day_data
+                        # if prev_day_data == {}:
+                        #     prev_day_data = last_day_data
                         prev_day_status = [ prev_day_data.get('sub_topic_status',{}).get(day_stat) for day_stat in prev_day_data.get('sub_topic_status',{}) ]
                         if sum(prev_day_status) == len(prev_day_status)*2 and len(prev_day_status) != 0:
                             if datetime.now().date() >= i.get('startDate').date() and datetime.now().date() <= i.get('endDate').date():
                                 status = 'Start'
-                        # last_weeks_last_day_data = prev_week_data.get('day_'+str(week_first_day-1),{})
-                        # last_weeks_last_day_status = [ last_weeks_last_day_data.get('sub_topic_status',{}).get(day_stat) for day_stat in last_weeks_last_day_data.get('sub_topic_status',{}) ]
-                        if (status == '' and daynumber == 0 ) :#or () or (sum(last_weeks_last_day_status) == len(last_weeks_last_day_status)*2 and len(last_weeks_last_day_status) != 0):
+                        last_weeks_last_day_data = prev_week_data.get('day_'+str(week_first_day-1),{})
+                        last_weeks_last_day_status = [ last_weeks_last_day_data.get('sub_topic_status',{}).get(day_stat) for day_stat in last_weeks_last_day_data.get('sub_topic_status',{}) ]
+                        if (status == '' and daynumber == 0 ) or (sum(last_weeks_last_day_status) == len(last_weeks_last_day_status)*2 and len(last_weeks_last_day_status) != 0):
                             if datetime.now().date() >= i.get('startDate').date() and datetime.now().date() <= i.get('endDate').date():
                                 status = 'Start'
                     if d.get('topic') == 'Weekly Test':# or d.get('topic') == 'Onsite Workshop' or d.get('topic') == 'Internship':
