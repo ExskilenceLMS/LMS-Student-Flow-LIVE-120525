@@ -111,6 +111,7 @@ def fetch_enrolled_subjects(request,student_id):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
+        update_app_usage(student_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)    
 def calculate_progress(start_date, end_date, student_progress,Total_days):
     days = student_progress.get('day')

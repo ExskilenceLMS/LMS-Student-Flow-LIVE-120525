@@ -35,6 +35,7 @@ def fetch_all_test_details(request,student_id):
                                                                          'assessment_completion_time'
                                                                      )
         if students_assessment == []:
+            update_app_usage(student_id)
             return JsonResponse({"message": "No Test Available"},safe=False,status=400)
         test_detail_obj = test_sections.objects.filter(test_id__test_id__in = [test.get('test_id') for test in students_assessment],
                                                   del_row = False) 
@@ -52,7 +53,9 @@ def fetch_all_test_details(request,student_id):
             "endtime": (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration)))).strftime("%I:%M") + " " + (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration)))).strftime("%p"),
             "title":test_detail.get(test.get('test_id')).test_id .test_name,            
         }  for test in students_assessment]
+        update_app_usage(student_id)
         return JsonResponse({'test_details':response},safe=False,status=200)
     except Exception as e:
         print(e)
+        update_app_usage(student_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)

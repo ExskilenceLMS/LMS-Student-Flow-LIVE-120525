@@ -5,6 +5,8 @@ from LMS_MSSQLdb_App.models import *
 from LMS_Mongodb_App.models import *
 from datetime import datetime, timedelta
 from django.core.serializers import serialize
+from .AppUsage import update_app_usage
+
 
 @api_view(['GET'])
 def fetch_student_Profile(request,student_id):
@@ -37,9 +39,11 @@ def fetch_student_Profile(request,student_id):
             'education_details':student_details.student_education_details
 
         }
+        update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
+        update_app_usage(student_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)  
 @api_view(['PUT'])
 def update_social_media(request):
@@ -90,10 +94,11 @@ def update_profile(request):
         student_details.save()
         education_details.save()
         response ={"message": "Updated"}
-        
+        update_app_usage(data.get('student_id'))
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
+        update_app_usage(json.loads(request.body).get('student_id'))
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)  
     
 @api_view(['GET'])

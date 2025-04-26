@@ -56,7 +56,9 @@ def fetch_all_live_session(request,student_id):
                     'ended': True if session.get('session_status') == 'Completed' else False,
                     'status':session.get('session_status')
                     }            for session in live_session ]
+        update_app_usage(student_id)
         return JsonResponse((response),safe=False,status=200)
     except Exception as e:
         print(e)
+        update_app_usage(student_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)

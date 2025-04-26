@@ -30,18 +30,21 @@ def submit_Tickets(request):
             resolved_time = None,
             reported_time = timezone.now() + timedelta(hours=5, minutes=30),
         )
-        
+        update_app_usage(data.get('student_id'))
         return JsonResponse({"message": "Success"},safe=False,status=200)
     except Exception as e:
         print(e)
+        update_app_usage(data.get('student_id'))
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 @api_view(['GET'])
 def fetch_all_tickets(request,student_id):
     try:
         tickets = list(issue_details.objects.using('mongodb').filter(student_id = student_id,del_row = 'False').order_by('-reported_time').values())
+        update_app_usage(student_id)
         return JsonResponse({'ticket_details':tickets},safe=False,status=200)
     except Exception as e:
         print(e)
+        update_app_usage(student_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 @api_view(['PUT'])
 def student_side_comments_for_tickets(request):
@@ -58,7 +61,9 @@ def student_side_comments_for_tickets(request):
                     },})
         ticket.save()
         responnse=ticket.comments
+        update_app_usage(data.get('student_id'))
         return JsonResponse({'message':responnse},safe=False,status=200)
     except Exception as e:
         print(e)
+        update_app_usage(data.get('student_id'))
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)

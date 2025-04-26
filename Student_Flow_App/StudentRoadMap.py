@@ -102,12 +102,12 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                         #     prev_day_data = last_day_data
                         prev_day_status = [ prev_day_data.get('sub_topic_status',{}).get(day_stat) for day_stat in prev_day_data.get('sub_topic_status',{}) ]
                         if sum(prev_day_status) == len(prev_day_status)*2 and len(prev_day_status) != 0:
-                            if datetime.now().date() >= i.get('startDate').date() and datetime.now().date() <= i.get('endDate').date():
+                            if datetime.utcnow().date() >= i.get('startDate').date() and datetime.utcnow().date() <= i.get('endDate').date():
                                 status = 'Start'
                         last_weeks_last_day_data = prev_week_data.get('day_'+str(week_first_day-1),{})
                         last_weeks_last_day_status = [ last_weeks_last_day_data.get('sub_topic_status',{}).get(day_stat) for day_stat in last_weeks_last_day_data.get('sub_topic_status',{}) ]
                         if (status == '' and daynumber == 0 ) or (sum(last_weeks_last_day_status) == len(last_weeks_last_day_status)*2 and len(last_weeks_last_day_status) != 0):
-                            if datetime.now().date() >= i.get('startDate').date() and datetime.now().date() <= i.get('endDate').date():
+                            if datetime.utcnow().date() >= i.get('startDate').date() and datetime.utcnow().date() <= i.get('endDate').date():
                                 status = 'Start'
                     if d.get('topic') == 'Weekly Test':# or d.get('topic') == 'Onsite Workshop' or d.get('topic') == 'Internship':
                         days.append({'day':daynumber+1,'day_key':d.get('day').split(' ')[-1],
@@ -194,11 +194,13 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
         response = {
             "weeks":course_details,
         }
+        update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
                     
         # return fetch_roadmap_old(request,student_id,course_id,subject_id)
     except Exception as e:
         print(e)
+        update_app_usage(student_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 
 # @api_view(['GET'])

@@ -120,7 +120,7 @@ def get_media(request):
 #         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 # def generate_id(college_key,branch_key,type):
 #     try:
-#         id_ = str(datetime.now().year)[-2:] + college_key + branch_key
+#         id_ = str(datetime.utcnow().year)[-2:] + college_key + branch_key
 #         if type=='student':
 #             ids = students_info.objects.filter(student_id__startswith=id_).order_by('-student_id').values_list('student_id',flat=True).first()
 #         elif type=='trainer':
