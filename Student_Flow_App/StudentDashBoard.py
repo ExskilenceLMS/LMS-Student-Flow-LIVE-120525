@@ -101,7 +101,7 @@ def fetch_enrolled_subjects(request,student_id):
                 "image": subject.path,
                 "duration": f"{getdays(subject.start_date)} - {getdays(subject.end_date)}",
                 "progress": calculate_progress(subject.start_date,subject.end_date,sub_days_count.get(subject.subject_id.subject_name,{'day':0}),subject.duration_in_days),
-                'status': 'Open' if subject.end_date > current_time and subject.start_date < current_time else 'Closed'
+                'status': 'Open' if (subject.end_date > current_time and subject.start_date < current_time) or (subject.end_date < current_time ) else 'Closed'
             })
             response.append(subject_data)
         # if str(student_data.course_id) == 'DEMO15' :
@@ -315,7 +315,7 @@ def get_weekly_progress(request,student_id):
             student_id = student_id,
             del_row = "False"
             ).order_by('-assessment_week_number').values_list('assessment_week_number','assessment_score_secured','assessment_max_score')
-        practice_data = practice_questions.objects.using('mongodb').filter(
+        practice_data = student_test_questions.objects.using('mongodb').filter(
             student_id = student_id,
             del_row = "False"
             ).order_by('-practice_week_number').values_list('practice_week_number','practice_score_secured','practice_max_score')

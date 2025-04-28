@@ -21,8 +21,9 @@ def update_app_usage(student_id):
         return 
 def create_app_usage(student_id):
     try:
+        student = students_info.objects.get(student_id = student_id,del_row = False)
         student_app_usages = student_app_usage.objects.create(
-            student_id = student_id,
+            student_id = student,
             # app_name = 'TEST',
             logged_in = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),
             logged_out = datetime.utcnow().__add__(timedelta(hours=5,minutes=30)),

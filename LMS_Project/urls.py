@@ -58,7 +58,18 @@ urlpatterns = [
 
     # TEST Details URLs
     path('api/student/testdetails/<str:student_id>/', test_details.fetch_all_test_details),
-    
+
+            # Test URLs
+    path('api/student/test/instuction/<str:student_id>/<str:test_id>/', test_details.test_insturction),
+    path('api/student/test/section/<str:student_id>/<str:test_id>/', test_details.section_details),
+    path('api/student/test/questions/<str:student_id>/<str:test_id>/<str:section_name>/', test_details.get_test_Qns),
+    path('api/student/test/questions/submit/mcq/', test_details.submit_test_mcq_questions),
+    path('api/student/test/questions/submit/coding/', test_details.submit_test_coding_questions),
+    path('api/student/test/submit/<str:student_id>/<str:test_id>/', test_details.submit_test),
+
+            # Test report URLs
+    path('api/student/test/report/<str:student_id>/<str:test_id>/', test_details.student_test_report),
+
     # Teckets URLs
     path('api/student/tickets/', tickets.submit_Tickets),
     path('api/student/tickets/<str:student_id>/', tickets.fetch_all_tickets),
