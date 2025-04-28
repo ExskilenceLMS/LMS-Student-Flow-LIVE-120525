@@ -166,6 +166,8 @@ def section_details(request,student_id,test_id):
         container_client.close()
         response.update({'Copleted_Questions':str(Completed_Questions.get('completed'))+'/'+str(Completed_Questions.get('total')),
                         'Qns_data':Qns_data})
+        student.student_test_start_time = timezone.now() + timedelta(hours=5, minutes=30)
+        student.save()
         update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
@@ -395,11 +397,11 @@ def submit_test_coding_questions(request):
                                                                            'completion_time':timezone.now() + timedelta(hours=5, minutes=30)
                                                                        })
                if student_created:
-                    student_assessment.student_id.student_score = int(student_assessment.student_id.student_score) + int(score)
-                    student_assessment.student_id.student_total_score = int(student_assessment.student_id.student_total_score) + int(outoff)
-                    student_assessment.assessment_status = 'Started'
-                    student_assessment.assessment_completion_time = timezone.now() + timedelta(hours=5, minutes=30)
-                    student_assessment.assessment_score_secured = float(student_assessment.assessment_score_secured) + float(score)
+                    student_assessment.student_id.student_score         = int(student_assessment.student_id.student_score) + int(score)
+                    student_assessment.student_id.student_total_score   = int(student_assessment.student_id.student_total_score) + int(outoff)
+                    student_assessment.assessment_status                = 'Started'
+                    student_assessment.assessment_completion_time       = timezone.now() + timedelta(hours=5, minutes=30)
+                    student_assessment.assessment_score_secured         = float(student_assessment.assessment_score_secured) + float(score)
                     student_assessment.save()
                     student_assessment.student_id.save()
                     response ={'message':'Submited'}
@@ -414,7 +416,17 @@ def submit_test_coding_questions(request):
 def student_test_report(request,student_id,test_id):
     try: 
         print()
+        student_assessment = students_assessments.objects.get(student_id = student_id,test_id = test_id,del_row = False)
+
         response ={}
+        response.update({
+            'score_secured'     :student_assessment.assessment_score_secured,
+            'max_score'         :student_assessment.assessment_max_score,
+            'percentage'        :round((student_assessment.assessment_score_secured/student_assessment.assessment_max_score)*100,2),
+            'status'            :student_assessment.assessment_status,
+            'test_start_time'   :student_assessment.student_test_start_time,
+            'test_end_time'     :student_assessment.assessment_completion_time
+        })
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)

@@ -286,6 +286,7 @@ class students_assessments(models.Model):
     assessment_overall_rank     = models.IntegerField(default=None, null=True)
     student_duration            = models.FloatField(default=0)
     student_test_completion_time= models.DateTimeField(default=None, null=True)
+    student_test_start_time     = models.DateTimeField(default=None, null=True)
     del_row                     = models.CharField(default='False',max_length=5)
 
     class Meta:
