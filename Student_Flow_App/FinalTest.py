@@ -17,51 +17,8 @@ from django.core.cache import cache
 from LMS_Project.Blobstorage import *
 from .sqlrun import get_all_tables
 
-
 @api_view(['GET'])
-def fetch_all_test_details(request,student_id):
-    try:
-        students_assessment = students_assessments.objects.filter(student_id = student_id,
-                                                                     del_row = False
-                                                                     ).values(
-                                                                         'assessment_type',
-                                                                         'subject_id',
-                                                                         'test_id',
-                                                                         'course_id',
-                                                                         'assessment_status',
-                                                                         'assessment_score_secured',
-                                                                         'assessment_max_score',
-                                                                         'assessment_week_number',
-                                                                         'assessment_completion_time'
-                                                                     ).order_by('-test_id__test_date_and_time')
-        if students_assessment == []:
-            update_app_usage(student_id)
-            return JsonResponse({"message": "No Test Available"},safe=False,status=400)
-        test_detail_obj = test_sections.objects.filter(test_id__test_id__in = [test.get('test_id') for test in students_assessment],
-                                                  del_row = False) 
-        test_detail = {test.test_id.test_id:test for test in test_detail_obj} 
-        response =[{
-            "test_type"     : test_detail.get(test.get('test_id')).test_id.test_type,
-            "test_id"       : test.get('test_id'),
-            "test_status"   : test.get('assessment_status'),
-            "score"         : str(test.get('assessment_score_secured'))+'/'+str(test_detail.get(test.get('test_id')).test_id.test_marks),
-            'topic'         : test_detail.get(test.get('test_id')).topic_id.topic_name,
-            "subject"       : test_detail.get(test.get('test_id')).test_id .subject_id.subject_name,
-            "startdate"     : test_detail.get(test.get('test_id')).test_id .test_date_and_time.strftime("%Y-%m-%d"),
-            "starttime"     : test_detail.get(test.get('test_id')).test_id .test_date_and_time.strftime("%I:%M") + " " + test_detail.get(test.get('test_id')).test_id .test_date_and_time.strftime("%p"),
-            "enddate"       : test_detail.get(test.get('test_id')).test_id .test_date_and_time.strftime("%Y-%m-%d"),
-            "endtime"       : (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration)))).strftime("%I:%M") + " " + (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration)))).strftime("%p"),
-            "title"         : test_detail.get(test.get('test_id')).test_id .test_name,            
-        }  for test in students_assessment]
-        update_app_usage(student_id)
-        return JsonResponse({'test_details':response},safe=False,status=200)
-    except Exception as e:
-        print(e)
-        update_app_usage(student_id)
-        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
-
-@api_view(['GET'])
-def test_insturction(request,student_id,test_id):
+def final_test_insturction(request,student_id,test_id):
     try:
         student = students_assessments.objects.get(
             student_id = student_id,
@@ -71,9 +28,12 @@ def test_insturction(request,student_id,test_id):
         if student.assessment_status == 'Completed':
             update_app_usage(student_id)
             return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
-        # if student.student_duration >= (student.test_id.test_date_and_time - student.student_test_completion_time).total_seconds():
-        #     update_app_usage(student_id)
-        #     return JsonResponse({"message": "Test Completed due to time limit reached."},safe=False,status=400)
+        if timezone.now().__add__(timedelta(hours=5,minutes=30)) >= (student.test_id.test_date_and_time + timedelta(minutes=student.test_id.test_duration)):
+            update_app_usage(student_id)
+            student.assessment_completion_time = timezone.now().__add__(timedelta(hours=5,minutes=30))
+            student.assessment_status = 'Completed'
+            student.save()
+            return JsonResponse({"message": "Test Completed due to time limit reached."},safe=False,status=400)
         test_detaile_queryset = test_sections.objects.filter(
                                                         test_id=test_id, 
                                                         del_row=False
@@ -81,10 +41,10 @@ def test_insturction(request,student_id,test_id):
                                                         section_count=Count('id')
                                                     )
         test_detaile = {
-            'duration'      :0,
-            'section_count' :{}
+            'duration':0,
+            'section_count':{}
         }
-        [test_detaile.update({'duration'    :item.get('test_id__test_duration')}) for item in test_detaile_queryset]
+        [test_detaile.update({'duration':item.get('test_id__test_duration')}) for item in test_detaile_queryset]
         test_detaile.update({'section_count': {'section_'+str(item.get('section_number')): item.get('section_count') for item in test_detaile_queryset} })
         return JsonResponse(test_detaile,safe=False,status=200)
     except Exception as e:
@@ -92,7 +52,7 @@ def test_insturction(request,student_id,test_id):
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 
 @api_view(['GET'])
-def section_details(request,student_id,test_id):
+def final_test_section_details(request,student_id,test_id):
     try:
         print(test_id)
         student = students_assessments.objects.get(
@@ -103,9 +63,12 @@ def section_details(request,student_id,test_id):
         if student.assessment_status == 'Completed':
             update_app_usage(student_id)
             return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
-        # if student.student_duration >= (student.test_id.test_date_and_time - student.student_test_completion_time).total_seconds():
-        #     update_app_usage(student_id)
-        #     return JsonResponse({"message": "Test Completed due to time limit reached."},safe=False,status=400)
+        if timezone.now().__add__(timedelta(hours=5,minutes=30)) >= (student.test_id.test_date_and_time + timedelta(minutes=student.test_id.test_duration)):
+            update_app_usage(student_id)
+            student.assessment_completion_time = timezone.now().__add__(timedelta(hours=5,minutes=30))
+            student.assessment_status = 'Completed'
+            student.save()
+            return JsonResponse({"message": "Test Completed due to time limit reached."},safe=False,status=400)
         test_section = test_sections.objects.filter(test_id = test_id,del_row = False)
         answers = student_test_questions_details.objects.filter(
                                                     test_id = test_id,
@@ -117,7 +80,6 @@ def section_details(request,student_id,test_id):
             update_app_usage(student_id)
             return JsonResponse({"message": "No Test Available"},safe=False,status=400)
         answers = {ans.question_id:ans for ans in answers}
-        print(answers)
         response ={}
         container_client = get_blob_container_client()
         rules = container_client.get_blob_client('lms_rules/rules.json')
@@ -138,7 +100,6 @@ def section_details(request,student_id,test_id):
                 response.update({test.section_name:[]})
             Qn = test.question_id.question_id
             path = f"subjects/{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{'mcq' if Qn[-5]=='m' else 'coding'}/{Qn}.json"
-            # print(path)
             if cache.get(path) == None:
                 blobdata = container_client.get_blob_client(path)
                 blob_data = json.loads(blobdata.download_blob().readall())
@@ -174,8 +135,9 @@ def section_details(request,student_id,test_id):
         print(e)
         update_app_usage(student_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+
 @api_view(['GET'])
-def submit_test(request,student_id,test_id):
+def submit_final_test(request,student_id,test_id):
     try:
         student = students_assessments.objects.get(
             student_id = student_id,
@@ -186,8 +148,6 @@ def submit_test(request,student_id,test_id):
             student.assessment_status = 'Pending'
             student.save()
             return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
-        # if student.student_duration >= (student.test_id.test_date_and_time - student.student_test_completion_time).total_seconds():
-        #     return JsonResponse({"message": "Test Completed due to time limit reached."},safe=False,status=400)
         student.assessment_completion_time = timezone.now().__add__(timedelta(hours=5,minutes=30))
         student.assessment_status = 'Completed'
         student.save()
@@ -196,8 +156,9 @@ def submit_test(request,student_id,test_id):
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+
 @api_view(['GET'])  
-def get_test_Qns(request,student_id,test_id,section_name):
+def get_final_test_Qns(request,student_id,test_id,section_name):
     try:
         student = students_assessments.objects.get(
             student_id = student_id,
@@ -206,8 +167,12 @@ def get_test_Qns(request,student_id,test_id,section_name):
         )
         if student.assessment_status == 'Completed':
             return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
-        # if student.student_duration >= (student.test_id.test_date_and_time - student.student_test_completion_time).total_seconds():
-        #     return JsonResponse({"message": "Test Completed due to time limit reached."},safe=False,status=400)
+        if timezone.now().__add__(timedelta(hours=5,minutes=30)) >= (student.test_id.test_date_and_time + timedelta(minutes=student.test_id.test_duration)):
+            update_app_usage(student_id)
+            student.assessment_completion_time = timezone.now().__add__(timedelta(hours=5,minutes=30))
+            student.assessment_status = 'Completed'
+            student.save()
+            return JsonResponse({"message": "Test Completed due to time limit reached."},safe=False,status=400)
         student.assessment_completion_time = timezone.now().__add__(timedelta(hours=5,minutes=30))
         container_client = get_blob_container_client()
         response = {}
@@ -251,15 +216,25 @@ def get_test_Qns(request,student_id,test_id,section_name):
         print(e)
         update_app_usage(student_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
-    
+
 @api_view(['PUT'])
-def submit_test_mcq_questions(request):
+def submit_final_test_mcq_questions(request):
     # if submit_type.lower() == 'mcq': 
         try:
            data = json.loads(request.body)
            student_id = data.get('student_id')
            question_id = data.get('question_id')
            # blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json'))
+           student_assessment = students_assessments.objects.get(student_id = student_id,test_id = data.get('test_id'),del_row = False)
+           if student_assessment.assessment_status == 'Completed':
+                return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
+           if timezone.now().__add__(timedelta(hours=5,minutes=30)) >= (student_assessment.test_id.test_date_and_time + timedelta(minutes=student_assessment.test_id.test_duration)):
+                update_app_usage(student_id)
+                student_assessment.assessment_completion_time = timezone.now().__add__(timedelta(hours=5,minutes=30))
+                student_assessment.assessment_status = 'Completed'
+                student_assessment.save()
+                return JsonResponse({"message": "Test Completed due to time limit reached."},safe=False,status=400)
+           
            blob_rules_data = json.loads(get_blob('lms_rules/rules.json'))
            blob_rules_data = blob_rules_data.get('mcq')
            score = 0
@@ -290,7 +265,7 @@ def submit_test_mcq_questions(request):
                                                                     })
            response ={'message':'Already Submited'}
            if created:
-               student_assessment = students_assessments.objects.get(student_id = student_id,test_id = data.get('test_id'),del_row = False)
+            #    student_assessment = students_assessments.objects.get(student_id = student_id,test_id = data.get('test_id'),del_row = False)
                question = questions.objects.get(question_id = question_id, del_row = False)
                student,student_created = student_test_questions_details.objects.get_or_create(student_id = student_id,
                                                                              test_id = data.get('test_id'),
@@ -323,11 +298,20 @@ def submit_test_mcq_questions(request):
             update_app_usage( json.loads(request.body).get('student_id') )
             return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 @api_view(['PUT'])
-def submit_test_coding_questions(request):
+def submit_final_test_coding_questions(request):
     try:
         data = json.loads(request.body)
         student_id = data.get('student_id')
         question_id = data.get('Qn')
+        student_assessment = students_assessments.objects.get(student_id = student_id,test_id = data.get('test_id'),del_row = False)
+        if student_assessment.assessment_status == 'Completed':
+            return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
+        if timezone.now().__add__(timedelta(hours=5,minutes=30)) >= (student_assessment.test_id.test_date_and_time + timedelta(minutes=student_assessment.test_id.test_duration)):
+            update_app_usage(student_id)
+            student_assessment.assessment_completion_time = timezone.now().__add__(timedelta(hours=5,minutes=30))
+            student_assessment.assessment_status = 'Completed'
+            student_assessment.save()
+            return JsonResponse({"message": "Test Completed due to time limit reached."},safe=False,status=400)
         blob_rules_data = json.loads(get_blob(f'lms_rules/rules.json')).get('coding')
         score = 0
         outoff = 0
@@ -379,7 +363,6 @@ def submit_test_coding_questions(request):
                                                                                         })
         response ={'message':'Submited','status':True}
         if created:
-               student_assessment = students_assessments.objects.get(student_id = student_id,test_id = data.get('test_id'),del_row = False)
                question = questions.objects.get(question_id = question_id, del_row = False)
                student,student_created = student_test_questions_details.objects.get_or_create(student_id = student_id,
                                                                              test_id = data.get('test_id'),
@@ -404,111 +387,10 @@ def submit_test_coding_questions(request):
                     student_assessment.assessment_score_secured         = float(student_assessment.assessment_score_secured) + float(score)
                     student_assessment.save()
                     student_assessment.student_id.save()
-                    response                                            = {'message':'Submited'}
+                    response ={'message':'Submited'}
         update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
         update_app_usage(json.loads(request.body).get('student_id'))
-        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
-
-@api_view(['GET'])
-def student_test_report(request,student_id,test_id):
-    try: 
-        student_assessment = students_assessments.objects.get(student_id = student_id,test_id = test_id,del_row = False)
-        test_questions_list = list(test_sections.objects.filter(test_id = test_id,del_row = False))
-        test_questions = [i.question_id.question_id for i in test_questions_list]
-        # print(test_questions)
-        answers_status = student_test_questions_details.objects.filter(student_id = student_id,test_id = test_id,question_id__in = test_questions,del_row = False).values('question_id','score_secured','max_score','question_status')
-        coding_answers = student_practice_coding_answers.objects.using('mongodb').filter(student_id = student_id,question_id__in = test_questions,question_done_at = test_id,del_row = False).values('question_id','score','entered_ans')
-        mcq_answers = student_practiceMCQ_answers.objects.using('mongodb').filter(student_id = student_id,question_id__in = test_questions,question_done_at = test_id,del_row = False).values('question_id','score','entered_ans')
-        coding_answers = {i.get('question_id'):i for i in coding_answers}#{i.question_id:i for i in coding_answers}
-        mcq_answers = { i.get('question_id'):i for i in mcq_answers}#{i.question_id:i for i in mcq_answers}
-        topics_list ={i.question_id.question_id:i.question_id.sub_topic_id.topic_id.topic_name for i in test_questions_list}
-        # print(topics_list)
-        test_summary ={}
-        test_summary.update({
-            'score_secured'         :student_assessment.assessment_score_secured,
-            'max_score'             :student_assessment.assessment_max_score,
-            'percentage'            :round((student_assessment.assessment_score_secured/student_assessment.assessment_max_score)*100,2),
-            'status'                :student_assessment.assessment_status,
-            'attempted_questions'   :len(answers_status),
-            'total_questions'       :len(test_questions),
-            'test_start_time'       :student_assessment.student_test_start_time,
-            'test_end_time'         :student_assessment.assessment_completion_time
-        })
-        if student_assessment.assessment_type == 'Final Test':
-            test_summary.update({
-                'overall_rank'  :student_assessment.student_id.student_overall_rank,
-                'college_rank'  :student_assessment.student_id.student_college_rank,
-            })
-        test_topics_wise_scores ={}
-        mcq=[]
-        coding=[]
-        container_client = get_blob_container_client()
-        for ans in answers_status:
-            Qn = ans.get('question_id') 
-            path = f"subjects/{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{'mcq' if Qn[-5]=='m' else 'coding'}/{Qn}.json"
-            if cache.get(path) == None:
-                blobdata = container_client.get_blob_client(path)
-                blob_data = json.loads(blobdata.download_blob().readall())
-                blob_data.update({'Qn_name':Qn})
-                cache.set(path,blob_data)
-            else:
-                blob_data = cache.get(path)
-                cache.set(path,blob_data)
-            blob_data.update({'score_secured':ans.get('score_secured'),
-                              'max_score':ans.get('max_score'),
-                              'question_status':ans.get('question_status'),
-                              'topic':topics_list.get(ans.get('question_id'))
-                              })
-            if Qn[-5] == 'm':
-                blob_data.update({
-                    'user_answer':mcq_answers.get(ans.get('question_id'),{}).get('entered_ans',''),
-                })
-                mcq.append(blob_data)
-            else:
-                blob_data.update({
-                    'user_answer':coding_answers.get(ans.get('question_id'),{}).get('entered_ans',''),
-                })
-                coding.append(blob_data)
-            test_topics_wise_scores.update({topics_list.get(ans.get('question_id')):
-                                            f'{float(test_topics_wise_scores.get(topics_list.get(ans.get('question_id')),'0/0').split("/")[0])+float(ans.get("score_secured"))}/{float(test_topics_wise_scores.get(topics_list.get(ans.get('question_id')),'0/0').split("/")[1])+float(ans.get("max_score"))}'
-                                            })
-        test_topics ={
-
-        }
-        for ans_score in test_topics_wise_scores:
-            if float(test_topics_wise_scores.get(ans_score,'0/0').split("/")[0])/float(test_topics_wise_scores.get(ans_score,'0/0').split("/")[1]) > 0.8:
-                print(ans_score)
-                if test_topics.get('good',[]) == []:
-                    test_topics.update({'good': [ans_score]})
-                else:
-                    test_topics.get('good').append(ans_score)
-            elif float(test_topics_wise_scores.get(ans_score,'0/0').split("/")[0])/float(test_topics_wise_scores.get(ans_score,'0/0').split("/")[1]) > 0.4:
-                print(ans_score)
-                if test_topics.get('average',[]) == []:
-                    test_topics.update({'average': [ans_score]})
-                else:
-                    test_topics.get('average').append(ans_score)
-            else:
-                print(ans_score)
-                if test_topics.get('poor',[]) == []:
-                    test_topics.update({'poor': [ans_score]})
-                else:
-                    test_topics.get('poor').append(ans_score)
-                
-
-        response ={
-            'test_summary'  :test_summary,
-            'topics_wise_scores':test_topics_wise_scores,
-            'topics'        :test_topics,
-            'answers'       :{
-                'mcq'       :mcq,
-                'coding'    :coding
-            }
-        }
-        return JsonResponse(response,safe=False,status=200)
-    except Exception as e:
-        print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)

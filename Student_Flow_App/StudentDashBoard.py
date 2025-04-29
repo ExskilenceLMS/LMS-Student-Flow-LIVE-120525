@@ -307,25 +307,25 @@ def fetch_student_summary(request,student_id):
     
 #    FETCH WEEKLY PROGRESS
 
-@api_view(['GET'])
-def get_weekly_progress(request,student_id):
-    try:
-        # obj = students_info.objects.get( student_id = student_id,del_row = False)
-        assessment_data = students_assessments.objects.using('mongodb').filter(
-            student_id = student_id,
-            del_row = "False"
-            ).order_by('-assessment_week_number').values_list('assessment_week_number','assessment_score_secured','assessment_max_score')
-        practice_data = student_test_questions.objects.using('mongodb').filter(
-            student_id = student_id,
-            del_row = "False"
-            ).order_by('-practice_week_number').values_list('practice_week_number','practice_score_secured','practice_max_score')
-        return JsonResponse({
-            "assessment":list(assessment_data),
-            "practice":list(practice_data),
-                })
-    except Exception as e:
-        print(e)
-        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+# @api_view(['GET'])
+# def get_weekly_progress(request,student_id):
+#     try:
+#         # obj = students_info.objects.get( student_id = student_id,del_row = False)
+#         assessment_data = students_assessments.objects.using('mongodb').filter(
+#             student_id = student_id,
+#             del_row = "False"
+#             ).order_by('-assessment_week_number').values_list('assessment_week_number','assessment_score_secured','assessment_max_score')
+#         practice_data = student_test_questions.objects.using('mongodb').filter(
+#             student_id = student_id,
+#             del_row = "False"
+#             ).order_by('-practice_week_number').values_list('practice_week_number','practice_score_secured','practice_max_score')
+#         return JsonResponse({
+#             "assessment":list(assessment_data),
+#             "practice":list(practice_data),
+#                 })
+#     except Exception as e:
+#         print(e)
+#         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++[OLD METHODS]+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++# 
     
 # OLD 
@@ -377,8 +377,8 @@ def fetch_study_hours_old(request,student_id,week):
             response.get('hours').append({
                 "date":subjects.get('start') + timedelta(days=i),
                 "day_name":calendar.day_name[(subjects.get('start') + timedelta(days=i)).weekday()][0:3],
-                "isUpcoming":True if subjects.get('start') + timedelta(days=i) > datetime.utcnow().__add__(timedelta(hours=5,minutes=30)).date() else False,
-                "isCurrent":True if subjects.get('start') + timedelta(days=i) == datetime.utcnow().__add__(timedelta(hours=5,minutes=30)).date() else False,
+                "isUpcoming":True if subjects.get('start') + timedelta(days=i) > timezone.now().__add__(timedelta(hours=5,minutes=30)).date() else False,
+                "isCurrent":True if subjects.get('start') + timedelta(days=i) == timezone.now().__add__(timedelta(hours=5,minutes=30)).date() else False,
                 "hours":round(hour_spent.get(subjects.get('start') + timedelta(days=i)).total_seconds()/3600,2) if hour_spent.get(subjects.get('start') + timedelta(days=i)) else 0
             })
         return JsonResponse(response,safe=False,status=200)

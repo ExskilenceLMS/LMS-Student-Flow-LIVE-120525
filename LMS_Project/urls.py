@@ -18,6 +18,7 @@ from django.urls import path
 from Student_Flow_App import views ,tests ,coding_validation as cv ,AppUsage,StudentProfile as profile
 from Student_Flow_App import StudentDashBoard as dashboard ,StudentLiveSessions as live_session ,LearningModules as learning_modules
 from Student_Flow_App import Student_Tickets as tickets , StudentRoadMap as roadmap , StudentTestDetails as test_details
+from Student_Flow_App import FinalTest as final_test
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home),
@@ -29,7 +30,7 @@ urlpatterns = [
     path('api/studentdashboard/mycourses/<str:student_id>/',       dashboard.fetch_enrolled_subjects),
     path('api/studentdashboard/upcomming/sessions/<str:student_id>/',      dashboard.fetch_live_session),
     path('api/studentdashboard/upcomming/events/<str:Course_id>/<str:batch_id>/',       dashboard.fetch_upcoming_events),
-    path('api/studentdashboard/weeklyprogress/<str:student_id>/',       dashboard.get_weekly_progress),
+    # path('api/studentdashboard/weeklyprogress/<str:student_id>/',       dashboard.get_weekly_progress),
     path('api/studentdashboard/hourspent/<str:student_id>/<str:week>/',       dashboard.fetch_study_hours),
     path('api/studentdashboard/summary/<str:student_id>/',       dashboard.fetch_student_summary),
     path('api/studentdashboard/event/calender/<str:student_id>/',       dashboard.fetch_calendar),
@@ -66,6 +67,13 @@ urlpatterns = [
     path('api/student/test/questions/submit/mcq/', test_details.submit_test_mcq_questions),
     path('api/student/test/questions/submit/coding/', test_details.submit_test_coding_questions),
     path('api/student/test/submit/<str:student_id>/<str:test_id>/', test_details.submit_test),
+
+            # Final Test URLs
+    path('api/student/final/test/instuction/<str:student_id>/<str:test_id>/', final_test.final_test_insturction),
+    path('api/student/final/test/questions/<str:student_id>/<str:test_id>/<str:section_name>/', final_test.get_final_test_Qns),
+    path('api/student/final/test/questions/submit/mcq/', final_test.submit_final_test_mcq_questions),
+    path('api/student/final/test/questions/submit/coding/', final_test.submit_final_test_coding_questions),
+    path('api/student/final/test/submit/<str:student_id>/<str:test_id>/', final_test.submit_final_test),
 
             # Test report URLs
     path('api/student/test/report/<str:student_id>/<str:test_id>/', test_details.student_test_report),
