@@ -125,7 +125,7 @@ def final_test_section_details(request,student_id,test_id):
                 Qns_data.update({'coding' if Qn[-5] == 'c' else 'mcq':[]})
             Qns_data.get('coding' if Qn[-5] == 'c' else 'mcq').append(blob_data)
         container_client.close()
-        response.update({'Copleted_Questions':str(Completed_Questions.get('completed'))+'/'+str(Completed_Questions.get('total')),
+        response.update({'Completed_Questions':str(Completed_Questions.get('completed'))+'/'+str(Completed_Questions.get('total')),
                         'Qns_data':Qns_data})
         student.student_test_start_time = timezone.now() + timedelta(hours=5, minutes=30)
         student.save()
