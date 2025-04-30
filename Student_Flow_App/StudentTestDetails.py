@@ -40,6 +40,9 @@ def fetch_all_test_details(request,student_id):
         test_detail_obj = test_sections.objects.filter(test_id__test_id__in = [test.get('test_id') for test in students_assessment],
                                                   del_row = False) 
         test_detail = {test.test_id.test_id:test for test in test_detail_obj} 
+        if test_detail == {}:
+            update_app_usage(student_id)
+            return JsonResponse({"message": "No Test Available"},safe=False,status=400)
         response =[{
             "test_type"     : test_detail.get(test.get('test_id')).test_id.test_type,
             "test_id"       : test.get('test_id'),
@@ -48,10 +51,11 @@ def fetch_all_test_details(request,student_id):
             'topic'         : test_detail.get(test.get('test_id')).topic_id.topic_name,
             "subject"       : test_detail.get(test.get('test_id')).test_id .subject_id.subject_name,
             "startdate"     : test_detail.get(test.get('test_id')).test_id .test_date_and_time.strftime("%Y-%m-%d"),
-            "starttime"     : test_detail.get(test.get('test_id')).test_id .test_date_and_time.strftime("%I:%M") + " " + test_detail.get(test.get('test_id')).test_id .test_date_and_time.strftime("%p"),
-            "enddate"       : test_detail.get(test.get('test_id')).test_id .test_date_and_time.strftime("%Y-%m-%d"),
-            "endtime"       : (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration)))).strftime("%I:%M") + " " + (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration)))).strftime("%p"),
-            "title"         : test_detail.get(test.get('test_id')).test_id .test_name,            
+            "starttime"     : test_detail.get(test.get('test_id')).test_id .test_date_and_time.strftime("%I:%M %p"),# + " " + test_detail.get(test.get('test_id')).test_id .test_date_and_time.strftime("%p"),
+            "enddate"       : test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration))).strftime("%Y-%m-%d"),
+            "endtime"       : (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration)))).strftime("%I:%M %p"),# + " " + (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration)))).strftime("%p"),
+            "title"         : test_detail.get(test.get('test_id')).test_id .test_name,
+            "status"        : 'Upcomming' if  test_detail.get(test.get('test_id')).test_id .test_date_and_time > timezone.now().__add__(timedelta(hours=5,minutes=30)) else 'On Going' if test.get('assessment_completion_time',0) < timezone.now().__add__(timedelta(hours=5,minutes=30)) else 'Completed'          
         }  for test in students_assessment]
         update_app_usage(student_id)
         return JsonResponse({'test_details':response},safe=False,status=200)
@@ -59,7 +63,8 @@ def fetch_all_test_details(request,student_id):
         print(e)
         update_app_usage(student_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
-
+def date_formater(date_time):
+    return str(date_time.day)+'-'+str(date_time.month)+'-'+str(date_time.year)[-2:]+' '+str(date_time.strftime('%I:%M %p'))
 @api_view(['GET'])
 def test_insturction(request,student_id,test_id):
     try:
@@ -188,7 +193,7 @@ def submit_test(request,student_id,test_id):
             return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
         # if student.student_duration >= (student.test_id.test_date_and_time - student.student_test_completion_time).total_seconds():
         #     return JsonResponse({"message": "Test Completed due to time limit reached."},safe=False,status=400)
-        student.assessment_completion_time = timezone.now().__add__(timedelta(hours=5,minutes=30))
+        student.student_test_completion_time = timezone.now().__add__(timedelta(hours=5,minutes=30))
         student.assessment_status = 'Completed'
         student.save()
         update_app_usage(student_id)
@@ -208,7 +213,7 @@ def get_test_Qns(request,student_id,test_id,section_name):
             return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
         # if student.student_duration >= (student.test_id.test_date_and_time - student.student_test_completion_time).total_seconds():
         #     return JsonResponse({"message": "Test Completed due to time limit reached."},safe=False,status=400)
-        student.assessment_completion_time = timezone.now().__add__(timedelta(hours=5,minutes=30))
+        # student.assessment_completion_time = timezone.now().__add__(timedelta(hours=5,minutes=30))
         container_client = get_blob_container_client()
         response = {}
         test_section = test_sections.objects.filter(test_id=test_id,section_name=section_name,del_row=False).order_by('section_number').values('question_id')
@@ -311,7 +316,7 @@ def submit_test_mcq_questions(request):
                     student_assessment.student_id.student_score = int(student_assessment.student_id.student_score) + int(score)
                     student_assessment.student_id.student_total_score = int(student_assessment.student_id.student_total_score) + int(outoff)
                     student_assessment.assessment_status = 'Started'
-                    student_assessment.assessment_completion_time = timezone.now() + timedelta(hours=5, minutes=30)
+                    student_assessment.student_test_completion_time = timezone.now() + timedelta(hours=5, minutes=30)
                     student_assessment.assessment_score_secured = float(student_assessment.assessment_score_secured) + float(score)
                     student_assessment.save()
                     student_assessment.student_id.save()
@@ -400,7 +405,7 @@ def submit_test_coding_questions(request):
                     student_assessment.student_id.student_score         = int(student_assessment.student_id.student_score) + int(score)
                     student_assessment.student_id.student_total_score   = int(student_assessment.student_id.student_total_score) + int(outoff)
                     student_assessment.assessment_status                = 'Started'
-                    student_assessment.assessment_completion_time       = timezone.now() + timedelta(hours=5, minutes=30)
+                    student_assessment.student_test_completion_time       = timezone.now() + timedelta(hours=5, minutes=30)
                     student_assessment.assessment_score_secured         = float(student_assessment.assessment_score_secured) + float(score)
                     student_assessment.save()
                     student_assessment.student_id.save()
@@ -435,7 +440,7 @@ def student_test_report(request,student_id,test_id):
             'attempted_questions'   :len(answers_status),
             'total_questions'       :len(test_questions),
             'test_start_time'       :student_assessment.student_test_start_time,
-            'test_end_time'         :student_assessment.assessment_completion_time
+            'test_end_time'         :student_assessment.student_test_completion_time
         })
         if student_assessment.assessment_type == 'Final Test':
             test_summary.update({
