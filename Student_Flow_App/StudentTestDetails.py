@@ -50,6 +50,7 @@ def fetch_all_test_details(request,student_id):
             "score"         : str(test.get('assessment_score_secured'))+'/'+str(test_detail.get(test.get('test_id')).test_id.test_marks),
             'topic'         : test_detail.get(test.get('test_id')).topic_id.topic_name,
             "subject"       : test_detail.get(test.get('test_id')).test_id .subject_id.subject_name,
+            'subject_id'    : test_detail.get(test.get('test_id')).test_id .subject_id.subject_id,
             "startdate"     : test_detail.get(test.get('test_id')).test_id .test_date_and_time.strftime("%Y-%m-%d"),
             "starttime"     : test_detail.get(test.get('test_id')).test_id .test_date_and_time.strftime("%I:%M %p"),# + " " + test_detail.get(test.get('test_id')).test_id .test_date_and_time.strftime("%p"),
             "enddate"       : test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration))).strftime("%Y-%m-%d"),
