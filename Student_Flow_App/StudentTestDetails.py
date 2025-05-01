@@ -124,7 +124,7 @@ def section_details(request,student_id,test_id):
         if test_section == [] :
             update_app_usage(student_id)
             return JsonResponse({"message": "No Test Available"},safe=False,status=400)
-        answers = {ans.question_id:ans for ans in answers}
+        answers = {ans.question_id.question_id:ans for ans in answers}
         print(answers)
         response ={}
         container_client = get_blob_container_client()
@@ -313,6 +313,7 @@ def submit_test_mcq_questions(request):
                                                                            'student_id':student_assessment.student_id,
                                                                            'subject_id':question.sub_topic_id.topic_id.subject_id,
                                                                            'question_id':question,
+                                                                           'question_type':question.question_type,
                                                                            'test_id': student_assessment.test_id,
                                                                            'question_status':'Submitted',
                                                                            'score_secured':float(score),
@@ -320,6 +321,7 @@ def submit_test_mcq_questions(request):
                                                                            'max_score':int(outoff),
                                                                            'completion_time':timezone.now() + timedelta(hours=5, minutes=30)
                                                                        })
+               
                if student_created:
                     student_assessment.student_id.student_score = int(student_assessment.student_id.student_score) + int(score)
                     student_assessment.student_id.student_total_score = int(student_assessment.student_id.student_total_score) + int(outoff)
@@ -328,6 +330,14 @@ def submit_test_mcq_questions(request):
                     student_assessment.assessment_score_secured = float(student_assessment.assessment_score_secured) + float(score)
                     student_assessment.save()
                     student_assessment.student_id.save()
+                    response ={'message':'Submited'}
+                    response.update({
+                        'user_answer':student.student_answer,
+                        'question_status':student.question_status
+                        })
+               else:
+                    student.question_status = 'Submitted'
+                    student.save()
                     response ={'message':'Submited'}
                     response.update({
                         'user_answer':student.student_answer,
@@ -406,6 +416,7 @@ def submit_test_coding_questions(request):
                                                                            'student_id':student_assessment.student_id,
                                                                            'subject_id':question.sub_topic_id.topic_id.subject_id,
                                                                            'question_id':question,
+                                                                           'question_type':question.question_type,
                                                                            'test_id': student_assessment.test_id,
                                                                            'question_status':'Submitted',
                                                                            'score_secured':float(score),
@@ -441,7 +452,7 @@ def student_test_report(request,student_id,test_id):
         test_questions = [i.question_id.question_id for i in test_questions_list]
         # print(test_questions)
         answers_status = student_test_questions_details.objects.filter(student_id = student_id,test_id = test_id,question_id__in = test_questions,del_row = False).values('question_id','score_secured','max_score','question_status')
-        coding_answers = student_practice_coding_answers.objects.using('mongodb').filter(student_id = student_id,question_id__in = test_questions,question_done_at = test_id,del_row = False).values('question_id','score','entered_ans')
+        coding_answers = student_practice_coding_answers.objects.using('mongodb').filter(student_id = student_id,question_id__in = test_questions,question_done_at = test_id,del_row = False).values('question_id','score','entered_ans','testcase_results')
         mcq_answers = student_practiceMCQ_answers.objects.using('mongodb').filter(student_id = student_id,question_id__in = test_questions,question_done_at = test_id,del_row = False).values('question_id','score','entered_ans')
         coding_answers = {i.get('question_id'):i for i in coding_answers}#{i.question_id:i for i in coding_answers}
         mcq_answers = { i.get('question_id'):i for i in mcq_answers}#{i.question_id:i for i in mcq_answers}
@@ -449,6 +460,7 @@ def student_test_report(request,student_id,test_id):
         # print(topics_list)
         test_summary ={}
         test_summary.update({
+            'time_taken_for_completion':round((student_assessment.student_test_start_time - student_assessment.student_test_completion_time ).total_seconds()/60,2),
             'score_secured'         :student_assessment.assessment_score_secured,
             'max_score'             :student_assessment.assessment_max_score,
             'percentage'            :round((student_assessment.assessment_score_secured/student_assessment.assessment_max_score)*100,2),
@@ -479,8 +491,9 @@ def student_test_report(request,student_id,test_id):
                 blob_data = cache.get(path)
                 cache.set(path,blob_data)
             blob_data.update({'score_secured':ans.get('score_secured'),
-                              'max_score':ans.get('max_score'),
-                              'question_status':ans.get('question_status'),
+                              'max_score':int(ans.get('max_score')),
+                            #   'status':ans.get('question_status'),
+                              'status':'Correct' if float(ans.get('score_secured'))==float(ans.get('max_score')) else 'Partial Correct' if float(ans.get('score_secured'))>0 else 'Wrong',
                               'topic':topics_list.get(ans.get('question_id'))
                               })
             if Qn[-5] == 'm':
@@ -489,8 +502,12 @@ def student_test_report(request,student_id,test_id):
                 })
                 mcq.append(blob_data)
             else:
+
+                testcases =coding_answers.get(ans.get('question_id'),{}).get('testcase_results','')
+                testcases_result =str(len([tc for tc in testcases if str(tc).startswith('TestCase') and testcases.get(tc) == 'Passed']))+'/'+str(len([tc for tc in testcases if str(tc).startswith('TestCase')]))
                 blob_data.update({
                     'user_answer':coding_answers.get(ans.get('question_id'),{}).get('entered_ans',''),
+                    'testcases' : testcases_result
                 })
                 coding.append(blob_data)
             test_topics_wise_scores.update({topics_list.get(ans.get('question_id')):
