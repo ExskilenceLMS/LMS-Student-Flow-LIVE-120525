@@ -55,7 +55,9 @@ def fetch_all_test_details(request,student_id):
             "enddate"       : test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration))).strftime("%Y-%m-%d"),
             "endtime"       : (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration)))).strftime("%I:%M %p"),# + " " + (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration)))).strftime("%p"),
             "title"         : test_detail.get(test.get('test_id')).test_id .test_name,
-            "status"        : 'Upcomming' if  test_detail.get(test.get('test_id')).test_id .test_date_and_time > timezone.now().__add__(timedelta(hours=5,minutes=30)) else 'Ongoing' if test.get('assessment_completion_time',0) < timezone.now().__add__(timedelta(hours=5,minutes=30)) else 'Completed'          
+            "status"        : 'Upcomming' if  test_detail.get(test.get('test_id')).test_id .test_date_and_time > timezone.now().__add__(timedelta(hours=5,minutes=30)) else 'Ongoing' if test.get('assessment_completion_time',0) > timezone.now().__add__(timedelta(hours=5,minutes=30)) and test_detail.get(test.get('test_id')).test_id .test_date_and_time < timezone.now().__add__(timedelta(hours=5,minutes=30))  else 'Completed'          
+            # ,'test_duration' : test_detail.get(test.get('test_id')).test_id.test_duration,
+            # 'testc to,end'  : test.get('assessment_completion_time',0),'now': timezone.now().__add__(timedelta(hours=5,minutes=30))
         }  for test in students_assessment]
         update_app_usage(student_id)
         return JsonResponse({'test_details':response},safe=False,status=200)
