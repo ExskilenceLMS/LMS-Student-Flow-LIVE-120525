@@ -55,7 +55,7 @@ def fetch_all_test_details(request,student_id):
             "enddate"       : test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration))).strftime("%Y-%m-%d"),
             "endtime"       : (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration)))).strftime("%I:%M %p"),# + " " + (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration)))).strftime("%p"),
             "title"         : test_detail.get(test.get('test_id')).test_id .test_name,
-            "status"        : 'Upcomming' if  test_detail.get(test.get('test_id')).test_id .test_date_and_time > timezone.now().__add__(timedelta(hours=5,minutes=30)) else 'On Going' if test.get('assessment_completion_time',0) < timezone.now().__add__(timedelta(hours=5,minutes=30)) else 'Completed'          
+            "status"        : 'Upcomming' if  test_detail.get(test.get('test_id')).test_id .test_date_and_time > timezone.now().__add__(timedelta(hours=5,minutes=30)) else 'Ongoing' if test.get('assessment_completion_time',0) < timezone.now().__add__(timedelta(hours=5,minutes=30)) else 'Completed'          
         }  for test in students_assessment]
         update_app_usage(student_id)
         return JsonResponse({'test_details':response},safe=False,status=200)
@@ -115,7 +115,7 @@ def section_details(request,student_id,test_id):
         answers = student_test_questions_details.objects.filter(
                                                     test_id = test_id,
                                                     student_id = student_id,
-                                                    del_row = 'False'
+                                                    del_row = False
                                                     ).order_by('question_id')
         
         if test_section == [] :
@@ -222,7 +222,7 @@ def get_test_Qns(request,student_id,test_id,section_name):
                                                     student_id = student_id,
                                                     question_id__in = [item.get('question_id') for item in test_section],
                                                     del_row = 'False'
-                                                    ).order_by('question_id').values('question_id','question_status')
+                                                    ).order_by('question_id').values('question_id','question_status','student_answer')
         answers = {item.get('question_id'):item for item in answers}
         Qn_data = {}
         table_required = False
@@ -239,7 +239,8 @@ def get_test_Qns(request,student_id,test_id,section_name):
                 blob_data = cache.get(path)
                 cache.set(path,blob_data)
             blob_data.update({
-                'question_status':answers.get(Qn).get('question_status') if answers.get(Qn) != None else 'Pending'
+                'question_status':answers.get(Qn).get('question_status') if answers.get(Qn) != None else 'Pending',
+                'user_answer':answers.get(Qn).get('student_answer') if answers.get(Qn) != None else '',
             })
             if Qn_data.get('coding' if Qn[-5] == 'c' else 'mcq') == None:
                 Qn_data.update({'coding' if Qn[-5] == 'c' else 'mcq':[]})
@@ -265,6 +266,10 @@ def submit_test_mcq_questions(request):
            student_id = data.get('student_id')
            question_id = data.get('question_id')
            # blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json'))
+           student_assessment = students_assessments.objects.get(student_id = student_id,test_id = data.get('test_id'),del_row = False)
+           if student_assessment.assessment_status == 'Completed':
+                return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
+           
            blob_rules_data = json.loads(get_blob('lms_rules/rules.json'))
            blob_rules_data = blob_rules_data.get('mcq')
            score = 0
@@ -295,7 +300,7 @@ def submit_test_mcq_questions(request):
                                                                     })
            response ={'message':'Already Submited'}
            if created:
-               student_assessment = students_assessments.objects.get(student_id = student_id,test_id = data.get('test_id'),del_row = False)
+            #    student_assessment = students_assessments.objects.get(student_id = student_id,test_id = data.get('test_id'),del_row = False)
                question = questions.objects.get(question_id = question_id, del_row = False)
                student,student_created = student_test_questions_details.objects.get_or_create(student_id = student_id,
                                                                              test_id = data.get('test_id'),
@@ -321,6 +326,10 @@ def submit_test_mcq_questions(request):
                     student_assessment.save()
                     student_assessment.student_id.save()
                     response ={'message':'Submited'}
+                    response.update({
+                        'user_answer':student.student_answer,
+                        'question_status':student.question_status
+                        })
            update_app_usage(student_id)
            return JsonResponse(response,safe=False,status=200)
         except Exception as e:
@@ -410,6 +419,10 @@ def submit_test_coding_questions(request):
                     student_assessment.save()
                     student_assessment.student_id.save()
                     response                                            = {'message':'Submited'}
+                    response.update({
+                        'user_answer':student.student_answer,
+                        'question_status':student.question_status
+                        })
         update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:

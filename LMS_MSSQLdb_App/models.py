@@ -364,6 +364,7 @@ class student_test_questions_details(models.Model):
     week_number                 = models.IntegerField(default=0, null=True)
     completion_time             = models.DateTimeField(default=None, null=True) 
     question_id                 = models.ForeignKey(questions, on_delete=models.SET_NULL, null=True)
+    student_answer              = models.TextField(default=None, null=True)
     del_row                     = models.BooleanField(default=False)
 
     class Meta:

@@ -73,7 +73,7 @@ def final_test_section_details(request,student_id,test_id):
         answers = student_test_questions_details.objects.filter(
                                                     test_id = test_id,
                                                     student_id = student_id,
-                                                    del_row = 'False'
+                                                    del_row = False
                                                     ).order_by('question_id')
         
         if test_section == [] :
@@ -199,7 +199,8 @@ def get_final_test_Qns(request,student_id,test_id,section_name):
                 blob_data = cache.get(path)
                 cache.set(path,blob_data)
             blob_data.update({
-                'question_status':answers.get(Qn).get('question_status') if answers.get(Qn) != None else 'Pending'
+                'question_status':answers.get(Qn).get('question_status') if answers.get(Qn) != None else 'Pending',
+                'user_answer':answers.get(Qn).get('student_answer') if answers.get(Qn) != None else '',
             })
             if Qn_data.get('coding' if Qn[-5] == 'c' else 'mcq') == None:
                 Qn_data.update({'coding' if Qn[-5] == 'c' else 'mcq':[]})
@@ -221,78 +222,82 @@ def get_final_test_Qns(request,student_id,test_id,section_name):
 def submit_final_test_mcq_questions(request):
     # if submit_type.lower() == 'mcq': 
         try:
-           data = json.loads(request.body)
-           student_id = data.get('student_id')
-           question_id = data.get('question_id')
-           # blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json'))
-           student_assessment = students_assessments.objects.get(student_id = student_id,test_id = data.get('test_id'),del_row = False)
-           if student_assessment.assessment_status == 'Completed':
-                return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
-           if timezone.now().__add__(timedelta(hours=5,minutes=30)) >= (student_assessment.test_id.test_date_and_time + timedelta(minutes=student_assessment.test_id.test_duration)):
-                update_app_usage(student_id)
-                student_assessment.assessment_completion_time = timezone.now().__add__(timedelta(hours=5,minutes=30))
-                student_assessment.assessment_status = 'Completed'
-                student_assessment.save()
-                return JsonResponse({"message": "Test Completed due to time limit reached."},safe=False,status=400)
-           
-           blob_rules_data = json.loads(get_blob('lms_rules/rules.json'))
-           blob_rules_data = blob_rules_data.get('mcq')
-           score = 0
-           outoff = 0
-           if question_id[-4]=='e':
-               outoff = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level1'][0]
-           elif question_id[-4]=='m':
-               outoff = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level2'][0]
-           elif question_id[-4]=='h':
-               outoff = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level3'][0]
-           
-           if data.get('correct_ans') == data.get('entered_ans'):
-                   score = int(outoff)
-           student_practiceMCQ_answer ,created= student_practiceMCQ_answers.objects.using('mongodb'
-                                                               ).get_or_create(student_id = student_id,
-                                                                    question_id = question_id,
-                                                                    question_done_at=data.get('test_id'),
-                                                                    del_row = 'False' ,
-                                                                    defaults={
-                                                                        'student_id':student_id,
-                                                                        'question_id':question_id,
-                                                                        'question_done_at' :data.get('test_id'),
-                                                                        'correct_ans': data.get('correct_ans'),
-                                                                        'entered_ans': data.get('entered_ans'),
-                                                                        'subject_id':data.get('subject_id'),
-                                                                        'score':int(score),
-                                                                        'answered_time':timezone.now() + timedelta(hours=5, minutes=30)
-                                                                    })
-           response ={'message':'Already Submited'}
-           if created:
-            #    student_assessment = students_assessments.objects.get(student_id = student_id,test_id = data.get('test_id'),del_row = False)
-               question = questions.objects.get(question_id = question_id, del_row = False)
-               student,student_created = student_test_questions_details.objects.get_or_create(student_id = student_id,
-                                                                             test_id = data.get('test_id'),
-                                                                             question_id = question_id,
-                                                                       del_row = 'False',
-                                                                       defaults={
-                                                                           'student_id':student_assessment.student_id,
-                                                                           'subject_id':question.sub_topic_id.topic_id.subject_id,
-                                                                           'question_id':question,
-                                                                           'test_id': student_assessment.test_id,
-                                                                           'question_status':'Submitted',
-                                                                           'score_secured':float(score),
-                                                                           'week_number':student_assessment.assessment_week_number,
-                                                                           'max_score':int(outoff),
-                                                                           'completion_time':timezone.now() + timedelta(hours=5, minutes=30)
-                                                                       })
-               if student_created:
-                    student_assessment.student_id.student_score = int(student_assessment.student_id.student_score) + int(score)
-                    student_assessment.student_id.student_total_score = int(student_assessment.student_id.student_total_score) + int(outoff)
-                    student_assessment.assessment_status = 'Started'
-                    student_assessment.assessment_completion_time = timezone.now() + timedelta(hours=5, minutes=30)
-                    student_assessment.assessment_score_secured = float(student_assessment.assessment_score_secured) + float(score)
-                    student_assessment.save()
-                    student_assessment.student_id.save()
-                    response ={'message':'Submited'}
-           update_app_usage(student_id)
-           return JsonResponse(response,safe=False,status=200)
+            data = json.loads(request.body)
+            student_id = data.get('student_id')
+            question_id = data.get('question_id')
+            # blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json'))
+            student_assessment = students_assessments.objects.get(student_id = student_id,test_id = data.get('test_id'),del_row = False)
+            if student_assessment.assessment_status == 'Completed':
+                 return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
+            if timezone.now().__add__(timedelta(hours=5,minutes=30)) >= (student_assessment.test_id.test_date_and_time + timedelta(minutes=student_assessment.test_id.test_duration)):
+                 update_app_usage(student_id)
+                 student_assessment.assessment_completion_time = timezone.now().__add__(timedelta(hours=5,minutes=30))
+                 student_assessment.assessment_status = 'Completed'
+                 student_assessment.save()
+                 return JsonResponse({"message": "Test Completed due to time limit reached."},safe=False,status=400)
+            
+            blob_rules_data = json.loads(get_blob('lms_rules/rules.json'))
+            blob_rules_data = blob_rules_data.get('mcq')
+            score = 0
+            outoff = 0
+            if question_id[-4]=='e':
+                outoff = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level1'][0]
+            elif question_id[-4]=='m':
+                outoff = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level2'][0]
+            elif question_id[-4]=='h':
+                outoff = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level3'][0]
+            
+            if data.get('correct_ans') == data.get('entered_ans'):
+                    score = int(outoff)
+            student_practiceMCQ_answer ,created= student_practiceMCQ_answers.objects.using('mongodb'
+                                                                ).get_or_create(student_id = student_id,
+                                                                     question_id = question_id,
+                                                                     question_done_at=data.get('test_id'),
+                                                                     del_row = 'False' ,
+                                                                     defaults={
+                                                                         'student_id':student_id,
+                                                                         'question_id':question_id,
+                                                                         'question_done_at' :data.get('test_id'),
+                                                                         'correct_ans': data.get('correct_ans'),
+                                                                         'entered_ans': data.get('entered_ans'),
+                                                                         'subject_id':data.get('subject_id'),
+                                                                         'score':int(score),
+                                                                         'answered_time':timezone.now() + timedelta(hours=5, minutes=30)
+                                                                     })
+            response ={'message':'Already Submited'}
+            if created:
+             #    student_assessment = students_assessments.objects.get(student_id = student_id,test_id = data.get('test_id'),del_row = False)
+                question = questions.objects.get(question_id = question_id, del_row = False)
+                student,student_created = student_test_questions_details.objects.get_or_create(student_id = student_id,
+                                                                              test_id = data.get('test_id'),
+                                                                              question_id = question_id,
+                                                                        del_row = 'False',
+                                                                        defaults={
+                                                                            'student_id':student_assessment.student_id,
+                                                                            'subject_id':question.sub_topic_id.topic_id.subject_id,
+                                                                            'question_id':question,
+                                                                            'test_id': student_assessment.test_id,
+                                                                            'question_status':'Submitted',
+                                                                            'score_secured':float(score),
+                                                                            'week_number':student_assessment.assessment_week_number,
+                                                                            'max_score':int(outoff),
+                                                                            'completion_time':timezone.now() + timedelta(hours=5, minutes=30)
+                                                                        })
+                if student_created:
+                     student_assessment.student_id.student_score = int(student_assessment.student_id.student_score) + int(score)
+                     student_assessment.student_id.student_total_score = int(student_assessment.student_id.student_total_score) + int(outoff)
+                     student_assessment.assessment_status = 'Started'
+                     student_assessment.assessment_completion_time = timezone.now() + timedelta(hours=5, minutes=30)
+                     student_assessment.assessment_score_secured = float(student_assessment.assessment_score_secured) + float(score)
+                     student_assessment.save()
+                     student_assessment.student_id.save()
+                     response ={'message':'Submited'}
+                     response.update({
+                        'user_answer':student.student_answer,
+                        'question_status':student.question_status
+                        })
+            update_app_usage(student_id)
+            return JsonResponse(response,safe=False,status=200)
         except Exception as e:
             print(e)
             update_app_usage( json.loads(request.body).get('student_id') )
@@ -388,6 +393,10 @@ def submit_final_test_coding_questions(request):
                     student_assessment.save()
                     student_assessment.student_id.save()
                     response ={'message':'Submited'}
+                    response.update({
+                        'user_answer':student.student_answer,
+                        'question_status':student.question_status
+                        })
         update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
