@@ -173,8 +173,12 @@ def section_details(request,student_id,test_id):
             Qns_data.get('coding' if Qn[-5] == 'c' else 'mcq').append(blob_data)
         container_client.close()
         response.update({'Completed_Questions':str(Completed_Questions.get('completed'))+'/'+str(Completed_Questions.get('total')),
+                         'Duration':student.student_duration,
                         'Qns_data':Qns_data})
-        student.student_test_start_time = timezone.now() + timedelta(hours=5, minutes=30)
+        if student.student_test_start_time == None:
+            student.student_test_start_time = timezone.now() + timedelta(hours=5, minutes=30)
+        student.assessment_status = 'Started'
+        student.student_test_completion_time = timezone.now() + timedelta(hours=5, minutes=30)
         student.save()
         update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
@@ -182,6 +186,31 @@ def section_details(request,student_id,test_id):
         print(e)
         update_app_usage(student_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+
+@api_view(['GET'])
+def Test_duration(req,student_id,test_id):
+    try:
+        student = students_assessments.objects.get(
+            student_id = student_id,
+            test_id = test_id,
+            del_row = False
+        )
+        if student.assessment_status == 'Completed':
+            update_app_usage(student_id)
+            return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
+        if student.student_duration == None:
+            student.student_test_completion_time= timezone.now() + timedelta(hours=5, minutes=30)
+        now = timezone.now() + timedelta(hours=5, minutes=30)
+        # student.student_duration =0
+        student.student_duration += (now-student.student_test_completion_time).total_seconds()
+        student.student_test_completion_time = now
+        student.save()
+        return JsonResponse( {
+            'status': 'success',
+            'duration':student.student_duration},safe=False,status=200)
+    except Exception as e:
+        return HttpResponse(json.dumps({'Error':str(e)}), content_type='application/json')
+    
 @api_view(['GET'])
 def submit_test(request,student_id,test_id):
     try:
@@ -462,7 +491,8 @@ def student_test_report(request,student_id,test_id):
         # print(topics_list)
         test_summary ={}
         test_summary.update({
-            'time_taken_for_completion':round((student_assessment.student_test_start_time - student_assessment.student_test_completion_time ).total_seconds()/60,2),
+            # 'time_taken_for_completion':round((student_assessment.student_test_start_time - student_assessment.student_test_completion_time ).total_seconds()/60,2),
+            'time_taken_for_completion':round(student_assessment.student_duration/60,2),
             'score_secured'         :student_assessment.assessment_score_secured,
             'max_score'             :student_assessment.assessment_max_score,
             'percentage'            :round((student_assessment.assessment_score_secured/student_assessment.assessment_max_score)*100,2),
