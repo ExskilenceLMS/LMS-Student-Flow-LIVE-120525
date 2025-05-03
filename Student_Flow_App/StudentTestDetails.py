@@ -173,7 +173,7 @@ def section_details(request,student_id,test_id):
             Qns_data.get('coding' if Qn[-5] == 'c' else 'mcq').append(blob_data)
         container_client.close()
         response.update({'Completed_Questions':str(Completed_Questions.get('completed'))+'/'+str(Completed_Questions.get('total')),
-                         'Duration':student.student_duration,
+                         'Duration':round(student.student_duration/60,2),
                         'Qns_data':Qns_data})
         if student.student_test_start_time == None:
             student.student_test_start_time = timezone.now() + timedelta(hours=5, minutes=30)
@@ -207,7 +207,7 @@ def Test_duration(req,student_id,test_id):
         student.save()
         return JsonResponse( {
             'status': 'success',
-            'duration':student.student_duration},safe=False,status=200)
+            'duration':round(student.student_duration/60,2)},safe=False,status=200)
     except Exception as e:
         return HttpResponse(json.dumps({'Error':str(e)}), content_type='application/json')
     
