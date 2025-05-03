@@ -198,18 +198,29 @@ def Test_duration(req,student_id,test_id):
         if student.assessment_status == 'Completed':
             update_app_usage(student_id)
             return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
-        if student.student_duration == None:
+        if student.student_test_completion_time == None:
             student.student_test_completion_time= timezone.now() + timedelta(hours=5, minutes=30)
         now = timezone.now() + timedelta(hours=5, minutes=30)
-        # student.student_duration =0
         student.student_duration += (now-student.student_test_completion_time).total_seconds()
         student.student_test_completion_time = now
+        if round(float(student.test_id.test_duration)*60-student.student_duration,2) <= 0:
+            student.assessment_status = 'Completed'
+            student.student_test_completion_time = now 
+            student.save()
+            update_app_usage(student_id)
+            return JsonResponse( {
+                'status': 'completed',
+                'time_left':0,
+                'test_duration':(student.assessment_completion_time-student.test_id.test_date_and_time).total_seconds()/60,
+                'user_duration':round(student.student_duration/60,2)
+            })
         student.save()
         return JsonResponse( {
             'status': 'success',
             'time_left':round(float(student.test_id.test_duration)*60-student.student_duration,2),
-            'test_duration':float(student.test_id.test_duration),
-            'user_duration':round(student.student_duration/60,2)},safe=False,status=200)
+            'test_duration':(student.assessment_completion_time-student.test_id.test_date_and_time).total_seconds()/60,
+            'user_duration':round(student.student_duration/60,2)
+            },safe=False,status=200)
     
     except Exception as e:
         return HttpResponse(json.dumps({'Error':str(e)}), content_type='application/json')
