@@ -197,7 +197,9 @@ def Test_duration(req,student_id,test_id):
         )
         if student.assessment_status == 'Completed':
             update_app_usage(student_id)
-            return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
+            return JsonResponse({"status": "Test Already Completed",
+                                 "time_left":0
+                                 },safe=False,status=400)
         if student.student_test_completion_time == None:
             student.student_test_completion_time= timezone.now() + timedelta(hours=5, minutes=30)
         now = timezone.now() + timedelta(hours=5, minutes=30)
@@ -217,7 +219,7 @@ def Test_duration(req,student_id,test_id):
         student.save()
         return JsonResponse( {
             'status': 'success',
-            'time_left':round(float(student.test_id.test_duration)*60-student.student_duration,2),
+            'time_left':round(float(student.test_id.test_duration)*60-student.student_duration),
             'test_duration':(student.assessment_completion_time-student.test_id.test_date_and_time).total_seconds()/60,
             'user_duration':round(student.student_duration/60,2)
             },safe=False,status=200)
