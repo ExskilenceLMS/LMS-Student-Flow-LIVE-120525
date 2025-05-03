@@ -207,7 +207,10 @@ def Test_duration(req,student_id,test_id):
         student.save()
         return JsonResponse( {
             'status': 'success',
-            'duration':round(student.student_duration/60,2)},safe=False,status=200)
+            'time_left':round(float(student.test_id.test_duration)*60-student.student_duration,2),
+            'test_duration':float(student.test_id.test_duration),
+            'user_duration':round(student.student_duration/60,2)},safe=False,status=200)
+    
     except Exception as e:
         return HttpResponse(json.dumps({'Error':str(e)}), content_type='application/json')
     
