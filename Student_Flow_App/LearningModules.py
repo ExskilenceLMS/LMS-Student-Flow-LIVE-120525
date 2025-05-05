@@ -21,6 +21,7 @@ from .sqlrun import get_all_tables
 @api_view(['GET'])
 def fetch_learning_modules(request,student_id,subject,subject_id,day_number):
     try:
+        blob_path = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
         student = students_info.objects.get(student_id = student_id,del_row = False)
         student_details = students_details.objects.using('mongodb').get(student_id = student_id,del_row = 'False')
         # if student_details.student_question_details.get(subject) == None:
@@ -35,8 +36,8 @@ def fetch_learning_modules(request,student_id,subject,subject_id,day_number):
             response_data.append({
                 'subtopicid':i.get('subtopic_id'),
                 'sub_topic':i.get('subtopic_name'),
-                'lesson': [subdata.get('path') for subdata in day_data.get('content').get(i.get('subtopic_id'),[]) if subdata.get('type')=="video"],
-                'notes': [subdata.get('path') for subdata in day_data.get('content').get(i.get('subtopic_id'),[]) if subdata.get('type')=="file"],
+                'lesson': [subdata.get('path').replace(blob_path,'') for subdata in day_data.get('content').get(i.get('subtopic_id'),[]) if subdata.get('type')=="video"],
+                'notes': [subdata.get('path').replace(blob_path,'') for subdata in day_data.get('content').get(i.get('subtopic_id'),[]) if subdata.get('type')=="file"],
                 'mcqQuestions':sum([ day_data.get('mcq').get(i.get('subtopic_id')).get(qn,0) for qn in day_data.get('mcq').get(i.get('subtopic_id'),{}) ]),
                 'codingQuestions':sum([day_data.get('coding').get(i.get('subtopic_id')).get(qn,0) for qn in day_data.get('coding').get(i.get('subtopic_id'),{} )])
             })

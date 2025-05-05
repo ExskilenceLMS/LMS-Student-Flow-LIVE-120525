@@ -58,8 +58,8 @@ def fetch_FAQ(request):
 def get_media(request):
     try:
         data = json.loads(request.body)
-        file_url = data.get('file_url')
-        # file_url = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/{data.get('file_url')}'
+        # file_url = data.get('file_url')
+        file_url = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/{data.get('file_url')}'
         response = requests.get(file_url, stream=True)
         response.raise_for_status()
         path = urlparse(file_url).path
