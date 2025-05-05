@@ -45,7 +45,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
         course = student.course_id
         blob_data = json.loads(get_blob(f'lms_daywise/{course.course_id}/{course.course_id}_{student.batch_id.batch_id}.json'))
         sub = subjects.objects.get(subject_id = subject_id,del_row = False)
-        course_details = list(course_plan_details.objects.filter(course_id=course, subject_id=sub, del_row=False)
+        course_details = list(course_plan_details.objects.filter(course_id=course, subject_id=sub,batch_id_id=student.batch_id.batch_id, del_row=False)
                   .values('week')
                   .annotate(#   day_date_count=Count('day_date'), 
                       startDate=Min('day_date'),

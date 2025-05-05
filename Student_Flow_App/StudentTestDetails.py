@@ -509,6 +509,7 @@ def student_test_report(request,student_id,test_id):
         test_summary.update({
             # 'time_taken_for_completion':round((student_assessment.student_test_start_time - student_assessment.student_test_completion_time ).total_seconds()/60,2),
             'time_taken_for_completion':round(student_assessment.student_duration/60,2),
+            'total_time'            :(student_assessment.assessment_completion_time-student_assessment.test_id.test_date_and_time).total_seconds()/60,
             'score_secured'         :student_assessment.assessment_score_secured,
             'max_score'             :student_assessment.assessment_max_score,
             'percentage'            :round((student_assessment.assessment_score_secured/student_assessment.assessment_max_score)*100,2),
