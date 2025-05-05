@@ -505,11 +505,13 @@ def student_test_report(request,student_id,test_id):
         mcq_answers = { i.get('question_id'):i for i in mcq_answers}#{i.question_id:i for i in mcq_answers}
         topics_list ={i.question_id.question_id:i.question_id.sub_topic_id.topic_id.topic_name for i in test_questions_list}
         # print(topics_list)
+        test_time_taken = round(student_assessment.student_duration/60) 
+        Total_time_given = round((student_assessment.assessment_completion_time-student_assessment.test_id.test_date_and_time).total_seconds()/60)
         test_summary ={}
         test_summary.update({
             # 'time_taken_for_completion':round((student_assessment.student_test_start_time - student_assessment.student_test_completion_time ).total_seconds()/60,2),
-            'time_taken_for_completion':round(student_assessment.student_duration/60,2),
-            'total_time'            :(student_assessment.assessment_completion_time-student_assessment.test_id.test_date_and_time).total_seconds()/60,
+            'time_taken_for_completion':str(test_time_taken)+' min' if test_time_taken < 60 else str(int(test_time_taken/60))+' hrs '+str(test_time_taken%60)+' min',
+            'total_time'            :str(Total_time_given)+' min' if Total_time_given < 60 else str(int(Total_time_given/60))+' hrs '+str(Total_time_given%60)+' min',
             'score_secured'         :student_assessment.assessment_score_secured,
             'max_score'             :student_assessment.assessment_max_score,
             'percentage'            :round((student_assessment.assessment_score_secured/student_assessment.assessment_max_score)*100,2),
