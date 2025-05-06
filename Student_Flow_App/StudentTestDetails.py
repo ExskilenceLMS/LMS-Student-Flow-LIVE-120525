@@ -59,7 +59,7 @@ def fetch_all_test_details(request,student_id):
             "status"        : 'Completed' if test.get('assessment_status') == 'Completed' else 'Upcomming' if  test_detail.get(test.get('test_id')).test_id .test_date_and_time > timezone.now().__add__(timedelta(hours=5,minutes=30)) else 'Ongoing' if test.get('assessment_completion_time',0) > timezone.now().__add__(timedelta(hours=5,minutes=30)) and test_detail.get(test.get('test_id')).test_id .test_date_and_time < timezone.now().__add__(timedelta(hours=5,minutes=30))  else 'Completed'          
             # ,'test_duration' : test_detail.get(test.get('test_id')).test_id.test_duration,
             # 'testc to,end'  : test.get('assessment_completion_time',0),'now': timezone.now().__add__(timedelta(hours=5,minutes=30))
-        }  for test in students_assessment]
+        }  for test in students_assessment if test_detail.get(test.get('test_id')) != None]
         update_app_usage(student_id)
         return JsonResponse({'test_details':response},safe=False,status=200)
     except Exception as e:
@@ -173,7 +173,7 @@ def section_details(request,student_id,test_id):
             Qns_data.get('coding' if Qn[-5] == 'c' else 'mcq').append(blob_data)
         container_client.close()
         response.update({'Completed_Questions':str(Completed_Questions.get('completed'))+'/'+str(Completed_Questions.get('total')),
-                         'Duration':round(student.student_duration/60,2),
+                         'Duration':round(student.student_duration/60,2) if str(student.test_id.test_type).lower() != 'final test' else 0,
                         'Qns_data':Qns_data})
         if student.student_test_start_time == None:
             student.student_test_start_time = timezone.now() + timedelta(hours=5, minutes=30)
@@ -205,13 +205,28 @@ def Test_duration(req,student_id,test_id):
         now = timezone.now() + timedelta(hours=5, minutes=30)
         student.student_duration += (now-student.student_test_completion_time).total_seconds()
         student.student_test_completion_time = now
+        if str(student.test_id.test_type).lower() == 'final test':
+            if now > student.assessment_completion_time:
+                student.assessment_status = 'Completed'
+                student.student_test_completion_time = now 
+                student.save()
+                update_app_usage(student_id)
+                return JsonResponse({"status": "Completed",
+                                     "time_left":0
+                                     },safe=False,status=400)
+            student.assessment_status = 'Completed'
+            student.save()
+            update_app_usage(student_id)
+            return JsonResponse({"status": "success",
+                                 "time_left": round((student.assessment_completion_time-student.test_id.test_date_and_time).total_seconds()/60)
+                                 },safe=False,status=400)
         if round(float(student.test_id.test_duration)*60-student.student_duration,2) <= 0:
             student.assessment_status = 'Completed'
             student.student_test_completion_time = now 
             student.save()
             update_app_usage(student_id)
             return JsonResponse( {
-                'status': 'completed',
+                'status': 'Completed',
                 'time_left':0,
                 'test_duration':(student.assessment_completion_time-student.test_id.test_date_and_time).total_seconds()/60,
                 'user_duration':round(student.student_duration/60,2)
@@ -236,16 +251,34 @@ def submit_test(request,student_id,test_id):
             del_row = False
         )
         if student.assessment_status == 'Completed':
-            student.assessment_status = 'Pending'
-            student.save()
+            # student.assessment_status = 'Pending'
+            # student.save()
             return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
         # if student.student_duration >= (student.test_id.test_date_and_time - student.student_test_completion_time).total_seconds():
         #     return JsonResponse({"message": "Test Completed due to time limit reached."},safe=False,status=400)
         student.student_test_completion_time = timezone.now().__add__(timedelta(hours=5,minutes=30))
         student.assessment_status = 'Completed'
         student.save()
+        # Update_CollegeRank_and_OverallRank(student.student_id.course_id,student.student_id.college)
         update_app_usage(student_id)
         return JsonResponse({"message": "Test Successfully Completed"},safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+def Update_CollegeRank_and_OverallRank(course_id,College):
+    try:
+        all_students_objs = students_info.objects.filter(course_id=course_id,del_row=False).order_by('-student_score')
+        all_student_objes_college_wise = [stud for stud in all_students_objs if stud.college == College]
+        Update_Studente_Rank =[]
+        for student in all_students_objs:
+            # print(student.student_id,student.student_overall_rank ,student.student_college_rank)
+            student.student_overall_rank = list(all_students_objs).index(student)+1
+            student.student_college_rank = list(all_student_objes_college_wise).index(student)+1
+            Update_Studente_Rank.append(student)
+            # print(student.student_id,student.student_overall_rank, student.student_college_rank)
+            
+        updated_objs = students_info.objects.bulk_update(Update_Studente_Rank,fields=['student_overall_rank','student_college_rank'],batch_size=100)
+        return JsonResponse({"message": "Successfully Updated"},safe=False,status=200)
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
@@ -491,6 +524,11 @@ def submit_test_coding_questions(request):
         update_app_usage(json.loads(request.body).get('student_id'))
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 
+def format_time_with_zone(date):
+    if date == None:
+        return None
+    date = datetime.strptime(str(date).split('.')[0].split('+')[0], "%Y-%m-%d %H:%M:%S")
+    return (f"{calendar.month_abbr[int(date.strftime("%m"))]} {int(date.strftime("%d"))} {date.strftime('%Y')} {date.strftime('%H:%M:%S')} IST")
 @api_view(['GET'])
 def student_test_report(request,student_id,test_id):
     try: 
@@ -518,8 +556,8 @@ def student_test_report(request,student_id,test_id):
             'status'                :student_assessment.assessment_status,
             'attempted_questions'   :len(answers_status),
             'total_questions'       :len(test_questions),
-            'test_start_time'       :student_assessment.student_test_start_time,
-            'test_end_time'         :student_assessment.student_test_completion_time
+            'test_start_time'       :format_time_with_zone (student_assessment.student_test_start_time) ,
+            'test_end_time'         :format_time_with_zone (student_assessment.student_test_completion_time) 
         })
         if student_assessment.assessment_type == 'Final Test':
             test_summary.update({

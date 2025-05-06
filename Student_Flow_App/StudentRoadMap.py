@@ -163,7 +163,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                                                 and str(d.get('topic')).lower() != 'Preparation Day'.lower() 
                                                 and str(d.get('topic')).lower() != 'Semester Exam'.lower()  
                                                 and  str(d.get('topic')).lower() != 'Internship'.lower()
-                                            else 'Completed'
+                                            else ''
                               })
                     daynumber+=1    
             i.update({'days': days})
@@ -202,6 +202,9 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
         print(e)
         update_app_usage(student_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+
+
+                                                           
 
 # @api_view(['GET'])
 def fetch_roadmap_old(request,student_id,course_id,subject_id):

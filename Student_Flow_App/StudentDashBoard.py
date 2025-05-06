@@ -157,7 +157,7 @@ def fetch_live_session(request,student_id):
             "title":session[0],
             "date":getdays(session[1]),#+" "+session[1].strftime("%Y")[2:],
             "time":session[1].strftime("%I:%M") + " " + session[1].strftime("%p")}            for session in live_session ]
-        update_app_usage(student_id)
+        # update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
@@ -166,7 +166,6 @@ def fetch_live_session(request,student_id):
 @api_view(['GET'])
 def fetch_upcoming_events(request,Course_id,batch_id):
     try:
-        print(Course_id)
         current_time = datetime.utcnow() + timedelta(days=0,hours=5, minutes=30)
         # blob_data = json.loads(get_blob('LMS_DayWise/Course0001.json'))
         blob_data = json.loads(get_blob(f'lms_daywise/{Course_id}/{Course_id}_{batch_id}.json'))
@@ -238,11 +237,13 @@ def fetch_study_hours(request,student_id,week):
                 "day_name":calendar.day_name[(start_of_week + timedelta(days=i)).weekday()][0:3],
                 "isUpcoming":True if (start_of_week + timedelta(days=i)).date() > today.date() else False,
                 "isCurrent":True if (start_of_week + timedelta(days=i)).date() == today.date() else False,
-                "hours":round(hour_spent.get((start_of_week + timedelta(days=i)).date()).total_seconds()/3600,2) if hour_spent.get((start_of_week + timedelta(days=i)).date()) else 0
+                "hours":round(hour_spent.get((start_of_week + timedelta(days=i)).date()).total_seconds()/3600,1) if hour_spent.get((start_of_week + timedelta(days=i)).date()) else 0
             })
+        update_app_usage(student_id) 
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
+        update_app_usage(student_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 
 #    FETCH CALENDAR
@@ -294,10 +295,10 @@ def fetch_student_summary(request,student_id):
             'student_id': student.student_id,
             'name': student.student_firstname+' '+student.student_lastname,
             'score':student.student_score,
-            'hour_spent':round(student_app_usages.get('total_seconds').total_seconds()/3600,2),
+            'hour_spent':round(student_app_usages.get('total_seconds').total_seconds()/3600,1),
             'category':student.student_catogory,
-            'college_rank':student.student_college_rank,
-            'overall_rank':student.student_overall_rank
+            'college_rank':student.student_college_rank if student.student_college_rank <=0 else '--',
+            'overall_rank':student.student_overall_rank if student.student_college_rank <=0 else '--',
 
         }
         return JsonResponse(response,safe=False,status=200)

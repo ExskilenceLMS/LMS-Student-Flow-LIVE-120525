@@ -473,6 +473,7 @@ def update_day_status(request):
         if current_status == 1 and data.get('status') == False:
             update_app_usage(data.get('student_id'))
             return JsonResponse({'message':'Already Started'},safe=False,status=200)
+        message =''
         if data.get('status') == True:
             mcq_questions_ids = (student.student_question_details.get(data.get('subject_id')
                                                                   ).get('week_'+str(data.get('week_number'))
@@ -490,10 +491,11 @@ def update_day_status(request):
                                              ).get('week_'+str(data.get('week_number'))
                                                    ).get('day_'+str(data.get('day_number'))
                                                          ).get('sub_topic_status').update({data.get('sub_topic'):2})
+                message =   start_learning_activity(student.student_id,data.get('sub_topic'),data.get('week_number'),data.get('day_number'))
                 student.save()
             else:
                 update_app_usage(data.get('student_id'))
-                return JsonResponse({'message':'Not Completed'},safe=False,status=200)
+                return JsonResponse({'message':'Not Completed','message2':message},safe=False,status=200)
         else:
             student.student_question_details.get(data.get('subject_id')
                                              ).get('week_'+str(data.get('week_number'))
@@ -501,8 +503,28 @@ def update_day_status(request):
                                                          ).get('sub_topic_status').update({data.get('sub_topic'): 1})
             student.save()
         update_app_usage(data.get('student_id'))
-        return JsonResponse({'message':'Updated'},safe=False,status=200)    
+        return JsonResponse({'message':'Updated','message2':message},safe=False,status=200)    
     except Exception as e:
         print(e)
         update_app_usage(json.loads(request.body).get('student_id'))
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+
+def start_learning_activity(student_id,sub_topic_id,week_number,day_number):
+    try :  
+        print(student_id)
+        sub_topic = sub_topics.objects.get(sub_topic_id=sub_topic_id,del_row=False)
+        student = students_info.objects.get(student_id=student_id,del_row=False)
+        student,created = student_activities.objects.get_or_create(student_id=student,subject_id=sub_topic.topic_id.subject_id,activity_subtopic=sub_topic,del_row=False,
+                                                           defaults={
+                                                               'student_id':student,
+                                                               'subject_id':sub_topic.topic_id.subject_id,
+                                                               'activity_end_time':timezone.now().__add__(timedelta(hours=5,minutes=30)),
+                                                               'activity_week': week_number,
+                                                               'activity_day':day_number,
+                                                               'activity_topic':sub_topic.topic_id,
+                                                               'activity_subtopic':sub_topic,
+                                                           })
+        return 'Done'
+    except Exception as e:
+        print(e)
+        return str(e)
