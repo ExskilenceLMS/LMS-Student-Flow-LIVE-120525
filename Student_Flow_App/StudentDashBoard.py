@@ -237,7 +237,7 @@ def fetch_study_hours(request,student_id,week):
                 "day_name":calendar.day_name[(start_of_week + timedelta(days=i)).weekday()][0:3],
                 "isUpcoming":True if (start_of_week + timedelta(days=i)).date() > today.date() else False,
                 "isCurrent":True if (start_of_week + timedelta(days=i)).date() == today.date() else False,
-                "hours":round(hour_spent.get((start_of_week + timedelta(days=i)).date()).total_seconds()/3600,5) if hour_spent.get((start_of_week + timedelta(days=i)).date()) else 0
+                "hours":round(hour_spent.get((start_of_week + timedelta(days=i)).date()).total_seconds()/3600,2) if hour_spent.get((start_of_week + timedelta(days=i)).date()) else 0
             })
         # update_app_usage(student_id) 
         return JsonResponse(response,safe=False,status=200)
@@ -307,7 +307,7 @@ def fetch_student_summary(request,student_id):
             'student_id': student.student_id,
             'name': student.student_firstname+' '+student.student_lastname,
             'score':student.student_score,
-            'hour_spent':round(student_app_usages_by_student.get(student_id).total_seconds()/3600,5),
+            'hour_spent':round(student_app_usages_by_student.get(student_id).total_seconds()/3600,2),
             'category':student.student_catogory,
             'college_rank':student.student_college_rank if student.student_college_rank <=0 else '--',
             'overall_rank':student.student_overall_rank if student.student_college_rank <=0 else '--',
