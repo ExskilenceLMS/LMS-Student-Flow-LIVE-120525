@@ -107,11 +107,11 @@ def fetch_enrolled_subjects(request,student_id):
         # if str(student_data.course_id) == 'DEMO15' :
         #     if str(student_data.batch_id) == 'DEMOBatch1' :  
         #        response.extend(demo)
-        update_app_usage(student_id)
+        # update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        update_app_usage(student_id)
+        # update_app_usage(student_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)    
 def calculate_progress(start_date, end_date, student_progress,Total_days):
     days = student_progress.get('day')
@@ -237,13 +237,13 @@ def fetch_study_hours(request,student_id,week):
                 "day_name":calendar.day_name[(start_of_week + timedelta(days=i)).weekday()][0:3],
                 "isUpcoming":True if (start_of_week + timedelta(days=i)).date() > today.date() else False,
                 "isCurrent":True if (start_of_week + timedelta(days=i)).date() == today.date() else False,
-                "hours":round(hour_spent.get((start_of_week + timedelta(days=i)).date()).total_seconds()/3600,1) if hour_spent.get((start_of_week + timedelta(days=i)).date()) else 0
+                "hours":round(hour_spent.get((start_of_week + timedelta(days=i)).date()).total_seconds()/3600,5) if hour_spent.get((start_of_week + timedelta(days=i)).date()) else 0
             })
-        update_app_usage(student_id) 
+        # update_app_usage(student_id) 
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        update_app_usage(student_id)
+        # update_app_usage(student_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 
 #    FETCH CALENDAR
@@ -256,12 +256,14 @@ def fetch_calendar(request,student_id):
         student = students_info.objects.get(student_id = student_id,del_row = False)
         blob_data = json.loads(get_blob(f'lms_daywise/{student.course_id.course_id}/{student.course_id.course_id}_{student.batch_id.batch_id}.json'))
         response = extract_calendar_events(blob_data,current_time)
+        # update_app_usage(student_id)
         return JsonResponse({'year':(current_time.strftime("%Y")),
                               'month':str(int(current_time.strftime("%m"))-1),
                               "calendar":response},
                               safe=False,status=200)    
     except Exception as e:
         print(e)
+        # update_app_usage(student_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 def extract_calendar_events(blob_data,current_time):
     events = []
@@ -286,20 +288,29 @@ def extract_calendar_events(blob_data,current_time):
 def fetch_student_summary(request,student_id):
     try:
         student = students_info.objects.get(student_id = student_id,del_row = False)
+        # student_app_usages = student_app_usage.objects.filter(student_id = student_id,
+        #                                                       del_row = False
+        #                                                     ).aggregate(
+        #                                                     total_seconds=Sum(F('logged_out') - F('logged_in')))
         student_app_usages = student_app_usage.objects.filter(student_id = student_id,
+                                                            #   logged_in__gte = course_details[0].get('day_date'),
+                                                            #   logged_in__lte = course_details[-1].get('day_date')+timedelta(days=1),
+                                                            #   logged_in__gte = start_of_week,
+                                                            #   logged_in__lte = start_of_week + timedelta(days=6, hours=23, minutes=59, seconds=59),
                                                               del_row = False
-                                                            ).aggregate(
-                                                            total_seconds=Sum(F('logged_out') - F('logged_in')))
-        print(student_app_usages.get('total_seconds'))
+                                                            ).annotate(date=TruncDate('logged_in')).values('date').annotate(
+                                                            total_study_hours=Sum(F('logged_out') - F('logged_in'))).order_by('date')
+        student_app_usages_by_student = {student_id:i.get('total_study_hours') for i in student_app_usages}
+        print(student_app_usages)
+        print(student_app_usages_by_student)
         response ={
             'student_id': student.student_id,
             'name': student.student_firstname+' '+student.student_lastname,
             'score':student.student_score,
-            'hour_spent':round(student_app_usages.get('total_seconds').total_seconds()/3600,1),
+            'hour_spent':round(student_app_usages_by_student.get(student_id).total_seconds()/3600,5),
             'category':student.student_catogory,
             'college_rank':student.student_college_rank if student.student_college_rank <=0 else '--',
             'overall_rank':student.student_overall_rank if student.student_college_rank <=0 else '--',
-
         }
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
