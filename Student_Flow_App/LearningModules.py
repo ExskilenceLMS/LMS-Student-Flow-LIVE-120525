@@ -497,11 +497,15 @@ def update_day_status(request):
                 update_app_usage(data.get('student_id'))
                 return JsonResponse({'message':'Not Completed','message2':message},safe=False,status=200)
         else:
-            student.student_question_details.get(data.get('subject_id')
+            if student.student_question_details.get(data.get('subject_id')
+                                             ).get('week_'+str(data.get('week_number'))
+                                                   ).get('day_'+str(data.get('day_number'))
+                                                         ).get('sub_topic_status').get(data.get('sub_topic')) < 2 :
+                student.student_question_details.get(data.get('subject_id')
                                              ).get('week_'+str(data.get('week_number'))
                                                    ).get('day_'+str(data.get('day_number'))
                                                          ).get('sub_topic_status').update({data.get('sub_topic'): 1})
-            student.save()
+                student.save()
         update_app_usage(data.get('student_id'))
         return JsonResponse({'message':'Updated','message2':message},safe=False,status=200)    
     except Exception as e:
