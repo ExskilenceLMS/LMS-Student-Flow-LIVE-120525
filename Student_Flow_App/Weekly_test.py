@@ -11,6 +11,10 @@ from django.db.models import Max, F ,Sum,Min,Count
 import json
 from django.db.models.functions import TruncDate    
 
+rule_for_weekly_test = {
+    'MCQ':10,'Coding':3
+}
+
 @api_view(['GET'])
 def Automated_weekly_test(request,student_id,week_number,subject_id): 
     try:
@@ -25,10 +29,35 @@ def Automated_weekly_test(request,student_id,week_number,subject_id):
             all_practice_Questions.extend(day.get('coding_questions'))
             all_sub_topics.extend([sub for sub in day.get('sub_topic_status')])
         if week_status.count(True) == len(week_status):
+            sub_topic_wise_mcq_qns = {}
+            sub_topic_wise_coding_qns = {}
+            sub_topic_wise_mcq_qns.update({sub :[] for sub in all_sub_topics})
+            sub_topic_wise_coding_qns.update({sub :[] for sub in all_sub_topics})
             print('completed',all_sub_topics)
             Qns_list_obj = questions.objects.filter(sub_topic_id__sub_topic_id__in=all_sub_topics,del_row=False) 
-            all_qns = [qn.question_id for qn in Qns_list_obj]
-            print(all_qns)
+            [sub_topic_wise_mcq_qns.get(qn.sub_topic_id.sub_topic_id).append(qn.question_id) for qn in Qns_list_obj if qn.question_id not in all_practice_Questions and str(qn.question_id)[-5].lower()=='m']
+            [sub_topic_wise_coding_qns.get(qn.sub_topic_id.sub_topic_id).append(qn.question_id) for qn in Qns_list_obj if qn.question_id not in all_practice_Questions and str(qn.question_id)[-5].lower()=='c']
+            all_mcq_qns = []
+            all_coding = []
+            while len(all_mcq_qns)< rule_for_weekly_test.get('MCQ') or len(all_coding)< rule_for_weekly_test.get('Coding') :
+                if  len(sub_topic_wise_mcq_qns.get(sub_qn))==0 and  len(sub_topic_wise_coding_qns.get(sub_qn))==0:
+                    break
+                for sub_qn in sub_topic_wise_mcq_qns:
+                    if len(sub_topic_wise_mcq_qns.get(sub_qn)) >0 :
+                        mcq_qns = random.sample(sub_topic_wise_mcq_qns.get(sub_qn),len(sub_topic_wise_mcq_qns.get(sub_qn)))
+                        if len(all_mcq_qns)< rule_for_weekly_test.get('MCQ'):
+                            qn = mcq_qns[0]
+                            all_mcq_qns.append(qn)
+                        sub_topic_wise_mcq_qns.get(sub_qn).pop(qn)
+                    if  len(sub_topic_wise_coding_qns.get(sub_qn))>0:
+                        codin_qns = random.sample(sub_topic_wise_coding_qns.get(sub_qn),len(sub_topic_wise_coding_qns.get(sub_qn)))
+                        if len(all_coding)< rule_for_weekly_test.get('Coding'):
+                            qn = codin_qns[0]
+                            all_coding.append(qn)
+                            sub_topic_wise_coding_qns.get(sub_qn).pop(qn)
+                    
+                    print(sub_qn)
+                    print()
             # container_client =  get_blob_container_client()
             # for subtop in all_sub_topics:
             #     cacheed_lists = cache.get(f'subjects/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type.lower()}/')
