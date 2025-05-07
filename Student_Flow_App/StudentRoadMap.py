@@ -57,7 +57,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
             student_id = student_id,
             del_row = False
             )
-        sub_data = studentQuestions.student_question_details.get(sub.subject_name,{})
+        sub_data = studentQuestions.student_question_details.get(sub.subject_id,{})
         days = []
         other_weeks = []
         Onsite = []
@@ -89,7 +89,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                     coding_answered = len([dd for dd in day_data.get('coding_questions_status',{}) if day_data.get('coding_questions_status',{}).get(dd)==2])
                     
                     day_status = [ day_data.get('sub_topic_status',{}).get(day_stat) for day_stat in day_data.get('sub_topic_status',{}) ]
-
+                    print(day_status)
                     if sum(day_status) == len(day_status)*2 and len(day_status) != 0:
                         status = 'Completed'
                     elif sum(day_status) != 0:
