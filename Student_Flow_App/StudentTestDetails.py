@@ -162,7 +162,7 @@ def section_details(request,student_id,test_id):
             response.get(test.section_name).append({
                              "qn_id"            : Qn,
                              "question_type"    : 'Coding' if Qn[-5] == 'c' else 'MCQ',
-                             "level"            : level,
+                             "level"            : str(level).lower().replace('level',''),
                              "question"         : blob_data.get('Qn') if blob_data.get('Qn') else blob_data.get('question'),
                              "score"            : rules_Json.get('coding',{}).get(level)['score'] if Qn[-5] == 'c' else rules_Json.get('mcq',{}).get(level)['score'],
                              "time"             : rules_Json.get('coding',{}).get(level)['time'] if Qn[-5] == 'c' else rules_Json.get('mcq',{}).get(level)['time'],

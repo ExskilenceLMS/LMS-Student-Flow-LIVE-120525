@@ -57,6 +57,14 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
             student_id = student_id,
             del_row = False
             )
+        student_assessments_objs = students_assessments.objects.filter(student_id = student,\
+                                                                    subject_id = sub,\
+                                                                    # assessment_type = 'Weekly Test',\
+                                                                    del_row = False\
+                                                                )
+        student_assessments = { i.test_id.test_name:i for i in student_assessments_objs }
+        final_assessments = { i.test_id.test_name:i for i in student_assessments_objs.filter(assessment_type = 'Final Test') }
+        print('student_assessments',student_assessments)
         sub_data = studentQuestions.student_question_details.get(sub.subject_id,{})
         days = []
         other_weeks = []
@@ -89,7 +97,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                     coding_answered = len([dd for dd in day_data.get('coding_questions_status',{}) if day_data.get('coding_questions_status',{}).get(dd)==2])
                     
                     day_status = [ day_data.get('sub_topic_status',{}).get(day_stat) for day_stat in day_data.get('sub_topic_status',{}) ]
-                    print(day_status)
+                    # print(day_status)
                     if sum(day_status) == len(day_status)*2 and len(day_status) != 0:
                         status = 'Completed'
                     elif sum(day_status) != 0:
@@ -104,19 +112,43 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                         if sum(prev_day_status) == len(prev_day_status)*2 and len(prev_day_status) != 0:
                             if datetime.utcnow().date() >= i.get('startDate').date() and datetime.utcnow().date() <= i.get('endDate').date():
                                 status = 'Start'
-                        last_weeks_last_day_data = prev_week_data.get('day_'+str(week_first_day-1),{})
-                        last_weeks_last_day_status = [ last_weeks_last_day_data.get('sub_topic_status',{}).get(day_stat) for day_stat in last_weeks_last_day_data.get('sub_topic_status',{}) ]
-                        if (status == '' and daynumber == 0 ) or (sum(last_weeks_last_day_status) == len(last_weeks_last_day_status)*2 and len(last_weeks_last_day_status) != 0):
-                            if datetime.utcnow().date() >= i.get('startDate').date() and datetime.utcnow().date() <= i.get('endDate').date():
-                                status = 'Start'
+                        # last_weeks_last_day_data = prev_week_data.get('day_'+str(week_first_day-1),{})
+                        # last_weeks_last_day_status = [ last_weeks_last_day_data.get('sub_topic_status',{}).get(day_stat) for day_stat in last_weeks_last_day_data.get('sub_topic_status',{}) ]
+                        # if (status == '' and daynumber == 0 ) or (sum(last_weeks_last_day_status) == len(last_weeks_last_day_status)*2 and len(last_weeks_last_day_status) != 0):
+                        #     if datetime.utcnow().date() >= i.get('startDate').date() and datetime.utcnow().date() <= i.get('endDate').date():
+                        #         status = 'Start'
+                        test_data = student_assessments.get('Week '+str(int(i.get('week')-1))+' Test')
+                        if test_data == None:
+                            test_data = students_assessments(
+                                assessment_status = '',
+                                assessment_score_secured = 0,
+                                assessment_max_score = 0
+                            )
+                        if test_data.assessment_status == 'Completed':
+                            status = 'Start'
                     if d.get('topic') == 'Weekly Test':# or d.get('topic') == 'Onsite Workshop' or d.get('topic') == 'Internship':
+                        test_data = student_assessments.get('Week '+str(i.get('week'))+' Test')
+                        if test_data == None:
+                            test_data = students_assessments(
+                                assessment_status = '',
+                                assessment_score_secured = 0,
+                                assessment_max_score = 0
+                            )
+                        week_status = []
+                        for day in week_data:#student_detaile.student_question_details.get(subject_id).get('week_'+str(week_number)):
+                            day = week_data.get(day)
+                            [ week_status.append(day.get('sub_topic_status',{}).get(sub,0)==2) for sub in day.get('sub_topic_status',{})]
+                            # all_practiced_Questions.extend(day.get('mcq_questions',[]))
+                            # all_practiced_Questions.extend(day.get('coding_questions',[]))
+                            # all_sub_topics.extend([sub for sub in day.get('sub_topic_status',{})])
+                        if week_status.count(True) == len(week_status):
+                            status = 'Start'
                         days.append({'day':daynumber+1,'day_key':d.get('day').split(' ')[-1],
                             "date":getdays(the_date),#+" "+the_date.strftime("%Y")[2:],
                             'week':i.get('week'),
                             'topics':d.get('topic'),
-                            'score' :'0/0',
-
-                            'status':"Completed" 
+                            'score' : str(round(test_data.assessment_score_secured,2))+'/'+str(round(test_data.assessment_max_score)),#'0/0',
+                            'status':test_data.assessment_status if test_data.assessment_status != 'Pending' else status,
                               })
                     elif d.get('topic') == 'Onsite Workshop' or d.get('topic') == 'Final Test':
                         Onsite.append({#'day':daynumber+1,
