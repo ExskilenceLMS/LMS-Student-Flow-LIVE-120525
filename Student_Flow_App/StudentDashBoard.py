@@ -351,7 +351,10 @@ def get_weekly_progress(request,student_id):
                                                                 )
         for i in PracticeQNs_score.student_question_details:
             filters_subject.append(i)
-            print(i)
+            for j in PracticeQNs_score.student_question_details.get(i):
+                filters_subject_week.append(j)
+                for k in PracticeQNs_score.student_question_details.get(i).get(j):
+                    print(k)
         return JsonResponse({
             "PracticeQNs_score":list(PracticeQNs_score),
                 })
