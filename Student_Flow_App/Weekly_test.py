@@ -300,4 +300,4 @@ def create_weekly_test(student_id,week_number,subject_id,mcqsection,codingsectio
         return {"status": "success","message":"Weekly Test Created" if created else "Weekly Test Already Exists","test_id":weekly_test.test_id}                       
     except Exception as e:
         # print(e)
-        return {"status": "error"}
+        return {"status": "error: "+str(e) }
