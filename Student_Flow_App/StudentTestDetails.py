@@ -102,7 +102,7 @@ def test_insturction(request,student_id,test_id):
 @api_view(['GET'])
 def section_details(request,student_id,test_id):
     try:
-        print(test_id)
+        # print(test_id)
         student = students_assessments.objects.get(
             student_id = student_id,
             test_id = test_id,
@@ -125,7 +125,7 @@ def section_details(request,student_id,test_id):
             update_app_usage(student_id)
             return JsonResponse({"message": "No Test Available"},safe=False,status=400)
         answers = {ans.question_id.question_id:ans for ans in answers}
-        print(answers)
+        # print(answers)
         response ={}
         container_client = get_blob_container_client()
         rules = container_client.get_blob_client('lms_rules/rules.json')
@@ -205,7 +205,7 @@ def Test_duration(req,student_id,test_id):
         now = timezone.now() + timedelta(hours=5, minutes=30)
         student.student_duration += (now-student.student_test_completion_time).total_seconds()
         student.student_test_completion_time = now
-        if str(student.test_id.test_type).lower() == 'final test':
+        if str(student.test_id.test_type).lower() == 'Final Test'.lower():
             if now > student.assessment_completion_time:
                 student.assessment_status = 'Completed'
                 student.student_test_completion_time = now 
@@ -214,11 +214,13 @@ def Test_duration(req,student_id,test_id):
                 return JsonResponse({"status": "Completed",
                                      "time_left":0
                                      },safe=False,status=400)
-            student.assessment_status = 'Completed'
+            # student.assessment_status = 'Completed'
             student.save()
             update_app_usage(student_id)
             return JsonResponse({"status": "success",
-                                 "time_left": round((student.assessment_completion_time-student.test_id.test_date_and_time).total_seconds()/60)
+                                 "time_left": round((student.assessment_completion_time-now).total_seconds()/60),
+                                 'test_duration':(student.assessment_completion_time-student.test_id.test_date_and_time).total_seconds()/60,
+                                 'user_duration':round(student.student_duration/60,2)
                                  },safe=False,status=400)
         if round(float(student.test_id.test_duration)*60-student.student_duration,2) <= 0:
             student.assessment_status = 'Completed'
@@ -602,11 +604,10 @@ def student_test_report(request,student_id,test_id):
             test_topics_wise_scores.update({topics_list.get(ans.get('question_id')):
                                             f'{float(test_topics_wise_scores.get(topics_list.get(ans.get('question_id')),'0/0').split("/")[0])+float(ans.get("score_secured"))}/{float(test_topics_wise_scores.get(topics_list.get(ans.get('question_id')),'0/0').split("/")[1])+float(ans.get("max_score"))}'
                                             })
-        not_attemted_Qns =[Qn for Qn in test_questions if Qn not in [ans.get('question_id')  for ans in answers_status]]
-        rules = container_client.get_blob_client('lms_rules/rules.jsonlms_rules/rules.json')
-        mcq_rules = rules.get('mcq')
-        coding_rules =rules.get('coding')
-        for Qn in test_questions:
+        not_attemted_Qns =[Qn for Qn in test_questions if Qn not in [answered.get('question_id')  for answered in answers_status]]
+        rulesdata = container_client.get_blob_client('lms_rules/rules.json')
+        rules = json.loads(rulesdata.download_blob().readall())
+        for Qn in not_attemted_Qns:
             path = f"subjects/{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{'mcq' if Qn[-5]=='m' else 'coding'}/{Qn}.json"
             if cache.get(path) == None:
                 blobdata = container_client.get_blob_client(path)
@@ -637,12 +638,9 @@ def student_test_report(request,student_id,test_id):
                 })
                 mcq.append(blob_data)
             else:
-
-                testcases =coding_answers.get(ans.get('question_id'),{}).get('testcase_results','')
-                testcases_result =str(len([tc for tc in testcases if str(tc).startswith('TestCase') and testcases.get(tc) == 'Passed']))+'/'+str(len([tc for tc in testcases if str(tc).startswith('TestCase')]))
                 blob_data.update({
                     'user_answer':'',
-                    'testcases' : '0/'+str(blob_data.get())
+                    'testcases' : '0/'+str(len(blob_data.get('TestCases')))
                 })
                 coding.append(blob_data)
         test_topics ={
