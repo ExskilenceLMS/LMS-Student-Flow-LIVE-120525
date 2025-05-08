@@ -64,7 +64,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                                                                 )
         student_assessments = { i.test_id.test_name:i for i in student_assessments_objs }
         final_assessments = { i.test_id.test_name:i for i in student_assessments_objs.filter(assessment_type = 'Final Test') }
-        print('student_assessments',student_assessments)
+        prevDaysStatuses = {}
         sub_data = studentQuestions.student_question_details.get(sub.subject_id,{})
         days = []
         other_weeks = []
@@ -104,16 +104,19 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                         status = 'Resume'
                     else:
                         prev_day_data = week_data.get('day_'+str(int(d.get('day').split(' ')[-1])-1),{})
-                        # if prev_day_data !={}:
-                        #     last_day_data = prev_day_data
-                        # if prev_day_data == {}:
-                        #     prev_day_data = last_day_data
+                        if prev_day_data !={}:
+                            last_day_data = prev_day_data
+                        if prev_day_data == {}:
+                            prev_day_data = last_day_data
+                        
                         prev_day_status = [ prev_day_data.get('sub_topic_status',{}).get(day_stat) for day_stat in prev_day_data.get('sub_topic_status',{}) ]
                         if sum(prev_day_status) == len(prev_day_status)*2 and len(prev_day_status) != 0:
+                            if d.get('topic') == 'Weekly Test':
+                                status = 'Start'
                             if datetime.utcnow().date() >= i.get('startDate').date() and datetime.utcnow().date() <= i.get('endDate').date():
                                 status = 'Start'
-                        # last_weeks_last_day_data = prev_week_data.get('day_'+str(week_first_day-1),{})
-                        # last_weeks_last_day_status = [ last_weeks_last_day_data.get('sub_topic_status',{}).get(day_stat) for day_stat in last_weeks_last_day_data.get('sub_topic_status',{}) ]
+                        last_weeks_last_day_data = prev_week_data.get('day_'+str(week_first_day-1),{})
+                        last_weeks_last_day_status = [ last_weeks_last_day_data.get('sub_topic_status',{}).get(day_stat) for day_stat in last_weeks_last_day_data.get('sub_topic_status',{}) ]
                         if (status == '' and daynumber == 0 ):# or (sum(last_weeks_last_day_status) == len(last_weeks_last_day_status)*2 and len(last_weeks_last_day_status) != 0):
                             if datetime.utcnow().date() >= i.get('startDate').date() and datetime.utcnow().date() <= i.get('endDate').date():
                                 status = 'Start'
@@ -126,11 +129,12 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                             )
                         if test_data.assessment_status == 'Completed':
                             status = 'Start'
+                    
                     if d.get('topic') == 'Weekly Test':# or d.get('topic') == 'Onsite Workshop' or d.get('topic') == 'Internship':
                         test_data = student_assessments.get('Week '+str(i.get('week'))+' Test')
                         if test_data == None:
                             test_data = students_assessments(
-                                assessment_status = '',
+                                assessment_status = 'Pending',
                                 assessment_score_secured = 0,
                                 assessment_max_score = 0
                             )
@@ -197,7 +201,8 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                                                 and  str(d.get('topic')).lower() != 'Internship'.lower()
                                             else ''
                               })
-                    daynumber+=1    
+                    daynumber+=1 
+                prevDaysStatuses.update({d.get('day'):d.get('topic')})   
             i.update({'days': days})
             days = []
         other_weeks.extend([{

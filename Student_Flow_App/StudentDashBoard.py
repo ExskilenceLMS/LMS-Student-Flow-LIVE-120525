@@ -345,19 +345,61 @@ def fetch_student_summary(request,student_id):
 def get_weekly_progress(request,student_id):
     try:
         filters_subject =[]
-        filters_subject_week =[]
+        filters_weeks =[]        
+        filters_subject_week ={}
+        mcqScores ={}
+        codingScore ={}
         PracticeQNs_score = students_details.objects.using('mongodb').get( student_id = student_id,\
                                                                 del_row = "False"\
                                                                 )
+        assessments = students_assessments.objects.filter(
+                                    student_id=student_id,
+                                    del_row=False
+                                ).values('assessment_type').annotate(
+                                    count=Count('id'),
+                                    max_score=Max('assessment_max_score'),
+                                    total_secured_score=Sum('assessment_score_secured')
+                                )
+        print (assessments)
+                    
         for i in PracticeQNs_score.student_question_details:
             filters_subject.append(i)
             for j in PracticeQNs_score.student_question_details.get(i):
-                filters_subject_week.append(j)
+                filters_weeks.append(j)
+                if filters_subject_week.get(i) == None:
+                    filters_subject_week.update({i:[]})
+                filters_subject_week.get(i).append(j)
+                week_mcq_scores =0
+                week_coding_scores =0
+                week_mcq_total_scores =0
+                week_coding_total_scores =0
                 for k in PracticeQNs_score.student_question_details.get(i).get(j):
-                    print(k)
-        return JsonResponse({
-            "PracticeQNs_score":list(PracticeQNs_score),
-                })
+                    k = PracticeQNs_score.student_question_details.get(i).get(j).get(k)
+                    week_mcq_scores = week_mcq_scores + float(k.get('mcq_score','0/0').split('/')[0])
+                    week_mcq_total_scores = week_mcq_total_scores + float(k.get('mcq_score','0/0').split('/')[1])
+                    week_coding_scores = week_coding_scores + float(k.get('coding_score','0/0').split('/')[0])
+                    week_coding_total_scores = week_coding_total_scores + float(k.get('coding_score','0/0').split('/')[1])
+                if mcqScores.get(i) == None:
+                    mcqScores.update({i:{}})
+                if codingScore.get(i) == None:
+                    codingScore.update({i:{}})
+                if mcqScores.get(i).get(j) == None:
+                    mcqScores.get(i).update({j:'0/0'})
+                if codingScore.get(i).get(j) == None:
+                    codingScore.get(i).update({j:'0/0'})
+                # oldmcqScores = mcqScores.get(i).get(j).split('/')[0]
+                # oldcodingScore = codingScore.get(i).get(j).split('/')[0]
+                # oldtotalmcqScores = mcqScores.get(i).get(j).split('/')[1]
+                # oldtotalcodingScore = codingScore.get(i).get(j).split('/')[1]
+                mcqScores.get(i).update({j:(str(week_mcq_scores)+'/'+str(week_mcq_total_scores))})
+                codingScore.get(i).update({j:(str(week_coding_scores)+'/'+str(week_coding_total_scores))})
+        response ={
+            "filters_subject":list(filters_subject),
+            "filters_subject_week":filters_subject_week,
+            "mcqScores":mcqScores,
+            "codingScore":codingScore
+        }
+        return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
