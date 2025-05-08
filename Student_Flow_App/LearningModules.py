@@ -42,11 +42,16 @@ def fetch_learning_modules(request,student_id,subject,subject_id,day_number):
                 'codingQuestions':sum([day_data.get('coding').get(i.get('subtopic_id')).get(qn,0) for qn in day_data.get('coding').get(i.get('subtopic_id'),{} )])
             })
         status ={'current_id': ""}
-        if student_details.student_question_details.get(subject_id,None) == None  or student_details.student_question_details.get(subject_id).get('week_'+str(1))== None or student_details.student_question_details.get(subject_id).get('week_'+str(1)).get('day_'+str(day_number)) == None or student_details.student_question_details.get(subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status')==None:
+        if student_details.student_question_details.get(subject_id,None) == None \
+              or student_details.student_question_details.get(subject_id).get('week_'+str(1))== None\
+                  or student_details.student_question_details.get(subject_id).get('week_'+str(1)).get('day_'+str(day_number)) == None \
+                    or student_details.student_question_details.get(subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status')==None:
             pass
         else:
             [status.update({'current_id':i}) for i in student_details.student_question_details.get(subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status')
-        if student_details.student_question_details.get(subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status').get(i) == 1]    
+                    if student_details.student_question_details.get(subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status').get(i) == 1\
+                        or student_details.student_question_details.get(subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status').get(i) == 2]   
+        if status.get('current_id') == '': status.update({'current_id':[i for i in student_details.student_question_details.get(subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status').keys()][0]})
         response =  [
         {
             'Day': day_data.get('day'),

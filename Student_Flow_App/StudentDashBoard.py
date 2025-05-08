@@ -24,7 +24,7 @@ def fetch_enrolled_subjects(request,student_id):
         latest_activities = student_activities.objects.filter(student_id=student_id,del_row=False).values('subject_id__subject_name').annotate(latest_day=Max('activity_day'))
         sub_days_count = {}
         [sub_days_count.update({activity['subject_id__subject_name']:{'day':activity['latest_day']}})for activity in latest_activities]
-        # print(sub_days_count)
+        
         demo = [
              {
         "title": "Python",
@@ -94,6 +94,7 @@ def fetch_enrolled_subjects(request,student_id):
             if subject.subject_id.del_row :
                 continue
             subject_data = {}
+            # print(sub_days_count,subject.duration_in_days)
             subject_data.update({
                 "title": subject.subject_id.subject_name,
                 "subject": str(subject.subject_id.subject_name).replace(' ',''),
@@ -338,8 +339,25 @@ def fetch_student_summary(request,student_id):
 #     except Exception as e:
 #         print(e)
 #         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
-#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++[OLD METHODS]+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++# 
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++[OLD METHODS]+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++# 
     
+@api_view(['GET'])
+def get_weekly_progress(request,student_id):
+    try:
+        filters_subject =[]
+        filters_subject_week =[]
+        PracticeQNs_score = students_details.objects.using('mongodb').get( student_id = student_id,\
+                                                                del_row = "False"\
+                                                                )
+        for i in PracticeQNs_score.student_question_details:
+            filters_subject.append(i)
+            print(i)
+        return JsonResponse({
+            "PracticeQNs_score":list(PracticeQNs_score),
+                })
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 # OLD 
 
 @api_view(['GET'])
