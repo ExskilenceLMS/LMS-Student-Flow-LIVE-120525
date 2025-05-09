@@ -289,21 +289,23 @@ def extract_calendar_events(blob_data,current_time):
 def fetch_student_summary(request,student_id):
     try:
         student = students_info.objects.get(student_id = student_id,del_row = False)
-        # student_app_usages = student_app_usage.objects.filter(student_id = student_id,
-        #                                                       del_row = False
-        #                                                     ).aggregate(
-        #                                                     total_seconds=Sum(F('logged_out') - F('logged_in')))
         student_app_usages = student_app_usage.objects.filter(student_id = student_id,
-                                                            #   logged_in__gte = course_details[0].get('day_date'),
-                                                            #   logged_in__lte = course_details[-1].get('day_date')+timedelta(days=1),
-                                                            #   logged_in__gte = start_of_week,
-                                                            #   logged_in__lte = start_of_week + timedelta(days=6, hours=23, minutes=59, seconds=59),
                                                               del_row = False
-                                                            ).annotate(date=TruncDate('logged_in')).values('date').annotate(
-                                                            total_study_hours=Sum(F('logged_out') - F('logged_in'))).order_by('date')
-        student_app_usages_by_student = {student_id:i.get('total_study_hours') for i in student_app_usages}
-        print(student_app_usages)
-        print(student_app_usages_by_student)
+                                                            ).aggregate(
+                                                            total_seconds=Sum(F('logged_out') - F('logged_in')))
+        
+        student_app_usages_by_student = {student_id:student_app_usages.get('total_seconds') for i in student_app_usages}
+        # student_app_usages = student_app_usage.objects.filter(student_id = student_id,
+        #                                                     #   logged_in__gte = course_details[0].get('day_date'),
+        #                                                     #   logged_in__lte = course_details[-1].get('day_date')+timedelta(days=1),
+        #                                                     #   logged_in__gte = start_of_week,
+        #                                                     #   logged_in__lte = start_of_week + timedelta(days=6, hours=23, minutes=59, seconds=59),
+        #                                                       del_row = False
+        #                                                     ).annotate(date=TruncDate('logged_in')).values('date').annotate(
+        #                                                     total_study_hours=Sum(F('logged_out') - F('logged_in'))).order_by('date')
+        # student_app_usages_by_student = {student_id:i.get('total_study_hours') for i in student_app_usages}
+        # print(student_app_usages)
+        # print(student_app_usages_by_student)
         response ={
             'student_id': student.student_id,
             'name': student.student_firstname+' '+student.student_lastname,
