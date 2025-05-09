@@ -153,7 +153,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                             'topics':d.get('topic'),
                             'score' : str(round(test_data.assessment_score_secured,2))+'/'+str(round(test_data.assessment_max_score)),#'0/0',
                             # 'status':test_data.assessment_status if test_data.assessment_status != 'Pending' else status,
-                            'status':status if [i for i in days if i.get('status') == 'Start'].__len__() == 0 else '',
+                            'status':'' if [i for i in days if i.get('status') == 'Start'].__len__() != 0 else status if test_data.assessment_status == 'Pending' else test_data.assessment_status,
                             
                               })
                     elif d.get('topic') == 'Onsite Workshop' or d.get('topic') == 'Final Test':
