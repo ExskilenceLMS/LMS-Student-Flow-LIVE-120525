@@ -362,7 +362,7 @@ def get_weekly_progress(request,student_id):
         assessments = students_assessments.objects.filter(
                                     student_id=student_id,
                                     del_row=False
-                                ).values('assessment_type','subject_id__subject_id').annotate(
+                                ).values('assessment_type','subject_id__subject_id','assessment_week_number').annotate(
                                     count=Count('id'),
                                     max_score=Sum('assessment_max_score'),
                                     total_secured_score=Sum('assessment_score_secured')
@@ -418,14 +418,16 @@ def get_weekly_progress(request,student_id):
             filters_subject_week.get(subject_names.get(i.get('subject_id__subject_id'))).append(i.get('assessment_type'))
             if tests_scores.get(subject_names.get(i.get('subject_id__subject_id')))== None:
                 tests_scores.update({subject_names.get(i.get('subject_id__subject_id')):{}})
-            tests_scores.get(subject_names.get(i.get('subject_id__subject_id'))).update({i.get('assessment_type'):str(i.get('total_secured_score','0'))+'/'+str(i.get('max_score'))})
+            tests_scores.get(subject_names.get(i.get('subject_id__subject_id'))).update({
+                'week_'+str(i.get('assessment_week_number')) if i.get('assessment_type') == 'Weekly Test' else i.get('assessment_type') :str(i.get('total_secured_score','0'))+'/'+str(i.get('max_score'))})
         response ={
             "filters_subject":list(filters_subject),
             "filters_subject_week":filters_subject_week,
             "mcqScores":mcqScores,
             "codingScore":codingScore,
             'tests': tests_scores,
-            "all":All_scores
+            "all":All_scores,
+            'delay':0
         }
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
