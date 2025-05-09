@@ -645,7 +645,7 @@ def student_test_report(request,student_id,test_id):
             blob_data.update({'score_secured':0,
                               'max_score':outoff,
                             #   'status':ans.get('question_status'),
-                              'status':'Not Attemted',
+                              'status':'Not Attempted',
                               'topic':topics_list.get(Qn)
                               })
             if Qn[-5] == 'm':
