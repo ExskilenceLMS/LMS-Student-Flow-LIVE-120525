@@ -24,8 +24,8 @@ def fetch_learning_modules(request,student_id,subject,subject_id,day_number):
         blob_path = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
         student = students_info.objects.get(student_id = student_id,del_row = False)
         student_details = students_details.objects.using('mongodb').get(student_id = student_id,del_row = 'False')
-        # if student_details.student_question_details.get(subject) == None:
-        #     student_details = add_day_to_student(student_id,subject,'week_'+str(1),day_number)
+        if student_details.student_question_details.get(subject) == None:
+            student_details.student_question_details.update({subject_id:add_day_to_student(student_id,subject_id,subject,1,day_number).get('data')})                                                              
         # print(f'lms_daywise/{student.course_id.course_id}/{student.course_id.course_id}_{student.batch_id.batch_id}.json')
         # print('student_details',student_details.student_question_details.get(subject).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status'))
         # blob_data = json.loads(get_blob('LMS_DayWise/'+student.course_id.course_id+'.json'))

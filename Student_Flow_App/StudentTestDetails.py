@@ -229,7 +229,7 @@ def Test_duration_update(student_id,test_id):
             student.save()
             # update_app_usage(student_id)
             return {"status": "success",
-                                 "time_left": round((student.assessment_completion_time-now).total_seconds()/60),
+                                 "time_left": round((student.assessment_completion_time-now).total_seconds()),
                                  'test_duration':(student.assessment_completion_time-student.test_id.test_date_and_time).total_seconds()/60,
                                  'user_duration':round(student.student_duration/60,2)
                                  }
