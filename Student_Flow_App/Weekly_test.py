@@ -218,7 +218,7 @@ def create_weekly_test(student_id,week_number,subject_id,mcqsection,codingsectio
             if i[-5].lower()=='m':
                 for l in mcq_rules:
                     if l.get('level') == level:
-                        dureation += int(l.get('time'))
+                        dureation += float(l.get('time'))
                         marks += int(l.get('score'))
             elif i[-5].lower()=='c':
                 for l in coding_rules:
