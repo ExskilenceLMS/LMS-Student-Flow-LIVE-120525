@@ -34,6 +34,7 @@ def fetch_all_test_details(request,student_id):
                                                                          'assessment_week_number',
                                                                          'assessment_completion_time'
                                                                      ).order_by('-test_id__test_date_and_time')
+        # students_assessment_end_time =  {test.get('test_id'):test.get('assessment_completion_time') for test in students_assessment}
         if students_assessment == []:
             update_app_usage(student_id)
             return JsonResponse({"message": "No Test Available"},safe=False,status=400)
@@ -53,8 +54,10 @@ def fetch_all_test_details(request,student_id):
             'subject_id'    : test_detail.get(test.get('test_id')).test_id .subject_id.subject_id,
             "startdate"     : test_detail.get(test.get('test_id')).test_id .test_date_and_time.strftime("%Y-%m-%d"),
             "starttime"     : test_detail.get(test.get('test_id')).test_id .test_date_and_time.strftime("%I:%M %p"),# + " " + test_detail.get(test.get('test_id')).test_id .test_date_and_time.strftime("%p"),
-            "enddate"       : test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = float(test_detail.get(test.get('test_id')).test_id.test_duration))).strftime("%Y-%m-%d"),
-            "endtime"       : (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = float(test_detail.get(test.get('test_id')).test_id.test_duration)))).strftime("%I:%M %p"),# + " " + (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration)))).strftime("%p"),
+            "enddate"       : (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = float(test_detail.get(test.get('test_id')).test_id.test_duration))).strftime("%Y-%m-%d"))\
+                                   if test_detail.get(test.get('test_id')).test_id.test_type != 'Weekly Test' else test.get('assessment_completion_time').strftime("%Y-%m-%d"),
+            "endtime"       : (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = float(test_detail.get(test.get('test_id')).test_id.test_duration)))).strftime("%I:%M %p")\
+                                   if test_detail.get(test.get('test_id')).test_id.test_type != 'Weekly Test' else test.get('assessment_completion_time').strftime("%I:%M %p")   ,# + " " + (test_detail.get(test.get('test_id')).test_id .test_date_and_time.__add__(timedelta(minutes = int(test_detail.get(test.get('test_id')).test_id.test_duration)))).strftime("%p"),
             "title"         : test_detail.get(test.get('test_id')).test_id .test_name,
             "status"        : 'Completed' if test.get('assessment_status') == 'Completed' else 'Upcomming' if  test_detail.get(test.get('test_id')).test_id .test_date_and_time > timezone.now().__add__(timedelta(hours=5,minutes=30)) else 'Ongoing' if test.get('assessment_completion_time',0) > timezone.now().__add__(timedelta(hours=5,minutes=30)) and test_detail.get(test.get('test_id')).test_id .test_date_and_time < timezone.now().__add__(timedelta(hours=5,minutes=30))  else 'Completed'          
             # ,'test_duration' : test_detail.get(test.get('test_id')).test_id.test_duration,
@@ -562,7 +565,8 @@ def student_test_report(request,student_id,test_id):
         topics_list ={i.question_id.question_id:i.question_id.sub_topic_id.topic_id.topic_name for i in test_questions_list}
         # print(topics_list)
         test_time_taken = round(student_assessment.student_duration/60) 
-        Total_time_given = round((student_assessment.assessment_completion_time-student_assessment.test_id.test_date_and_time).total_seconds()/60)
+        Total_time_given = round((student_assessment.assessment_completion_time-student_assessment.test_id.test_date_and_time).total_seconds()/60)\
+                            if student_assessment.assessment_type != 'Weekly Test' else float(student_assessment.test_id.test_duration)
         test_summary ={}
         test_summary.update({
             # 'time_taken_for_completion':round((student_assessment.student_test_start_time - student_assessment.student_test_completion_time ).total_seconds()/60,2),
