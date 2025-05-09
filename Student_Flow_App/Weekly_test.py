@@ -253,7 +253,7 @@ def create_weekly_test(student_id,week_number,subject_id,mcqsection,codingsectio
             test_section_list.append(test_sections(
                 test_id = weekly_test,
                 section_number = 1,
-                section_name = 'MCQ Questions',
+                section_name = 'MCQ',
                 question_id = Questons.get(i),
                 topic_id = Questons.get(i).sub_topic_id.topic_id,
                 sub_topic_id = Questons.get(i).sub_topic_id,
@@ -262,7 +262,7 @@ def create_weekly_test(student_id,week_number,subject_id,mcqsection,codingsectio
             test_section_list.append(test_sections(
                 test_id = weekly_test,
                 section_number = 2,
-                section_name = 'Coding Questions',
+                section_name = 'Coding',
                 question_id = Questons.get(i),
                 topic_id = Questons.get(i).sub_topic_id.topic_id,
                 sub_topic_id = Questons.get(i).sub_topic_id,
