@@ -24,7 +24,7 @@ def fetch_learning_modules(request,student_id,subject,subject_id,day_number):
         blob_path = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
         student = students_info.objects.get(student_id = student_id,del_row = False)
         student_details = students_details.objects.using('mongodb').get(student_id = student_id,del_row = 'False')
-        if student_details.student_question_details.get(subject) == None:
+        if student_details.student_question_details.get(subject_id) == None:
             student_details.student_question_details.update({subject_id:add_day_to_student(student_id,subject_id,subject,1,day_number).get('data')})                                                              
         # print(f'lms_daywise/{student.course_id.course_id}/{student.course_id.course_id}_{student.batch_id.batch_id}.json')
         # print('student_details',student_details.student_question_details.get(subject).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status'))
@@ -122,9 +122,9 @@ def add_day_to_student(student_id,subject,subject_name,week_number,day_number):
                 blob_data = json.loads(get_blob(f'lms_daywise/{student_info.course_id.course_id}/{student_info.course_id.course_id}_{student_info.batch_id.batch_id}.json'))
                 # cache.set('LMS_DayWise/'+student_info.course_id.course_id+'.json',blob_data)
                 cache.set(f'lms_daywise/{student_info.course_id.course_id}/{student_info.course_id.course_id}_{student_info.batch_id.batch_id}.json',blob_data)
-            print('blob_data',blob_data.get(subject_name),subject_name)
+            # print('blob_data',blob_data.get(subject_name),subject_name)
             day_data = [day  for day in blob_data.get(subject_name) if day.get('day') == 'Day '+str(day_number)][0]
-            print('day_data',day_data)
+            # print('day_data',day_data)
             types = []
             levels ={}
             if day_data.get('mcq'):
@@ -520,7 +520,7 @@ def update_day_status(request):
 
 def start_learning_activity(student_id,sub_topic_id,week_number,day_number):
     try :  
-        print(student_id)
+        # print(student_id)
         sub_topic = sub_topics.objects.get(sub_topic_id=sub_topic_id,del_row=False)
         student = students_info.objects.get(student_id=student_id,del_row=False)
         student,created = student_activities.objects.get_or_create(student_id=student,subject_id=sub_topic.topic_id.subject_id,activity_subtopic=sub_topic,del_row=False,
