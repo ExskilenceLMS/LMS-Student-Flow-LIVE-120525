@@ -102,14 +102,14 @@ def test_insturction(request,student_id,test_id):
 @api_view(['GET'])
 def section_details(request,student_id,test_id):
     try:
-        print(test_id)
+        # print(test_id)
         student = students_assessments.objects.get(
             student_id = student_id,
             test_id = test_id,
             del_row = False
         )
         if student.assessment_status == 'Completed':
-            update_app_usage(student_id)
+            # update_app_usage(student_id)
             return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
         # if student.student_duration >= (student.test_id.test_date_and_time - student.student_test_completion_time).total_seconds():
         #     update_app_usage(student_id)
@@ -125,7 +125,7 @@ def section_details(request,student_id,test_id):
             update_app_usage(student_id)
             return JsonResponse({"message": "No Test Available"},safe=False,status=400)
         answers = {ans.question_id.question_id:ans for ans in answers}
-        print(answers)
+        # print(answers)
         response ={}
         container_client = get_blob_container_client()
         rules = container_client.get_blob_client('lms_rules/rules.json')
@@ -181,6 +181,7 @@ def section_details(request,student_id,test_id):
         student.student_test_completion_time = timezone.now() + timedelta(hours=5, minutes=30)
         student.save()
         # update_app_usage(student_id)
+        Test_duration_update(student_id,test_id)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
@@ -190,6 +191,13 @@ def section_details(request,student_id,test_id):
 @api_view(['GET'])
 def Test_duration(req,student_id,test_id):
     try:
+        return JsonResponse(Test_duration_update(student_id,test_id),safe=False,status=200) #Test_duration_update(student_id,test_id)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+
+def Test_duration_update(student_id,test_id):
+    try:
         student = students_assessments.objects.get(
             student_id = student_id,
             test_id = test_id,
@@ -197,50 +205,55 @@ def Test_duration(req,student_id,test_id):
         )
         if student.assessment_status == 'Completed':
             # update_app_usage(student_id)
-            return JsonResponse({"status": "Test Already Completed",
+            return {"status": "Test Already Completed",
                                  "time_left":0
-                                 },safe=False,status=400)
+                                 }
         if student.student_test_completion_time == None:
             student.student_test_completion_time= timezone.now() + timedelta(hours=5, minutes=30)
         now = timezone.now() + timedelta(hours=5, minutes=30)
         student.student_duration += (now-student.student_test_completion_time).total_seconds()
         student.student_test_completion_time = now
-        if str(student.test_id.test_type).lower() == 'final test':
+        if str(student.test_id.test_type).lower() == 'Final Test'.lower():
             if now > student.assessment_completion_time:
                 student.assessment_status = 'Completed'
                 student.student_test_completion_time = now 
                 student.save()
                 # update_app_usage(student_id)
-                return JsonResponse({"status": "Completed",
-                                     "time_left":0
-                                     },safe=False,status=400)
-            student.assessment_status = 'Completed'
+                return {"status": "Completed",
+                                     "time_left":0}
+            if (student.assessment_completion_time-student.test_id.test_date_and_time).total_seconds()/60 <= round(student.student_duration/60,2):
+                student.assessment_status = 'Completed'
+                student.student_test_completion_time = now
+                print(student.assessment_completion_time-student.test_id.test_date_and_time,student.assessment_status)            
+            # student.assessment_status = 'Completed'
             student.save()
             # update_app_usage(student_id)
-            return JsonResponse({"status": "success",
-                                 "time_left": round((student.assessment_completion_time-student.test_id.test_date_and_time).total_seconds()/60)
-                                 },safe=False,status=400)
+            return {"status": "success",
+                                 "time_left": round((student.assessment_completion_time-now).total_seconds()/60),
+                                 'test_duration':(student.assessment_completion_time-student.test_id.test_date_and_time).total_seconds()/60,
+                                 'user_duration':round(student.student_duration/60,2)
+                                 }
         if round(float(student.test_id.test_duration)*60-student.student_duration,2) <= 0:
             student.assessment_status = 'Completed'
             student.student_test_completion_time = now 
             student.save()
             # update_app_usage(student_id)
-            return JsonResponse( {
+            return  {
                 'status': 'Completed',
                 'time_left':0,
                 'test_duration':(student.assessment_completion_time-student.test_id.test_date_and_time).total_seconds()/60,
                 'user_duration':round(student.student_duration/60,2)
-            })
+            }
         student.save()
-        return JsonResponse( {
+        return  {
             'status': 'success',
             'time_left':round(float(student.test_id.test_duration)*60-student.student_duration),
             'test_duration':(student.assessment_completion_time-student.test_id.test_date_and_time).total_seconds()/60,
             'user_duration':round(student.student_duration/60,2)
-            },safe=False,status=200)
+            }
     
     except Exception as e:
-        return HttpResponse(json.dumps({'Error':str(e)}), content_type='application/json')
+        return {'Error':str(e)}
     
 @api_view(['GET'])
 def submit_test(request,student_id,test_id):
@@ -333,10 +346,12 @@ def get_test_Qns(request,student_id,test_id,section_name):
             response.update({'tables':get_all_tables()} )
         response.update({'qns_data':Qn_data})
         # update_app_usage(student_id)
+        Test_duration_update(student_id,test_id)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
         # update_app_usage(student_id)
+        Test_duration_update(student_id,test_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
     
 @api_view(['PUT'])
@@ -349,6 +364,7 @@ def submit_test_mcq_questions(request):
            # blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json'))
            student_assessment = students_assessments.objects.get(student_id = student_id,test_id = data.get('test_id'),del_row = False)
            if student_assessment.assessment_status == 'Completed':
+                Test_duration_update(student_id,data.get('test_id'))
                 return JsonResponse({"message": "Test Already Completed"},safe=False,status=400)
            
            blob_rules_data = json.loads(get_blob('lms_rules/rules.json'))
@@ -423,6 +439,7 @@ def submit_test_mcq_questions(request):
                         'question_status':student.question_status
                         })
         #    update_app_usage(student_id)
+           Test_duration_update(student_id,data.get('test_id'))
            return JsonResponse(response,safe=False,status=200)
         except Exception as e:
             print(e)
@@ -518,6 +535,7 @@ def submit_test_coding_questions(request):
                         'question_status':student.question_status
                         })
         # update_app_usage(student_id)
+        Test_duration_update(student_id,data.get('test_id'))
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
@@ -602,6 +620,45 @@ def student_test_report(request,student_id,test_id):
             test_topics_wise_scores.update({topics_list.get(ans.get('question_id')):
                                             f'{float(test_topics_wise_scores.get(topics_list.get(ans.get('question_id')),'0/0').split("/")[0])+float(ans.get("score_secured"))}/{float(test_topics_wise_scores.get(topics_list.get(ans.get('question_id')),'0/0').split("/")[1])+float(ans.get("max_score"))}'
                                             })
+        not_attemted_Qns =[Qn for Qn in test_questions if Qn not in [answered.get('question_id')  for answered in answers_status]]
+        rulesdata = container_client.get_blob_client('lms_rules/rules.json')
+        rules = json.loads(rulesdata.download_blob().readall())
+        for Qn in not_attemted_Qns:
+            path = f"subjects/{Qn[1:3]}/{Qn[1:-7]}/{Qn[1:-5]}/{'mcq' if Qn[-5]=='m' else 'coding'}/{Qn}.json"
+            if cache.get(path) == None:
+                blobdata = container_client.get_blob_client(path)
+                blob_data = json.loads(blobdata.download_blob().readall())
+                blob_data.update({'Qn_name':Qn})
+                cache.set(path,blob_data)
+            else:
+                blob_data = cache.get(path)
+                cache.set(path,blob_data)
+            outoff = 0
+            blob_rules_data = rules.get('mcq' if Qn[-5]=='m' else 'coding') 
+            if Qn[-4]=='e':
+                outoff = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level1'][0]
+            elif Qn[-4]=='m':
+                outoff = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level2'][0]
+            elif Qn[-4]=='h':
+                outoff = [i.get('score') for i in blob_rules_data if i.get('level').lower() == 'level3'][0]
+            outoff = int(outoff)
+            blob_data.update({'score_secured':0,
+                              'max_score':outoff,
+                            #   'status':ans.get('question_status'),
+                              'status':'Not Attemted',
+                              'topic':topics_list.get(Qn)
+                              })
+            if Qn[-5] == 'm':
+                blob_data.update({
+                    'user_answer':'',
+                })
+                mcq.append(blob_data)
+            else:
+                blob_data.update({
+                    'user_answer':'',
+                    'testcases' : '0/'+str(len(blob_data.get('TestCases')))
+                })
+                coding.append(blob_data)
         test_topics ={
 
         }
