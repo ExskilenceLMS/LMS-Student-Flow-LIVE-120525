@@ -413,6 +413,8 @@ def get_weekly_progress(request,student_id):
                 oldscore = float(str(All_scores.get(i.get('assessment_type'))).split('/')[0])
                 oldoutoff =float(str(All_scores.get(i.get('assessment_type'))).split('/')[1])
                 All_scores.update({i.get('assessment_type'):str(float(i.get('total_secured_score','0'))+oldscore)+'/'+str(float(i.get('max_score'))+oldoutoff)})
+            if filters_subject_week.get(subject_names.get(i.get('subject_id__subject_id'))) == None:
+                filters_subject_week.update({subject_names.get(i.get('subject_id__subject_id')):[]})
             filters_subject_week.get(subject_names.get(i.get('subject_id__subject_id'))).append(i.get('assessment_type'))
             if tests_scores.get(subject_names.get(i.get('subject_id__subject_id')))== None:
                 tests_scores.update({subject_names.get(i.get('subject_id__subject_id')):{}})
