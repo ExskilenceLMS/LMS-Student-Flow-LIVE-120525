@@ -180,7 +180,7 @@ def section_details(request,student_id,test_id):
         student.assessment_status = 'Started'
         student.student_test_completion_time = timezone.now() + timedelta(hours=5, minutes=30)
         student.save()
-        update_app_usage(student_id)
+        # update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
@@ -196,7 +196,7 @@ def Test_duration(req,student_id,test_id):
             del_row = False
         )
         if student.assessment_status == 'Completed':
-            update_app_usage(student_id)
+            # update_app_usage(student_id)
             return JsonResponse({"status": "Test Already Completed",
                                  "time_left":0
                                  },safe=False,status=400)
@@ -210,13 +210,13 @@ def Test_duration(req,student_id,test_id):
                 student.assessment_status = 'Completed'
                 student.student_test_completion_time = now 
                 student.save()
-                update_app_usage(student_id)
+                # update_app_usage(student_id)
                 return JsonResponse({"status": "Completed",
                                      "time_left":0
                                      },safe=False,status=400)
             student.assessment_status = 'Completed'
             student.save()
-            update_app_usage(student_id)
+            # update_app_usage(student_id)
             return JsonResponse({"status": "success",
                                  "time_left": round((student.assessment_completion_time-student.test_id.test_date_and_time).total_seconds()/60)
                                  },safe=False,status=400)
@@ -224,7 +224,7 @@ def Test_duration(req,student_id,test_id):
             student.assessment_status = 'Completed'
             student.student_test_completion_time = now 
             student.save()
-            update_app_usage(student_id)
+            # update_app_usage(student_id)
             return JsonResponse( {
                 'status': 'Completed',
                 'time_left':0,
@@ -260,7 +260,7 @@ def submit_test(request,student_id,test_id):
         student.assessment_status = 'Completed'
         student.save()
         # Update_CollegeRank_and_OverallRank(student.student_id.course_id,student.student_id.college)
-        update_app_usage(student_id)
+        # update_app_usage(student_id)
         return JsonResponse({"message": "Test Successfully Completed"},safe=False,status=200)
     except Exception as e:
         print(e)
@@ -332,11 +332,11 @@ def get_test_Qns(request,student_id,test_id,section_name):
         if table_required :
             response.update({'tables':get_all_tables()} )
         response.update({'qns_data':Qn_data})
-        update_app_usage(student_id)
+        # update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        update_app_usage(student_id)
+        # update_app_usage(student_id)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
     
 @api_view(['PUT'])
@@ -422,11 +422,11 @@ def submit_test_mcq_questions(request):
                         'user_answer':student.student_answer,
                         'question_status':student.question_status
                         })
-           update_app_usage(student_id)
+        #    update_app_usage(student_id)
            return JsonResponse(response,safe=False,status=200)
         except Exception as e:
             print(e)
-            update_app_usage( json.loads(request.body).get('student_id') )
+            # update_app_usage( json.loads(request.body).get('student_id') )
             return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 @api_view(['PUT'])
 def submit_test_coding_questions(request):
@@ -517,11 +517,11 @@ def submit_test_coding_questions(request):
                         'user_answer':student.student_answer,
                         'question_status':student.question_status
                         })
-        update_app_usage(student_id)
+        # update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        update_app_usage(json.loads(request.body).get('student_id'))
+        # update_app_usage(json.loads(request.body).get('student_id'))
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
 
 def format_time_with_zone(date):
