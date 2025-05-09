@@ -152,8 +152,8 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                             'week':i.get('week'),
                             'topics':d.get('topic'),
                             'score' : str(round(test_data.assessment_score_secured,2))+'/'+str(round(test_data.assessment_max_score)),#'0/0',
-                            'status':test_data.assessment_status if test_data.assessment_status != 'Pending' else status,
-                            # 'status':status if [i for i in days if i.get('status') == 'Start'].__len__() == 0 else 'Start',
+                            # 'status':test_data.assessment_status if test_data.assessment_status != 'Pending' else status,
+                            'status':status if [i for i in days if i.get('status') == 'Start'].__len__() == 0 else '',
                             
                               })
                     elif d.get('topic') == 'Onsite Workshop' or d.get('topic') == 'Final Test':
@@ -234,7 +234,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
         response = {
             "weeks":course_details,
         }
-        print(prevDaysStatuses)     
+        # print(prevDaysStatuses)     
         update_app_usage(student_id)
         return JsonResponse(response,safe=False,status=200)
                  
