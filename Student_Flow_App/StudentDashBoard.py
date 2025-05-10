@@ -225,13 +225,16 @@ def fetch_study_hours(request,student_id,week):
                                                               logged_in__gte = start_of_week,
                                                               logged_in__lte = start_of_week + timedelta(days=6, hours=23, minutes=59, seconds=59),
                                                               del_row = False
-                                                            ).annotate(date=TruncDate('logged_in')).values('date').annotate(
-                                                            total_study_hours=Sum(F('logged_out') - F('logged_in'))).order_by('date')
+                                                            ).annotate(date=TruncDate('logged_in'),duration_in_hours=Sum(F('logged_out') - F('logged_in'))).values('date','duration_in_hours','student_id')\
+                                                                .annotate(
+                                                            total_study_hours=Sum(F('logged_out') - F('logged_in'))).order_by('date')       
         list_of_duration = [i.get("duration_in_hours")  for i in  course_details]
         response = {'daily_limit':round(sum(list_of_duration)/len(list_of_duration)) if list_of_duration else 0,
                     'weekly_limit':current_week,
                     'hours':[]}
         hour_spent ={ i.get('date'):i.get('total_study_hours') for i in student_app_usages}
+        hour_spent2 ={ i.get('date'):round(i.get('duration_in_hours').total_seconds()/3600,2) for i in student_app_usages}
+        print('hour_spent2',hour_spent2)
         for i in range(7):
             response.get('hours').append({
                 "date":start_of_week + timedelta(days=i),
@@ -312,8 +315,8 @@ def fetch_student_summary(request,student_id):
             'score':student.student_score,
             'hour_spent':round(student_app_usages_by_student.get(student_id).total_seconds()/3600,2),
             'category':student.student_catogory,
-            'college_rank':student.student_college_rank if student.student_college_rank <=0 else '--',
-            'overall_rank':student.student_overall_rank if student.student_college_rank <=0 else '--',
+            'college_rank':student.student_college_rank if student.student_college_rank >=0 else '--',
+            'overall_rank':student.student_overall_rank if student.student_college_rank >=0 else '--',
         }
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:

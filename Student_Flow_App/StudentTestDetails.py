@@ -667,13 +667,13 @@ def student_test_report(request,student_id,test_id):
 
         }
         for ans_score in test_topics_wise_scores:
-            if float(test_topics_wise_scores.get(ans_score,'0/0').split("/")[0])/float(test_topics_wise_scores.get(ans_score,'0/0').split("/")[1]) > 0.8:
+            if float(test_topics_wise_scores.get(ans_score,'0/0').split("/")[0])/float(test_topics_wise_scores.get(ans_score,'0/0').split("/")[1]) >= 0.7:
                 print(ans_score)
                 if test_topics.get('good',[]) == []:
                     test_topics.update({'good': [ans_score]})
                 else:
                     test_topics.get('good').append(ans_score)
-            elif float(test_topics_wise_scores.get(ans_score,'0/0').split("/")[0])/float(test_topics_wise_scores.get(ans_score,'0/0').split("/")[1]) > 0.4:
+            elif float(test_topics_wise_scores.get(ans_score,'0/0').split("/")[0])/float(test_topics_wise_scores.get(ans_score,'0/0').split("/")[1]) >= 0.4:
                 print(ans_score)
                 if test_topics.get('average',[]) == []:
                     test_topics.update({'average': [ans_score]})
