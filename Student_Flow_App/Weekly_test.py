@@ -96,12 +96,13 @@ rule_for_weekly_test = {
 def Automated_weekly_test(request,student_id,week_number,subject_id): 
     try:
         student_detaile = students_details.objects.using('mongodb').get(student_id = student_id,del_row = False)
+        student_info = students_info.objects.get(student_id=student_id,del_row=False)
         week_status = []
         all_sub_topics =[]
         sections = {}
         all_practiced_Questions = []
-        for day in student_detaile.student_question_details.get(subject_id).get('week_'+str(week_number)):
-            day = student_detaile.student_question_details.get(subject_id).get('week_'+str(week_number)).get(day)
+        for day in student_detaile.student_question_details.get(student_info.course_id.course_id+subject_id).get('week_'+str(week_number)):
+            day = student_detaile.student_question_details.get(student_info.course_id.course_id+subject_id).get('week_'+str(week_number)).get(day)
             [ week_status.append(day.get('sub_topic_status',{}).get(sub,0)==2) for sub in day.get('sub_topic_status',{})]
             all_practiced_Questions.extend(day.get('mcq_questions',[]))
             all_practiced_Questions.extend(day.get('coding_questions',[]))
@@ -181,7 +182,7 @@ def Automated_weekly_test(request,student_id,week_number,subject_id):
             #                      'mcq':mcqsection,'coding':codingsections
             #                  }})
             # print('inside')
-            sections.update(create_weekly_test(student_id,week_number,subject_id ,mcqsection,codingsections))
+            sections.update(create_weekly_test(student_info,week_number,subject_id ,mcqsection,codingsections))
             return JsonResponse(sections,safe=False,status=200)
         else:
             return JsonResponse({"message": "Not Unlocked yet"},safe=False,status=400)
@@ -189,10 +190,8 @@ def Automated_weekly_test(request,student_id,week_number,subject_id):
         # print(e)
         return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
     
-def create_weekly_test(student_id,week_number,subject_id,mcqsection,codingsections):
+def create_weekly_test(student,week_number,subject_id,mcqsection,codingsections):
     try:
-        
-        student = students_info.objects.get(student_id=student_id,del_row=False)
         subject = course_subjects.objects.get(subject_id__subject_id = subject_id,\
                                               course_id = student.course_id,\
                                               del_row = False)

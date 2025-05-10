@@ -64,7 +64,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                                                                 )
         student_assessments = { i.test_id.test_name:i for i in student_assessments_objs }
         final_assessments = { i.test_id.test_name:i for i in student_assessments_objs.filter(assessment_type = 'Final Test') }
-        sub_data = studentQuestions.student_question_details.get(sub.subject_id,{})
+        sub_data = studentQuestions.student_question_details.get(course.course_id+sub.subject_id,{})
         days = []
         other_weeks = []
         Onsite = []
@@ -273,7 +273,7 @@ def fetch_roadmap_old(request,student_id,course_id,subject_id):
         studentQuestions = students_details.objects.using('mongodb').get(
             student_id = student_id,del_row = 'False'
         )
-        sub_data = studentQuestions.student_question_details.get(sub.subject_name,{})
+        sub_data = studentQuestions.student_question_details.get(course.course_id+sub.subject_name,{})
         days = []
         other_weeks = []
         Onsite = []

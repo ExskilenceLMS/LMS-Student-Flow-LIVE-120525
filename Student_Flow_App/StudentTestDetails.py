@@ -275,6 +275,7 @@ def submit_test(request,student_id,test_id):
         student.student_test_completion_time = timezone.now().__add__(timedelta(hours=5,minutes=30))
         student.assessment_status = 'Completed'
         student.save()
+        Test_duration_update(student_id,test_id)
         # Update_CollegeRank_and_OverallRank(student.student_id.course_id,student.student_id.college)
         # update_app_usage(student_id)
         return JsonResponse({"message": "Test Successfully Completed"},safe=False,status=200)

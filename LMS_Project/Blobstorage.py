@@ -69,7 +69,7 @@ def get_random_questions(types,subtops,levels):
                     all_qns_list =container_client.list_blobs(
                                     name_starts_with =f'subjects/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type.lower()}/')
                     cache.set(f'subjects/{subtop[0:2]}/{subtop[0:-2]}/{subtop}/{type.lower()}/',all_qns_list)
-                all_qns = [blob.name.split('/')[-1].split('.')[0] for blob in all_qns_list]
+                all_qns = [blob.name.split('/')[-1].split('.')[0] for blob in all_qns_list ]#if blob.name.split('/')[-1].startswith('q')]
                 Easy    = [qn for qn in all_qns if qn[-4]=='e']
                 Medium  = [qn for qn in all_qns if qn[-4]=='m']
                 Hard    = [qn for qn in all_qns if qn[-4]=='h']
