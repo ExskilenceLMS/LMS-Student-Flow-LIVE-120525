@@ -112,7 +112,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                         if sum(prev_day_status) == len(prev_day_status)*2 and len(prev_day_status) != 0:
                             if d.get('topic') == 'Weekly Test':
                                 status = 'Start'
-                            if timezone.now().__add__(timedelta(days=2,hours=5,minutes=30)).date() >= i.get('startDate').date() and timezone.now().__add__(timedelta(days=2,hours=5,minutes=30)).date() <= i.get('endDate').date():
+                            if timezone.now().__add__(timedelta(days=0,hours=5,minutes=30)).date() >= i.get('startDate').date() and timezone.now().__add__(timedelta(days=0,hours=5,minutes=30)).date() <= i.get('endDate').date():
                                 test_data = student_assessments.get('Week '+str(int(i.get('week')-1))+' Test')
                                 if test_data == None:
                                     test_data = students_assessments(
@@ -125,7 +125,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                         last_weeks_last_day_data = prev_week_data.get('day_'+str(week_first_day-1),{})
                         last_weeks_last_day_status = [ last_weeks_last_day_data.get('sub_topic_status',{}).get(day_stat) for day_stat in last_weeks_last_day_data.get('sub_topic_status',{}) ]
                         if (status == '' and daynumber == 0 ):# or (sum(last_weeks_last_day_status) == len(last_weeks_last_day_status)*2 and len(last_weeks_last_day_status) != 0):
-                            if timezone.now().__add__(timedelta(days=2,hours=5,minutes=30)).date() >= i.get('startDate').date() and timezone.now().__add__(timedelta(days=2,hours=5,minutes=30)).date() <= i.get('endDate').date():
+                            if timezone.now().__add__(timedelta(days=0,hours=5,minutes=30)).date() >= i.get('startDate').date() and timezone.now().__add__(timedelta(days=0,hours=5,minutes=30)).date() <= i.get('endDate').date():
                                 status = 'Start'
                         # test_data = student_assessments.get('Week '+str(int(i.get('week')-1))+' Test')
                         # if test_data == None:
