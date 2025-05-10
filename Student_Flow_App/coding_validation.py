@@ -3,15 +3,17 @@ import json
 from datetime import datetime, timedelta
 from django.utils import timezone
 from LMS_Mongodb_App.models import *
+from LMS_MSSQLdb_App.models import *
 from rest_framework.decorators import api_view
 import re
 from LMS_Project.settings import *
 from .sqlrun import *
 def addAttempt (studentId,Subject,Qn,user_ans,data):
     try :
+        student_info = students_info.objects.get(student_id = studentId,del_row = False)
         mainuser  = students_details.objects.using('mongodb').get(student_id = studentId,
                                                                      del_row = 'False')
-        stat = mainuser.student_question_details.get(data.get('subject')).get('week_'+str(data.get('week_number')),{}).get('day_'+str(data.get('day_number')),{}).get('coding_questions_status',{}).get(Qn,0)  
+        stat = mainuser.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject')).get('week_'+str(data.get('week_number')),{}).get('day_'+str(data.get('day_number')),{}).get('coding_questions_status',{}).get(Qn,0)  
         if stat < 2 :
                 print("stat",stat)
                 user , created = student_practice_coding_answers.objects.using('mongodb').get_or_create(student_id=str( studentId),
@@ -37,7 +39,7 @@ def addAttempt (studentId,Subject,Qn,user_ans,data):
                     user.save()
                     attempt = user.Attempts
                 if stat == 0 :
-                    mainuser.student_question_details.get(data.get('subject')
+                    mainuser.student_question_details.get( student_info.course_id.course_id+'_'+data.get('subject')
                                                           ).get('week_'+str(data.get('week_number')
                                                                             ),{}).get('day_'+str(data.get('day_number')),{}
                                                                                       ).get('coding_questions_status',{}

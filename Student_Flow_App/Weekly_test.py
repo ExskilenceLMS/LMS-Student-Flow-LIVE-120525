@@ -101,8 +101,8 @@ def Automated_weekly_test(request,student_id,week_number,subject_id):
         all_sub_topics =[]
         sections = {}
         all_practiced_Questions = []
-        for day in student_detaile.student_question_details.get(student_info.course_id.course_id+subject_id).get('week_'+str(week_number)):
-            day = student_detaile.student_question_details.get(student_info.course_id.course_id+subject_id).get('week_'+str(week_number)).get(day)
+        for day in student_detaile.student_question_details.get(student_info.course_id.course_id+'_'+subject_id).get('week_'+str(week_number)):
+            day = student_detaile.student_question_details.get(student_info.course_id.course_id+'_'+subject_id).get('week_'+str(week_number)).get(day)
             [ week_status.append(day.get('sub_topic_status',{}).get(sub,0)==2) for sub in day.get('sub_topic_status',{})]
             all_practiced_Questions.extend(day.get('mcq_questions',[]))
             all_practiced_Questions.extend(day.get('coding_questions',[]))

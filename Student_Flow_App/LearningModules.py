@@ -24,8 +24,8 @@ def fetch_learning_modules(request,student_id,subject,subject_id,day_number):
         blob_path = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
         student = students_info.objects.get(student_id = student_id,del_row = False)
         student_details = students_details.objects.using('mongodb').get(student_id = student_id,del_row = 'False')
-        if student_details.student_question_details.get(student.course_id.course_id+subject_id) == None:
-            student_details.student_question_details.update({student.course_id.course_id+subject_id:add_day_to_student(student_id,subject_id,subject,1,day_number).get('data')})                                                              
+        if student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id) == None:
+            student_details.student_question_details.update({student.course_id.course_id+'_'+subject_id:add_day_to_student(student_id,subject_id,subject,1,day_number).get('data')})                                                              
         # print(f'lms_daywise/{student.course_id.course_id}/{student.course_id.course_id}_{student.batch_id.batch_id}.json')
         # print('student_details',student_details.student_question_details.get(subject).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status'))
         # blob_data = json.loads(get_blob('LMS_DayWise/'+student.course_id.course_id+'.json'))
@@ -42,16 +42,16 @@ def fetch_learning_modules(request,student_id,subject,subject_id,day_number):
                 'codingQuestions':sum([day_data.get('coding').get(i.get('subtopic_id')).get(qn,0) for qn in day_data.get('coding').get(i.get('subtopic_id'),{} )])
             })
         status ={'current_id': ""}
-        if student_details.student_question_details.get(student.course_id.course_id+subject_id,None) == None \
-              or student_details.student_question_details.get(student.course_id.course_id+subject_id).get('week_'+str(1))== None\
-                  or student_details.student_question_details.get(student.course_id.course_id+subject_id).get('week_'+str(1)).get('day_'+str(day_number)) == None \
-                    or student_details.student_question_details.get(student.course_id.course_id+subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status')==None:
+        if student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id,None) == None \
+              or student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(1))== None\
+                  or student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(1)).get('day_'+str(day_number)) == None \
+                    or student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status')==None:
             pass
         else:
-            [status.update({'current_id':i}) for i in student_details.student_question_details.get(student.course_id.course_id+subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status')
-                    if student_details.student_question_details.get(student.course_id.course_id+subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status').get(i) == 1\
-                        or student_details.student_question_details.get(student.course_id.course_id+subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status').get(i) == 2]   
-        if status.get('current_id') == '': status.update({'current_id':[i for i in student_details.student_question_details.get(student.course_id.course_id+subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status').keys()][0]})
+            [status.update({'current_id':i}) for i in student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status')
+                    if student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status').get(i) == 1\
+                        or student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status').get(i) == 2]   
+        if status.get('current_id') == '': status.update({'current_id':[i for i in student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status').keys()][0]})
         response =  [
         {
             'Day': day_data.get('day'),
@@ -90,21 +90,21 @@ def add_day_to_student(student_id,subject,subject_name,week_number,day_number):
         student = students_details.objects.using('mongodb').get(student_id = student_id,
                                                                 del_row = 'False')
         needTOsave = False
-        if student.student_question_details.get(student_info.course_id.course_id+subject) == None:
+        if student.student_question_details.get(student_info.course_id.course_id+'_'+subject) == None:
             student.student_question_details.update({
-                student_info.course_id.course_id+subject:{
+                student_info.course_id.course_id+'_'+subject:{
                     'week_'+str(week_number):{}
             }})
             needTOsave = True
-        if student.student_question_details.get(student_info.course_id.course_id+subject).get('week_'+str(week_number)) == None:
-            student.student_question_details.get(student_info.course_id.course_id+subject).update({
+        if student.student_question_details.get(student_info.course_id.course_id+'_'+subject).get('week_'+str(week_number)) == None:
+            student.student_question_details.get(student_info.course_id.course_id+'_'+subject).update({
                 'week_'+str(week_number):{
                         'day_'+str(day_number):{}
                     }
             })
             needTOsave = True
-        if student.student_question_details.get(student_info.course_id.course_id+subject).get('week_'+str(week_number)).get('day_'+str(day_number)) == None:
-            student.student_question_details.get(student_info.course_id.course_id+subject).get('week_'+str(week_number)).update({
+        if student.student_question_details.get(student_info.course_id.course_id+'_'+subject).get('week_'+str(week_number)).get('day_'+str(day_number)) == None:
+            student.student_question_details.get(student_info.course_id.course_id+'_'+subject).get('week_'+str(week_number)).update({
                 'day_'+str(day_number):{}
             })
             needTOsave = True
@@ -135,24 +135,24 @@ def add_day_to_student(student_id,subject,subject_name,week_number,day_number):
                 types.append('Coding')
                 levels.update({'Coding':day_data.get('coding')})
             qnslist = get_random_questions(types,[st.get('subtopic_id') for st in day_data.get('subtopicids')],levels)
-            student.student_question_details.get(student_info.course_id.course_id+subject).get('week_'+str(week_number)).get('day_'+str(day_number)).update({
+            student.student_question_details.get(student_info.course_id.course_id+'_'+subject).get('week_'+str(week_number)).get('day_'+str(day_number)).update({
                 "sub_topic_status": {st.get('subtopic_id'):0 for st in day_data.get('subtopicids')},
             })
             if qnslist.get('MCQ') is not None:
-                student.student_question_details.get(student_info.course_id.course_id+subject).get('week_'+str(week_number)).get('day_'+str(day_number)).update({
+                student.student_question_details.get(student_info.course_id.course_id+'_'+subject).get('week_'+str(week_number)).get('day_'+str(day_number)).update({
                 "mcq_questions": qnslist.get('MCQ',[]),
                 "mcq_questions_status": {i:0 for i in qnslist.get('MCQ',[])},
                 "mcq_score": "0/"+str(qnslist.get('MCQ_score',0))
             })
             if qnslist.get('Coding') is not None:
-                student.student_question_details.get(student_info.course_id.course_id+subject).get('week_'+str(week_number)).get('day_'+str(day_number)).update({
+                student.student_question_details.get(student_info.course_id.course_id+'_'+subject).get('week_'+str(week_number)).get('day_'+str(day_number)).update({
                 "coding_questions": qnslist.get('Coding',[]),
                 "coding_questions_status": {i:0 for i in qnslist.get('Coding',[])},
                 "coding_score": "0/"+str(qnslist.get('Coding_score',0))
             })
             student.save()
             response.update({'message':'updated',
-                             'data':student.student_question_details.get(student_info.course_id.course_id+subject)})
+                             'data':student.student_question_details.get(student_info.course_id.course_id+'_'+subject)})
         # else:
         #     day_Qna_data =student.student_question_details.get(subject).get('week_'+str(week_number)).get('day_'+str(day_number))
         #     sub_topics  = [ i[1:-5]  for i in day_Qna_data.get('mcq_questions_status')]
@@ -190,13 +190,13 @@ def fetch_questions(request,type,student_id,subject,subject_id,day_number,week_n
     try:
         student_info = students_info.objects.get(student_id = student_id,del_row = False)
         student = students_details.objects.using('mongodb').get(student_id = student_id,del_row = 'False')
-        if student.student_question_details.get(student_info.course_id.course_id+subject_id) == None:
-            student.student_question_details.update({student_info.course_id.course_id+subject_id:add_day_to_student(student_id,subject_id,subject,week_number,day_number).get('data')})
-        if student.student_question_details.get(student_info.course_id.course_id+subject_id).get('week_'+week_number) == None:
-            student.student_question_details.update({student_info.course_id.course_id+subject_id:add_day_to_student(student_id,subject_id,subject,week_number,day_number).get('data')})
-        if student.student_question_details.get(student_info.course_id.course_id+subject_id).get('week_'+week_number).get('day_'+day_number) == None:
-            student.student_question_details.update({student_info.course_id.course_id+subject_id:add_day_to_student(student_id,subject_id,subject,week_number,day_number).get('data')})
-        questions_ids = (student.student_question_details.get(student_info.course_id.course_id+subject_id).get('week_'+week_number).get('day_'+day_number).get('mcq_questions' if type.lower() =='mcq' else 'coding_questions',[]))
+        if student.student_question_details.get(student_info.course_id.course_id+'_'+subject_id) == None:
+            student.student_question_details.update({student_info.course_id.course_id+'_'+subject_id:add_day_to_student(student_id,subject_id,subject,week_number,day_number).get('data')})
+        if student.student_question_details.get(student_info.course_id.course_id+'_'+subject_id).get('week_'+week_number) == None:
+            student.student_question_details.update({student_info.course_id.course_id+'_'+subject_id:add_day_to_student(student_id,subject_id,subject,week_number,day_number).get('data')})
+        if student.student_question_details.get(student_info.course_id.course_id+'_'+subject_id).get('week_'+week_number).get('day_'+day_number) == None:
+            student.student_question_details.update({student_info.course_id.course_id+'_'+subject_id:add_day_to_student(student_id,subject_id,subject,week_number,day_number).get('data')})
+        questions_ids = (student.student_question_details.get(student_info.course_id.course_id+'_'+subject_id).get('week_'+week_number).get('day_'+day_number).get('mcq_questions' if type.lower() =='mcq' else 'coding_questions',[]))
         if type .lower() == 'mcq':
             student_answers = list(student_practiceMCQ_answers.objects.using('mongodb').filter(student_id = student_id,
                                                                                                 subject_id = subject_id,
@@ -218,7 +218,7 @@ def fetch_questions(request,type,student_id,subject,subject_id,day_number,week_n
         blob_path = 'subjects/'
         list_of_qns = [qn for qn in questions_ids if qn[1:-5] == subTopic]
         if list_of_qns == []:
-            student.student_question_details.update({student_info.course_id.course_id+subject_id:add_day_to_student(student_id,subject_id,subject,week_number,day_number).get('data')})
+            student.student_question_details.update({student_info.course_id.course_id+'_'+subject_id:add_day_to_student(student_id,subject_id,subject,week_number,day_number).get('data')})
             list_of_qns = [qn for qn in questions_ids if qn[1:-5] == subTopic]
         cacheresponse = cache.get('lms_rules/rules.json')
         if cacheresponse:
@@ -245,7 +245,7 @@ def fetch_questions(request,type,student_id,subject,subject_id,day_number,week_n
             blob_data.update({'Qn_name':Qn,
                               'entered_ans':student_answers.get(Qn,{'entered_ans':'','score':0}).get('entered_ans'),
                               'score':str(student_answers.get(Qn,{'entered_ans':'','score':0}).get('score'))+'/'+''.join([str(i.get('score')) for i in Rules.get(type.lower(),[]) if i.get('level').lower() == level.lower()]),
-                              'status': True if student.student_question_details.get(student_info.course_id.course_id+subject_id).get('week_'+week_number).get('day_'+day_number).get(type.lower()+'_questions_status').get(Qn) == 2 else False
+                              'status': True if student.student_question_details.get(student_info.course_id.course_id+'_'+subject_id).get('week_'+week_number).get('day_'+day_number).get(type.lower()+'_questions_status').get(Qn) == 2 else False
                               })
             qn_data.append(blob_data)
         # elif type.lower() == 'coding':
@@ -317,32 +317,32 @@ def submit_MCQ_Question(request):
             student = students_details.objects.using('mongodb').get(student_id = student_id,
                                                                     del_row = 'False')
             student_info = students_info.objects.get(student_id = student_id,del_row = False)   
-            if student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')) == None:
+            if student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')) == None:
                 student.student_question_details.update({
-                    student_info.course_id.course_id+data.get('subject_id'):{
+                    student_info.course_id.course_id+'_'+data.get('subject_id'):{
                         'week_'+str(data.get('week_number')):{}
                 }})
-            if student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')).get('week_'+str(data.get('week_number'))) == None:
-                student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')).update({
+            if student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')).get('week_'+str(data.get('week_number'))) == None:
+                student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')).update({
                     'week_'+str(data.get('week_number')):{
                             'day_'+str(data.get('day_number')):{}
                         }
                 })
-            if student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))) == None:
-                student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')).get('week_'+str(data.get('week_number'))).update({
+            if student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))) == None:
+                student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')).get('week_'+str(data.get('week_number'))).update({
                     'day_'+str(data.get('day_number')):{
                             'mcq_questions_status':{},
                             'mcq_score':'0/0'
                     }
                 })
-            old_score = student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('mcq_score','0/0').split('/')
+            old_score = student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('mcq_score','0/0').split('/')
             newscore = str(int(old_score[0]) + int(score)) + '/' + old_score[1]
-            student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')
+            student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')
                                                  ).get('week_'+str(data.get('week_number'))
                                                        ).get('day_'+str(data.get('day_number'))
                                                              ).get('mcq_questions_status'
                                                                    ).update({question_id:2}) 
-            student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')
+            student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')
                                                  ).get('week_'+str(data.get('week_number'))
                                                        ).get('day_'+str(data.get('day_number'))
                                                              ).update({'mcq_score':newscore})
@@ -369,7 +369,7 @@ def submition_coding_question(request):
         student_info = students_info.objects.get(student_id = student_id,del_row = False)
         student = students_details.objects.using('mongodb').get(student_id = student_id,
                                                                 del_row = 'False')
-        if student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('coding_questions_status').get(question_id) ==2:
+        if student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('coding_questions_status').get(question_id) ==2:
             update_app_usage(student_id)
             return JsonResponse({ "message": "Already Submited","status":True},safe=False,status=200)
         # blob_rules_data = json.loads(get_blob('LMS_Rules/Rules.json')).get('coding')
@@ -432,14 +432,14 @@ def submition_coding_question(request):
             user.save()
             # return JsonResponse({'message':'Already Submited'},safe=False,status=200)
         # student_info = students_info.objects.get(student_id = student_id,del_row = False)
-        old_score = student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('coding_score').split('/')
+        old_score = student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')).get('week_'+str(data.get('week_number'))).get('day_'+str(data.get('day_number'))).get('coding_score').split('/')
         newscore = str(int(old_score[0]) + int(score)) + '/' + old_score[1]
-        student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')
+        student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')
                                              ).get('week_'+str(data.get('week_number'))
                                                    ).get('day_'+str(data.get('day_number'))
                                                          ).get('coding_questions_status'
                                                                ).update({question_id:2})   
-        student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')
+        student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')
                                              ).get('week_'+str(data.get('week_number'))
                                                    ).get('day_'+str(data.get('day_number'))
                                                          ).update({'coding_score':newscore})
@@ -466,13 +466,13 @@ def update_day_status(request):
         data = json.loads(request.body)
         student_info = students_info.objects.get(student_id = data.get('student_id'),del_row = False)
         student = students_details.objects.using('mongodb').get(student_id = data.get('student_id'),del_row = False)
-        if student.student_question_details.get( student_info.course_id.course_id+data.get('subject_id')) == None:
-            student.student_question_details.update({student_info.course_id.course_id+data.get('subject_id'):add_day_to_student(data.get('student_id'),data.get('subject_id'),data.get('subject'),data.get('week_number'),data.get('day_number')).get('data')})
-        if student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')).get('week_'+data.get('week_number')) == None:
-            student.student_question_details.update({student_info.course_id.course_id+data.get('subject_id'):add_day_to_student(data.get('student_id'),data.get('subject_id'),data.get('subject'),data.get('week_number'),data.get('day_number')).get('data')})
-        if student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')).get('week_'+data.get('week_number')).get('day_'+data.get('day_number')) == None:
-            student.student_question_details.update({student_info.course_id.course_id+data.get('subject_id'):add_day_to_student(data.get('student_id'),data.get('subject_id'),data.get('subject'),data.get('week_number'),data.get('day_number')).get('data')})
-        current_status = student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')
+        if student.student_question_details.get( student_info.course_id.course_id+'_'+data.get('subject_id')) == None:
+            student.student_question_details.update({student_info.course_id.course_id+'_'+data.get('subject_id'):add_day_to_student(data.get('student_id'),data.get('subject_id'),data.get('subject'),data.get('week_number'),data.get('day_number')).get('data')})
+        if student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')).get('week_'+data.get('week_number')) == None:
+            student.student_question_details.update({student_info.course_id.course_id+'_'+data.get('subject_id'):add_day_to_student(data.get('student_id'),data.get('subject_id'),data.get('subject'),data.get('week_number'),data.get('day_number')).get('data')})
+        if student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')).get('week_'+data.get('week_number')).get('day_'+data.get('day_number')) == None:
+            student.student_question_details.update({student_info.course_id.course_id+'_'+data.get('subject_id'):add_day_to_student(data.get('student_id'),data.get('subject_id'),data.get('subject'),data.get('week_number'),data.get('day_number')).get('data')})
+        current_status = student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')
                                                 ).get('week_'+str(data.get('week_number'))
                                                       ).get('day_'+str(data.get('day_number'))
                                                             ).get('sub_topic_status').get(data.get('sub_topic'))
@@ -484,11 +484,11 @@ def update_day_status(request):
             return JsonResponse({'message':'Already Started'},safe=False,status=200)
         message =''
         if data.get('status') == True:
-            mcq_questions_ids = (student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')
+            mcq_questions_ids = (student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')
                                                                   ).get('week_'+str(data.get('week_number'))
                                                                         ).get('day_'+str(data.get('day_number'))
                                                                               ).get('mcq_questions_status',[]))
-            coding_questons = (student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')
+            coding_questons = (student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')
                                                                   ).get('week_'+str(data.get('week_number'))
                                                                         ).get('day_'+str(data.get('day_number'))
                                                                               ).get('coding_questions_status',[]))
@@ -496,7 +496,7 @@ def update_day_status(request):
             status_of_qns = [{i:mcq_questions_ids.get(i)} for i in mcq_questions_ids if i[1:-5] == data.get('sub_topic')]
             status_of_qns.extend([{i:coding_questons.get(i)} for i in coding_questons if i[1:-5] == data.get('sub_topic')])
             if len(status_of_qns) == len([i for i in status_of_qns if i.get(list(i.keys())[0])  == 2]):
-                student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')
+                student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')
                                              ).get('week_'+str(data.get('week_number'))
                                                    ).get('day_'+str(data.get('day_number'))
                                                          ).get('sub_topic_status').update({data.get('sub_topic'):2})
@@ -506,11 +506,11 @@ def update_day_status(request):
                 update_app_usage(data.get('student_id'))
                 return JsonResponse({'message':'Not Completed','message2':message},safe=False,status=200)
         else:
-            if student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')
+            if student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')
                                              ).get('week_'+str(data.get('week_number'))
                                                    ).get('day_'+str(data.get('day_number'))
                                                          ).get('sub_topic_status').get(data.get('sub_topic')) < 2 :
-                student.student_question_details.get(student_info.course_id.course_id+data.get('subject_id')
+                student.student_question_details.get(student_info.course_id.course_id+'_'+data.get('subject_id')
                                              ).get('week_'+str(data.get('week_number'))
                                                    ).get('day_'+str(data.get('day_number'))
                                                          ).get('sub_topic_status').update({data.get('sub_topic'): 1})

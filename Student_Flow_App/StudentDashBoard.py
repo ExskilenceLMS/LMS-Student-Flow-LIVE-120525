@@ -359,6 +359,7 @@ def get_weekly_progress(request,student_id):
         filters_subject_week ={}
         mcqScores ={}
         codingScore ={}
+        student_info = students_info.objects.get( student_id = student_id,del_row = False)
         PracticeQNs_score = students_details.objects.using('mongodb').get( student_id = student_id,\
                                                                 del_row = "False"\
                                                                 )
@@ -371,7 +372,7 @@ def get_weekly_progress(request,student_id):
                                     total_secured_score=Sum('assessment_score_secured')
                                 )
         print (assessments)
-        subject_names = {sub.subject_id:sub.subject_name for sub in subjects.objects.filter(del_row =False).all()}
+        subject_names = {student_info.course_id.course_id+'_'+sub.subject_id:sub.subject_name for sub in subjects.objects.filter(del_row =False).all()}
         print(subject_names)          
         for i in PracticeQNs_score.student_question_details:
             filters_subject.append(subject_names.get(i))

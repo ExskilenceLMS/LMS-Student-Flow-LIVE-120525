@@ -64,7 +64,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                                                                 )
         student_assessments = { i.test_id.test_name:i for i in student_assessments_objs }
         final_assessments = { i.test_id.test_name:i for i in student_assessments_objs.filter(assessment_type = 'Final Test') }
-        sub_data = studentQuestions.student_question_details.get(course.course_id+sub.subject_id,{})
+        sub_data = studentQuestions.student_question_details.get(course.course_id+'_'+sub.subject_id,{})
         days = []
         other_weeks = []
         Onsite = []
@@ -110,8 +110,8 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                         
                         prev_day_status = [ prev_day_data.get('sub_topic_status',{}).get(day_stat) for day_stat in prev_day_data.get('sub_topic_status',{}) ]
                         if sum(prev_day_status) == len(prev_day_status)*2 and len(prev_day_status) != 0:
-                            if d.get('topic') == 'Weekly Test':
-                                status = 'Start'
+                            # if d.get('topic') == 'Weekly Test':
+                            #     status = 'Start'
                             if timezone.now().__add__(timedelta(days=0,hours=5,minutes=30)).date() >= i.get('startDate').date() and timezone.now().__add__(timedelta(days=0,hours=5,minutes=30)).date() <= i.get('endDate').date():
                                 test_data = student_assessments.get('Week '+str(int(i.get('week')-1))+' Test')
                                 if test_data == None:
@@ -120,7 +120,8 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                                         assessment_score_secured = 0,
                                         assessment_max_score = 0
                                     )
-                                if [i for i in days if i.get('status') == 'Start'].__len__() == 0 and test_data.assessment_status == 'Completed':
+                                if ([i for i in days if i.get('status') == 'Start'].__len__() == 0 and test_data.assessment_status == 'Completed') or \
+                                      ([i for i in days if i.get('status') == 'Start'].__len__() == 0):
                                     status = 'Start'
                         last_weeks_last_day_data = prev_week_data.get('day_'+str(week_first_day-1),{})
                         last_weeks_last_day_status = [ last_weeks_last_day_data.get('sub_topic_status',{}).get(day_stat) for day_stat in last_weeks_last_day_data.get('sub_topic_status',{}) ]
@@ -273,7 +274,7 @@ def fetch_roadmap_old(request,student_id,course_id,subject_id):
         studentQuestions = students_details.objects.using('mongodb').get(
             student_id = student_id,del_row = 'False'
         )
-        sub_data = studentQuestions.student_question_details.get(course.course_id+sub.subject_name,{})
+        sub_data = studentQuestions.student_question_details.get(course.course_id+'_'+sub.subject_name,{})
         days = []
         other_weeks = []
         Onsite = []
