@@ -20,7 +20,7 @@ from django.core.cache import cache
 def fetch_enrolled_subjects(request,student_id):
     try:
         student_data = students_info.objects.get(student_id = student_id,del_row = False)
-        enrolled_subjects = course_subjects.objects.filter(course_id = student_data.course_id,del_row = False)
+        enrolled_subjects = course_subjects.objects.filter(course_id = student_data.course_id, batch_id = student_data.batch_id,del_row = False)
         latest_activities = student_activities.objects.filter(student_id=student_id,del_row=False).values('subject_id__subject_name').annotate(latest_day=Max('activity_day'))
         sub_days_count = {}
         [sub_days_count.update({activity['subject_id__subject_name']:{'day':activity['latest_day']}})for activity in latest_activities]
@@ -444,7 +444,7 @@ def fetch_study_hours_old(request,student_id,week):
     try:
         week = int(week)
         student = students_info.objects.get(student_id = student_id,del_row = False)
-        course_subjects_data = course_subjects.objects.filter(course_id = student.course_id,del_row = False
+        course_subjects_data = course_subjects.objects.filter(course_id = student.course_id,batch_id = student.batch_id,del_row = False
                                                               ).values('subject_id__subject_name','duration_in_days','start_date','end_date')
         subjects ={}
         currentweek = {}

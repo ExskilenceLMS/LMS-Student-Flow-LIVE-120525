@@ -99,21 +99,7 @@ class courses(models.Model):
 
     class Meta:
         db_table = 'courses'
-# 6
-class course_subjects(models.Model):
-    course_id               = models.ForeignKey(courses, on_delete=models.CASCADE)
-    subject_id              = models.ForeignKey(subjects, on_delete=models.CASCADE)
-    duration_in_days        = models.CharField(max_length=20)
-    start_date              = models.DateTimeField(default=None )
-    end_date                = models.DateTimeField(default=None)
-    is_mandatory            = models.BooleanField()
-    path                    = models.CharField(max_length=250)
-    del_row                 = models.BooleanField(default=False)
 
-    def __str__(self):
-        return f"{self.course_id.course_name} - {self.subject_id.subject_name}"
-    class Meta:
-        db_table = 'course_subjects'
 # 7 
 class batches(models.Model):
     batch_id                = models.CharField(max_length=20, primary_key=True)
@@ -132,6 +118,23 @@ class batches(models.Model):
         return self.batch_name
     class Meta:
         db_table = 'batches'
+
+# 6
+class course_subjects(models.Model):
+    course_id               = models.ForeignKey(courses, on_delete=models.CASCADE)
+    subject_id              = models.ForeignKey(subjects, on_delete=models.CASCADE)
+    duration_in_days        = models.CharField(max_length=20)
+    start_date              = models.DateTimeField(default=None )
+    end_date                = models.DateTimeField(default=None)
+    is_mandatory            = models.BooleanField()
+    path                    = models.CharField(max_length=250)
+    batch_id                = models.ForeignKey(batches,  on_delete=models.SET_NULL, null=True,default=None)
+    del_row                 = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.course_id.course_name} - {self.subject_id.subject_name}"
+    class Meta:
+        db_table = 'course_subjects'
 # 8
 class course_plan_details(models.Model):
     course_id               = models.ForeignKey(courses, on_delete=models.CASCADE)
