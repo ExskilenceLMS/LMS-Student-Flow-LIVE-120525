@@ -95,7 +95,7 @@ def test_insturction(request,student_id,test_id):
             'duration'      :0,
             'section_count' :{}
         }
-        [test_detaile.update({'duration'    :item.get('test_id__test_duration')}) for item in test_detaile_queryset]
+        [test_detaile.update({'duration'    :float(item.get('test_id__test_duration'))*60}) for item in test_detaile_queryset]
         test_detaile.update({'section_count': {'section_'+str(item.get('section_number')): item.get('section_count') for item in test_detaile_queryset} })
         return JsonResponse(test_detaile,safe=False,status=200)
     except Exception as e:
