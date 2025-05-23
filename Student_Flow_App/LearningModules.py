@@ -48,16 +48,16 @@ def fetch_learning_modules(request,student_id,subject,subject_id,day_number,week
         # print(4)
         status ={'current_id': ""}
         if student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id,None) == None \
-              or student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(1))== None\
-                  or student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(1)).get('day_'+str(day_number)) == None \
-                    or student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status')==None:
+              or student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(week_number))== None\
+                  or student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(week_number)).get('day_'+str(day_number)) == None \
+                    or student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(week_number)).get('day_'+str(day_number)).get('sub_topic_status')==None:
             # print(5)
             pass
             
         else:
-            [status.update({'current_id':i}) for i in student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status')
-                    if student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status').get(i) == 1\
-                        or student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(1)).get('day_'+str(day_number)).get('sub_topic_status').get(i) == 2]   
+            [status.update({'current_id':i}) for i in student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(week_number)).get('day_'+str(day_number)).get('sub_topic_status')
+                    if student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(week_number)).get('day_'+str(day_number)).get('sub_topic_status').get(i) == 1\
+                        or student_details.student_question_details.get(student.course_id.course_id+'_'+subject_id).get('week_'+str(week_number)).get('day_'+str(day_number)).get('sub_topic_status').get(i) == 2]   
         # print(6)
         if status.get('current_id') == '': 
             # print(7)
