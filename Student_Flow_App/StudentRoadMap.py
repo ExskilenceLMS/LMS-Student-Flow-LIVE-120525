@@ -14,7 +14,7 @@ from django.db.models.functions import TruncDate
 from LMS_Project.Blobstorage import *
 from .AppUsage import update_app_usage
 from django.core.cache import cache
-
+from .ErrorLog import *
 from .StudentDashBoard import getdays
 
 
@@ -36,7 +36,11 @@ def fetch_top_navigation(request,student_id):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+        return JsonResponse({"message": "Failed",
+                             "error":str(encrypt_message(str({
+                                    "Error_msg": str(e),
+                                    "Stack_trace":str(traceback.format_exc())+'\nUrl:-'+str(request.build_absolute_uri())+'\nBody:-' + (str(json.loads(request.body)) if request.body else "{}")
+                                    })))},safe=False,status=400)
 
 @api_view(['GET'])
 def fetch_roadmap(request,student_id,course_id,subject_id):
@@ -73,6 +77,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
         daynumber=0
         last_day_data = {}
         current_date = timezone.now().__add__(timedelta(days=0,hours=5,minutes=30))
+        # print('current_date',current_date)
         max_date = timezone.now().__add__(timedelta(hours=5, minutes=30))
         for week in course_details:
             if week.get('startDate').date() <= current_date.date() and \
@@ -255,7 +260,11 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
     except Exception as e:
         print(e)
         update_app_usage(student_id)
-        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+        return JsonResponse({"message": "Failed",
+                             "error":str(encrypt_message(str({
+                                    "Error_msg": str(e),
+                                    "Stack_trace":str(traceback.format_exc())+'\nUrl:-'+str(request.build_absolute_uri())+'\nBody:-' + (str(json.loads(request.body)) if request.body else "{}")
+                                    })))},safe=False,status=400)
 
 
                                                            

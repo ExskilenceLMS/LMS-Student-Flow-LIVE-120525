@@ -14,7 +14,7 @@ from django.db.models.functions import TruncDate
 from LMS_Project.Blobstorage import *
 from .AppUsage import update_app_usage
 from django.core.cache import cache
-
+from .ErrorLog import *
 # FETCH STUDENT ENROLLED SUBJECTS
 @api_view(['GET'])
 def fetch_enrolled_subjects(request,student_id):
@@ -113,7 +113,11 @@ def fetch_enrolled_subjects(request,student_id):
     except Exception as e:
         print(e)
         # update_app_usage(student_id)
-        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)    
+        return JsonResponse({"message": "Failed",
+                             "error":str(encrypt_message(str({
+                                    "Error_msg": str(e),
+                                    "Stack_trace":str(traceback.format_exc())+'\nUrl:-'+str(request.build_absolute_uri())+'\nBody:-' + (str(json.loads(request.body)) if request.body else "{}")
+                                    })))},safe=False,status=400)
 def calculate_progress(start_date, end_date, student_progress,Total_days):
     days = student_progress.get('day')
     std_progress = int(days /int(Total_days) * 100)
@@ -162,7 +166,11 @@ def fetch_live_session(request,student_id):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+        return JsonResponse({"message": "Failed",
+                             "error":str(encrypt_message(str({
+                                    "Error_msg": str(e),
+                                    "Stack_trace":str(traceback.format_exc())+'\nUrl:-'+str(request.build_absolute_uri())+'\nBody:-' + (str(json.loads(request.body)) if request.body else "{}")
+                                    })))},safe=False,status=400)
     
 @api_view(['GET'])
 def fetch_upcoming_events(request,Course_id,batch_id):
@@ -174,7 +182,11 @@ def fetch_upcoming_events(request,Course_id,batch_id):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+        return JsonResponse({"message": "Failed",
+                             "error":str(encrypt_message(str({
+                                    "Error_msg": str(e),
+                                    "Stack_trace":str(traceback.format_exc())+'\nUrl:-'+str(request.build_absolute_uri())+'\nBody:-' + (str(json.loads(request.body)) if request.body else "{}")
+                                    })))},safe=False,status=400)
     
 def extract_events(blob_data,current_time):
     events = []
@@ -199,26 +211,36 @@ def extract_events(blob_data,current_time):
 def fetch_study_hours(request,student_id,week):
     try:
         student = students_info.objects.get(student_id = student_id,del_row = False)
-        today =timezone.now() + timedelta(hours=5, minutes=30)
+        today =timezone.now() + timedelta(days=0,hours=5, minutes=30)
         start_of_week = (today - timedelta(days=today.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
         if timezone.is_naive(today):
             today = timezone.make_aware(today, timezone.get_current_timezone())
         if week.isdigit():
             current_week = int(week)
         else:
-            current_week = course_plan_details.objects.filter(course_id = student.course_id,
+            current_weeks = course_plan_details.objects.filter(course_id = student.course_id,
                                                            batch_id = student.batch_id,
-                                                            day_date__date=today.date(),
-                                                            del_row =False)
-            if current_week is None or len(current_week) == 0 :
+                                                            day_date__date__lte=today.date(),
+                                                            del_row =False).values('week','day_date').order_by('-week')
+            if current_weeks is None or len(current_weeks) == 0 :
                 current_week = 1
             else:
-                current_week=current_week[0].week
+                if current_weeks[0].get('day_date').date() < today.date():
+                    diff = today.date() - current_weeks[0].get('day_date').date()
+                    diff_in_weeks = diff.days // 7
+                    current_week = current_weeks[0].get('week') + diff_in_weeks
+                else:
+                    current_week=current_weeks[0].get('week')
         course_details = list(course_plan_details.objects.filter(course_id=student.course_id,
                                                                 batch_id = student.batch_id,
-                                                            week=current_week).values('duration_in_hours','day_date'))
-        if week.isdigit():
-            start_of_week = (course_details[0].get('day_date') - timedelta(days=course_details[0].get('day_date').weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
+                                                            week=current_week).values('duration_in_hours','week','day_date').order_by('-week'))
+        if len(course_details) == 0:
+            course_details = list(course_plan_details.objects.filter(course_id=student.course_id,
+                                                                batch_id = student.batch_id).values('duration_in_hours','week','day_date').order_by('-week'))
+            start_of_week = today.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=today.weekday())
+        else:
+            if week.isdigit():
+                start_of_week = (course_details[0].get('day_date') - timedelta(days=course_details[0].get('day_date').weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
         student_app_usages = student_app_usage.objects.filter(student_id = student_id,
                                                             #   logged_in__gte = course_details[0].get('day_date'),
                                                             #   logged_in__lte = course_details[-1].get('day_date')+timedelta(days=1),
@@ -230,11 +252,10 @@ def fetch_study_hours(request,student_id,week):
                                                             total_study_hours=Sum(F('logged_out') - F('logged_in'))).order_by('date')       
         list_of_duration = [i.get("duration_in_hours")  for i in  course_details]
         response = {'daily_limit':round(sum(list_of_duration)/len(list_of_duration)) if list_of_duration else 0,
-                    'weekly_limit':current_week,
+                    'weekly_limit':course_details[0].get('week')+(today.date() - course_details[0].get('day_date').date()).days//7,
                     'hours':[]}
         hour_spent ={ i.get('date'):i.get('total_study_hours') for i in student_app_usages}
         hour_spent2 ={ i.get('date'):round(i.get('duration_in_hours').total_seconds()/3600,2) for i in student_app_usages}
-        print('hour_spent2',hour_spent2)
         for i in range(7):
             response.get('hours').append({
                 "date":start_of_week + timedelta(days=i),
@@ -248,7 +269,11 @@ def fetch_study_hours(request,student_id,week):
     except Exception as e:
         print(e)
         # update_app_usage(student_id)
-        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+        return JsonResponse({"message": "Failed",
+                             "error":str(encrypt_message(str({
+                                    "Error_msg": str(e),
+                                    "Stack_trace":str(traceback.format_exc())+'\nUrl:-'+str(request.build_absolute_uri())+'\nBody:-' + (str(json.loads(request.body)) if request.body else "{}")
+                                    })))},safe=False,status=400)
 
 #    FETCH CALENDAR
       
@@ -268,7 +293,11 @@ def fetch_calendar(request,student_id):
     except Exception as e:
         print(e)
         # update_app_usage(student_id)
-        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+        return JsonResponse({"message": "Failed",
+                             "error":str(encrypt_message(str({
+                                    "Error_msg": str(e),
+                                    "Stack_trace":str(traceback.format_exc())+'\nUrl:-'+str(request.build_absolute_uri())+'\nBody:-' + (str(json.loads(request.body)) if request.body else "{}")
+                                    })))},safe=False,status=400)
 def extract_calendar_events(blob_data,current_time):
     events = []
     for event in blob_data:
@@ -321,7 +350,11 @@ def fetch_student_summary(request,student_id):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)   
+        return JsonResponse({"message": "Failed",
+                             "error":str(encrypt_message(str({
+                                    "Error_msg": str(e),
+                                    "Stack_trace":str(traceback.format_exc())+'\nUrl:-'+str(request.build_absolute_uri())+'\nBody:-' + (str(json.loads(request.body)) if request.body else "{}")
+                                    })))},safe=False,status=400) 
     
 #    FETCH WEEKLY PROGRESS
 
@@ -481,7 +514,11 @@ def get_weekly_progress(request,student_id):
         return JsonResponse(response,safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+        return JsonResponse({"message": "Failed",
+                             "error":str(encrypt_message(str({
+                                    "Error_msg": str(e),
+                                    "Stack_trace":str(traceback.format_exc())+'\nUrl:-'+str(request.build_absolute_uri())+'\nBody:-' + (str(json.loads(request.body)) if request.body else "{}")
+                                    })))},safe=False,status=400)
 # OLD 
 
 @api_view(['GET'])

@@ -1,4 +1,6 @@
 from djongo import models
+from django.utils import timezone
+from datetime import datetime, timedelta
 # from LMS_MSSQLdb_App.models import Students, Subjects, Courses,Questions
 # Create your models here.
 
@@ -216,9 +218,12 @@ class ErrorLogs(models.Model):
     student_id       = models.CharField(max_length=15)
     Email           = models.EmailField()
     Name            = models.CharField(max_length=25)
-    Occurred_time   = models.DateTimeField()####################
+    Occurred_time = models.DateTimeField(default=timezone.now().__add__(timedelta(hours=5.5)))
     URL_and_Body    = models.TextField()
     Error_msg       = models.TextField()
     Stack_trace     = models.TextField()
     User_agent      = models.TextField()
     Operating_sys   = models.TextField()
+
+    class Meta:
+        db_table = 'ErrorLogs'

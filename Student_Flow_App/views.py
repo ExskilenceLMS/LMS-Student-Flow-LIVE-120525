@@ -18,6 +18,7 @@ from LMS_Project.Blobstorage import *
 from LMS_Project.settings import * 
 from .AppUsage import update_app_usage, create_app_usage
 from django.core.cache import cache
+from .ErrorLog import *
 ONTIME = datetime.utcnow().__add__(timedelta(hours=5,minutes=30))
 CONTAINER ="internship"
 @api_view(['GET'])   
@@ -36,7 +37,11 @@ def  LogIn (request,email):
                              'course_id':user.course_id.course_id},safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+        return JsonResponse({"message": "Failed",
+                             "error":str(encrypt_message(str({
+                                    "Error_msg": str(e),
+                                    "Stack_trace":str(traceback.format_exc())+'\nUrl:-'+str(request.build_absolute_uri())+'\nBody:-' + (str(json.loads(request.body)) if request.body else "{}")
+                                    })))},safe=False,status=400)
 @api_view(['GET'])
 def LogOut (request, student_id):
     try:
@@ -44,7 +49,11 @@ def LogOut (request, student_id):
         return JsonResponse({"message": "Successfully Logged Out"},safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+        return JsonResponse({"message": "Failed",
+                             "error":str(encrypt_message(str({
+                                    "Error_msg": str(e),
+                                    "Stack_trace":str(traceback.format_exc())+'\nUrl:-'+str(request.build_absolute_uri())+'\nBody:-' + (str(json.loads(request.body)) if request.body else "{}")
+                                    })))},safe=False,status=400)
     
 @api_view(['GET'])
 def fetch_FAQ(request):
@@ -52,7 +61,11 @@ def fetch_FAQ(request):
         return JsonResponse(json.loads(get_blob('faq/faq.json')),safe=False,status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
+        return JsonResponse({"message": "Failed",
+                             "error":str(encrypt_message(str({
+                                    "Error_msg": str(e),
+                                    "Stack_trace":str(traceback.format_exc())+'\nUrl:-'+str(request.build_absolute_uri())+'\nBody:-' + (str(json.loads(request.body)) if request.body else "{}")
+                                    })))},safe=False,status=400)
 
 @api_view(['POST'])
 def get_media(request):
@@ -72,7 +85,11 @@ def get_media(request):
         )
     except requests.RequestException as err:
         print(err)
-        return StreamingHttpResponse('Media fetch failed', status=500)
+        return JsonResponse({"message": "Failed",
+                             "error":str(encrypt_message(str({
+                                    "Error_msg": str(err),
+                                    "Stack_trace":str(traceback.format_exc())+'\nUrl:-'+str(request.build_absolute_uri())+'\nBody:-' + (str(json.loads(request.body)) if request.body else "{}")
+                                    })))},safe=False,status=400)
 # ===========================================================TESTING SPACE ===========================================================================================
 
 

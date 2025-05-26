@@ -1,10 +1,24 @@
 from datetime import datetime, timedelta
 import json
+from django.http import JsonResponse
 from LMS_Mongodb_App.models import *
 from LMS_MSSQLdb_App.models import *
 import traceback
 from django.utils import timezone
+from rest_framework.decorators import api_view
+from cryptography.fernet import Fernet
+import ast, json
 
+# key = Fernet.generate_key()
+key = b'kOt0aprdFA1-Zj-w6fENiZOf7IVfgnPjv_-usgnBA5s='
+# print("key:", key, len(key.split()))
+cipher_suite = Fernet(key)
+
+def encrypt_message(message: str) -> bytes:
+    return cipher_suite.encrypt(message.encode())
+
+def decrypt_message(encrypted_message: bytes) -> str:
+    return cipher_suite.decrypt(encrypted_message).decode()
 def ErrorLog(req,e):
     try:
         u_agent = str(req.META.get('HTTP_USER_AGENT'))
@@ -36,3 +50,28 @@ def ErrorLog(req,e):
     except Exception as e:
         print(e)
         return False
+    
+@api_view(['POST'])
+def Upload_ErrorLog(req):
+    try:
+        data = json.loads(req.body)
+        enc_data = data.get('error')
+        if isinstance(enc_data, str) and enc_data.startswith("b'"):
+            enc_data = eval(enc_data) 
+        raw = cipher_suite.decrypt(enc_data).decode()
+        decrypted_data = json.loads(raw) if raw.strip().startswith('{"') else ast.literal_eval(raw)
+        u_agent = str(req.META.get('HTTP_USER_AGENT'))
+        ErrorLog = ErrorLogs.objects.using('mongodb').create(
+            student_id  =data.get('student_id'),
+            Email       =data.get('Email'),
+            Name        = data.get('Name'),
+            URL_and_Body = data.get('URL_and_Body'),
+            Error_msg = decrypted_data.get('Error_msg'),
+            Stack_trace =  decrypted_data.get('Stack_trace'),
+            User_agent =  u_agent,
+            Operating_sys = str(u_agent)[u_agent.find("(")+1:u_agent.find(")")],
+            )
+        return JsonResponse({"message": "Successfully Uploaded Error Log"},safe=False,status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "Failed","error":str(e)},safe=False,status=400)
