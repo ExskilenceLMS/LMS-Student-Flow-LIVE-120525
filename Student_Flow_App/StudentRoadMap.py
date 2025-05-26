@@ -80,7 +80,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                 current_week = week.get('week')
                 max_date = week.get('endDate')
                 break
-        print('current_week',current_week)
+        # print('current_week',current_week)
         for i in course_details:
             week_data = sub_data.get('week_'+str(i.get('week')),{})
             if i.get('week') > 1:
