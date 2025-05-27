@@ -56,7 +56,7 @@ def Upload_ErrorLog(req):
     try:
         data = json.loads(req.body)
         enc_data = data.get('error')
-        Time  = timezone.now().__add__(timedelta(hours=5,minutes=30))
+        Time  = datetime.now(timezone.utc).__add__(timedelta(hours=5,minutes=30))
         if isinstance(enc_data, str) and enc_data.startswith("b'"):
             enc_data = eval(enc_data) 
         raw = cipher_suite.decrypt(enc_data).decode()
