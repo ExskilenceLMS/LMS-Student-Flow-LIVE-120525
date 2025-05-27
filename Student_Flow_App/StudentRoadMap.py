@@ -138,7 +138,7 @@ def fetch_roadmap(request,student_id,course_id,subject_id):
                                     #   ([i for i in days if i.get('status') == 'Start'].__len__() == 0):
                                     status = 'Start'
                             if (current_date.date() >= i.get('startDate').date() and current_date.date() <= max_date.date()) and \
-                                i.get('week') ==1  and ([i for i in days if i.get('status') == 'Start'].__len__() == 0): 
+                                      ([i for i in days if i.get('status') == 'Start'].__len__() == 0): # i.get('week') ==1  and\
                                     status = 'Start'
                         last_weeks_last_day_data = prev_week_data.get('day_'+str(week_first_day-1),{})
                         last_weeks_last_day_status = [ last_weeks_last_day_data.get('sub_topic_status',{}).get(day_stat) for day_stat in last_weeks_last_day_data.get('sub_topic_status',{}) ]
